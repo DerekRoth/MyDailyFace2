@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
   googleDrive: {
-    apiKey: 'YOUR_GOOGLE_API_KEY_HERE',
-    clientId: 'YOUR_GOOGLE_CLIENT_ID_HERE'
+    apiKey: 'AIzaSyAGvuivJCXGCcW63TWdP9oIwDBdscGx59U',
+    clientId: '41342017454-1n3krnh4sp32m0s8egphj2fp2b9rrtlc.apps.googleusercontent.com'
   }
 };

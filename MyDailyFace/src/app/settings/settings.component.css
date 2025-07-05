@@ -362,6 +362,35 @@ input:checked + .toggle-slider:before {
   cursor: not-allowed;
 }
 
+.speed-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.speed-button {
+  background-color: #f2f2f7;
+  color: #1c1c1e;
+  border: 1px solid #d1d1d6;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 50px;
+}
+
+.speed-button:hover {
+  background-color: #e5e5ea;
+}
+
+.speed-button.active {
+  background-color: #007aff;
+  color: white;
+  border-color: #007aff;
+}
+
 /* Make the component element itself take full height */
 :host {
   display: block;

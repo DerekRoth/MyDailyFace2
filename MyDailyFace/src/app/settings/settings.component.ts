@@ -33,6 +33,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   showTestingFeatures = false;
   versionTapCount = 0;
   isGeneratingTestData = false;
+  currentAnimationSpeed = 1;
   
   private destroy$ = new Subject<void>();
 
@@ -48,6 +49,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
     
     // Check if Google Drive is configured
     this.isGoogleDriveConfigured = this.googleDriveService.isConfigured();
+    
+    // Load current animation speed
+    this.currentAnimationSpeed = this.testDataGenerator.getAnimationSpeed();
     
     // Subscribe to sync status updates
     this.googleDriveService.syncStatus$
@@ -232,5 +236,24 @@ export class SettingsComponent implements OnInit, OnDestroy {
   hideTestingFeatures() {
     this.showTestingFeatures = false;
     this.versionTapCount = 0;
+  }
+
+  setAnimationSpeed(multiplier: number) {
+    this.currentAnimationSpeed = multiplier;
+    this.testDataGenerator.setAnimationSpeed(multiplier);
+    
+    const speedText = multiplier === 1 ? 'Normal' : `${multiplier}x slower`;
+    alert(`🎬 Animation speed set to: ${speedText}`);
+  }
+
+  resetAnimationSpeed() {
+    this.currentAnimationSpeed = 1;
+    this.testDataGenerator.resetAnimationSpeed();
+    alert('🎬 Animation speed reset to normal');
+  }
+
+  getAnimationSpeedText(): string {
+    if (this.currentAnimationSpeed === 1) return 'Normal';
+    return `${this.currentAnimationSpeed}x slower`;
   }
 }

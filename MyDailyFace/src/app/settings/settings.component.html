@@ -139,6 +139,42 @@
 
       <div class="setting-item">
         <div class="setting-info">
+          <h3>Animation Speed</h3>
+          <p>Slow down animations for debugging (Current: {{ getAnimationSpeedText() }})</p>
+        </div>
+      </div>
+      
+      <div class="setting-item">
+        <div class="setting-info">
+          <h3>Speed Options</h3>
+          <p>Choose animation slowdown multiplier</p>
+        </div>
+        <div class="speed-controls">
+          <button class="speed-button" 
+                  [class.active]="currentAnimationSpeed === 1"
+                  (click)="setAnimationSpeed(1)">
+            Normal
+          </button>
+          <button class="speed-button" 
+                  [class.active]="currentAnimationSpeed === 2"
+                  (click)="setAnimationSpeed(2)">
+            2x
+          </button>
+          <button class="speed-button" 
+                  [class.active]="currentAnimationSpeed === 5"
+                  (click)="setAnimationSpeed(5)">
+            5x
+          </button>
+          <button class="speed-button" 
+                  [class.active]="currentAnimationSpeed === 10"
+                  (click)="setAnimationSpeed(10)">
+            10x
+          </button>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-info">
           <h3>Hide Testing</h3>
           <p>Hide these testing features</p>
         </div>

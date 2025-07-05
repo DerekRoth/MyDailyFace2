@@ -19,7 +19,17 @@ export class TestDataGeneratorService {
   constructor(
     private cameraService: CameraService,
     private indexedDbService: IndexedDbService
-  ) { }
+  ) {
+    // Apply stored animation speed on startup
+    this.initializeAnimationSpeed();
+  }
+
+  private initializeAnimationSpeed(): void {
+    const storedSpeed = this.getAnimationSpeed();
+    if (storedSpeed !== 1) {
+      this.setAnimationSpeed(storedSpeed);
+    }
+  }
 
   async generateTestData(): Promise<{ success: number; failed: number }> {
     const endDate = new Date();
@@ -221,5 +231,30 @@ export class TestDataGeneratorService {
     for (const photo of testPhotos) {
       await this.indexedDbService.deletePhoto(photo.id);
     }
+  }
+
+  // Animation debugging
+  setAnimationSpeed(multiplier: number): void {
+    // Apply CSS custom property to slow down all transitions and animations
+    document.documentElement.style.setProperty('--animation-speed-multiplier', multiplier.toString());
+    
+    // Store preference
+    localStorage.setItem('debugAnimationSpeed', multiplier.toString());
+  }
+
+  getAnimationSpeed(): number {
+    const stored = localStorage.getItem('debugAnimationSpeed');
+    return stored ? parseFloat(stored) : 1;
+  }
+
+  resetAnimationSpeed(): void {
+    document.documentElement.style.removeProperty('--animation-speed-multiplier');
+    localStorage.removeItem('debugAnimationSpeed');
+  }
+
+  // Helper method to get timing adjusted for debug speed
+  getAdjustedTimeout(baseTimeoutMs: number): number {
+    const multiplier = this.getAnimationSpeed();
+    return Math.round(baseTimeoutMs * multiplier);
   }
 }

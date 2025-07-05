@@ -38,15 +38,12 @@
     </div>
   </div>
 
-  <!-- Photo preview overlay -->
-  <div class="preview-overlay" *ngIf="lastPhoto && lastPhotoDataUrl">
-    <div class="preview-container">
-      <img [src]="lastPhotoDataUrl" alt="Last taken photo">
-      <div class="preview-text">
-        <h3>Photo Saved!</h3>
-        <p>{{ lastPhoto.timestamp | date:'medium' }}</p>
-      </div>
-    </div>
+  <!-- Flash effect -->
+  <div class="flash-overlay" *ngIf="showFlash"></div>
+  
+  <!-- Freeze frame animation -->
+  <div #freezeFrame class="freeze-frame" *ngIf="showFreezeFrame" [class.animate-to-browse]="animatingToBrowse">
+    <img [src]="freezeFrameUrl" alt="Captured photo">
   </div>
 
   <canvas #canvas style="display: none;"></canvas>

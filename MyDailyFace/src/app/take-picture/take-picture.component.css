@@ -1,0 +1,238 @@
+.take-picture-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 20px;
+  padding-bottom: 100px;
+  box-sizing: border-box;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+  margin-top: 20px;
+}
+
+.header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1c1c1e;
+  margin-bottom: 8px;
+}
+
+.header p {
+  font-size: 16px;
+  color: #8e8e93;
+}
+
+.camera-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.camera-frame {
+  position: relative;
+  width: 100%;
+  max-width: 350px;
+  aspect-ratio: 3/4;
+  background-color: #000;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.camera-frame video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* Mirror the video horizontally */
+}
+
+.camera-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid #007aff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-message {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+
+.error-message svg {
+  margin-bottom: 16px;
+}
+
+.error-message p {
+  margin-bottom: 24px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.capture-button {
+  width: 80px;
+  height: 80px;
+  border: none;
+  border-radius: 50%;
+  background-color: white;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.capture-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.capture-button:active {
+  transform: scale(0.95);
+}
+
+.capture-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.capture-button-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #007aff;
+  border-radius: 50%;
+  margin: 4px;
+  transition: all 0.2s ease;
+}
+
+.capture-button-inner.taking {
+  background-color: #ff3b30;
+  animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.capture-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.preview-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.preview-container {
+  text-align: center;
+  color: white;
+  max-width: 300px;
+}
+
+.preview-container img {
+  width: 200px;
+  height: 200px;
+  border-radius: 16px;
+  object-fit: cover;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.preview-text h3 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.preview-text p {
+  font-size: 16px;
+  color: #8e8e93;
+}
+
+@media (max-width: 480px) {
+  .take-picture-container {
+    padding: 15px;
+  }
+  
+  .header h1 {
+    font-size: 28px;
+  }
+  
+  .camera-frame {
+    max-width: 280px;
+  }
+  
+  .capture-button {
+    width: 70px;
+    height: 70px;
+  }
+}

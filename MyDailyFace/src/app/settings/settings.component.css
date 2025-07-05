@@ -1,0 +1,113 @@
+.settings-container {
+  padding: 20px;
+  padding-bottom: 100px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+  margin-top: 20px;
+}
+
+.header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1c1c1e;
+  margin-bottom: 8px;
+}
+
+.header p {
+  font-size: 16px;
+  color: #8e8e93;
+}
+
+.settings-sections {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.settings-section {
+  margin-bottom: 32px;
+}
+
+.settings-section h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1c1c1e;
+  margin-bottom: 16px;
+  padding-left: 4px;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background-color: white;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.setting-item:last-child {
+  margin-bottom: 0;
+}
+
+.setting-info {
+  flex: 1;
+}
+
+.setting-info h3 {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1c1c1e;
+  margin-bottom: 4px;
+}
+
+.setting-info p {
+  font-size: 14px;
+  color: #8e8e93;
+  line-height: 1.3;
+}
+
+.danger-button {
+  background-color: #ff3b30;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.danger-button:hover {
+  background-color: #d70015;
+}
+
+.danger-button:active {
+  background-color: #bf0012;
+}
+
+@media (max-width: 480px) {
+  .settings-container {
+    padding: 15px;
+  }
+  
+  .header h1 {
+    font-size: 28px;
+  }
+  
+  .setting-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .setting-item .danger-button {
+    margin-top: 12px;
+    align-self: flex-end;
+  }
+}

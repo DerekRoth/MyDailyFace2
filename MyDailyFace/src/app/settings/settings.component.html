@@ -1,0 +1,43 @@
+<div class="settings-container">
+  <div class="header">
+    <h1>Settings</h1>
+    <p>Manage your app preferences</p>
+  </div>
+
+  <div class="settings-sections">
+    <div class="settings-section">
+      <h2>Storage</h2>
+      <div class="setting-item">
+        <div class="setting-info">
+          <h3>Photos Stored</h3>
+          <p>{{ photoCount }} photos saved locally</p>
+        </div>
+      </div>
+      <div class="setting-item">
+        <div class="setting-info">
+          <h3>Clear All Photos</h3>
+          <p>Remove all stored photos from device</p>
+        </div>
+        <button class="danger-button" (click)="clearAllPhotos()">
+          Clear All
+        </button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h2>About</h2>
+      <div class="setting-item">
+        <div class="setting-info">
+          <h3>Version</h3>
+          <p>MyDailyFace v1.0.0</p>
+        </div>
+      </div>
+      <div class="setting-item">
+        <div class="setting-info">
+          <h3>Privacy</h3>
+          <p>All photos are stored locally on your device</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

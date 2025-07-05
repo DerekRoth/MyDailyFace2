@@ -1,56 +1,29 @@
 .take-picture-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  padding: 20px;
-  padding-bottom: 100px;
-  box-sizing: border-box;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #000;
 }
 
-.header {
-  text-align: center;
-  margin-bottom: 30px;
-  margin-top: 20px;
-}
-
-.header h1 {
-  font-size: 32px;
-  font-weight: 700;
-  color: #1c1c1e;
-  margin-bottom: 8px;
-}
-
-.header p {
-  font-size: 16px;
-  color: #8e8e93;
-}
-
-.camera-container {
-  flex: 1;
+/* Full-screen camera view */
+.camera-view {
+  position: relative;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 40px;
 }
 
-.camera-frame {
-  position: relative;
-  width: 100%;
-  max-width: 350px;
-  aspect-ratio: 3/4;
-  background-color: #000;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-}
-
-.camera-frame video {
+.camera-view video {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transform: scaleX(-1); /* Mirror the video horizontally */
 }
 
+/* Loading overlay */
 .camera-overlay {
   position: absolute;
   top: 0;
@@ -63,6 +36,7 @@
   justify-content: center;
   background-color: rgba(0, 0, 0, 0.8);
   color: white;
+  z-index: 2;
 }
 
 .loading-spinner {
@@ -75,12 +49,13 @@
   margin-bottom: 16px;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.camera-overlay p {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
 }
 
-.error-message {
+/* Error overlay */
+.error-overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -94,41 +69,75 @@
   color: white;
   text-align: center;
   padding: 20px;
+  z-index: 2;
 }
 
-.error-message svg {
+.error-overlay svg {
   margin-bottom: 16px;
 }
 
-.error-message p {
+.error-overlay p {
   margin-bottom: 24px;
   font-size: 16px;
   line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
 }
 
-.controls {
+.retry-button {
+  background-color: #007aff;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retry-button:hover {
+  background-color: #0056b3;
+  transform: translateY(-1px);
+}
+
+.retry-button:active {
+  transform: translateY(0);
+}
+
+/* Capture button overlay */
+.capture-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 20px 0;
+  padding: 30px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+  z-index: 3;
+  pointer-events: none;
 }
 
 .capture-button {
   width: 80px;
   height: 80px;
-  border: none;
+  border: 4px solid rgba(255, 255, 255, 0.9);
   border-radius: 50%;
-  background-color: white;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  background-color: #007aff;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   cursor: pointer;
   transition: all 0.2s ease;
-  position: relative;
-  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
 }
 
 .capture-button:hover {
   transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 1);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
 }
 
 .capture-button:active {
@@ -136,32 +145,14 @@
 }
 
 .capture-button:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
   transform: none;
 }
 
-.capture-button-inner {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #007aff;
-  border-radius: 50%;
-  margin: 4px;
-  transition: all 0.2s ease;
-}
-
-.capture-button-inner.taking {
+.capture-button.taking {
   background-color: #ff3b30;
   animation: pulse 0.5s ease-in-out;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
 }
 
 .capture-spinner {
@@ -173,6 +164,7 @@
   animation: spin 1s linear infinite;
 }
 
+/* Photo preview overlay */
 .preview-overlay {
   position: fixed;
   top: 0;
@@ -185,11 +177,6 @@
   justify-content: center;
   z-index: 1000;
   animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }
 
 .preview-container {
@@ -218,21 +205,76 @@
   color: #8e8e93;
 }
 
+/* Animations */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Make the component element itself take full height */
+:host {
+  display: block;
+  height: 100%;
+}
+
+/* Mobile Responsive */
 @media (max-width: 480px) {
-  .take-picture-container {
-    padding: 15px;
-  }
-  
-  .header h1 {
-    font-size: 28px;
-  }
-  
-  .camera-frame {
-    max-width: 280px;
+  .capture-overlay {
+    padding: 20px;
   }
   
   .capture-button {
     width: 70px;
     height: 70px;
+  }
+  
+  .preview-container img {
+    width: 160px;
+    height: 160px;
+  }
+  
+  .preview-text h3 {
+    font-size: 20px;
+  }
+  
+  .preview-text p {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  .capture-overlay {
+    padding: 15px;
+  }
+  
+  .capture-button {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+/* Portrait orientation optimization */
+@media (orientation: portrait) {
+  .camera-view video {
+    object-fit: cover;
+    object-position: center;
+  }
+}
+
+/* Landscape orientation optimization */
+@media (orientation: landscape) {
+  .capture-overlay {
+    padding: 20px 40px;
   }
 }

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { IndexedDbService, PhotoRecord } from './indexed-db.service';
+import { GoogleDriveService } from './google-drive.service';
 
 export interface CameraPhoto {
   id: string;
@@ -12,7 +13,10 @@ export interface CameraPhoto {
   providedIn: 'root'
 })
 export class CameraService {
-  constructor(private indexedDbService: IndexedDbService) { }
+  constructor(
+    private indexedDbService: IndexedDbService,
+    private googleDriveService: GoogleDriveService
+  ) { }
 
   async takePictureFromVideo(videoElement: HTMLVideoElement): Promise<CameraPhoto | null> {
     try {
@@ -49,6 +53,9 @@ export class CameraService {
               timestamp,
               blob
             };
+            
+            // Auto-sync to Google Drive if enabled
+            await this.autoSyncPhoto(photo);
             
             resolve(photo);
           } catch (error) {
@@ -131,6 +138,60 @@ export class CameraService {
       console.error('Error getting photo count:', error);
       return 0;
     }
+  }
+
+  private async autoSyncPhoto(photo: CameraPhoto): Promise<void> {
+    try {
+      const syncStatus = this.googleDriveService.getCurrentStatus();
+      
+      // Check if auto-sync is enabled and user is authenticated
+      if (!syncStatus.isEnabled || !syncStatus.isAuthenticated || !photo.blob) {
+        return;
+      }
+
+      // Sync the photo in the background
+      const success = await this.googleDriveService.syncPhoto(photo.blob, photo.id, photo.timestamp);
+      
+      if (success) {
+        console.log('Photo automatically synced to Google Drive:', photo.id);
+      } else {
+        console.warn('Failed to auto-sync photo to Google Drive:', photo.id);
+      }
+    } catch (error) {
+      console.error('Error during auto-sync:', error);
+    }
+  }
+
+  async syncAllPhotosToGoogleDrive(): Promise<{ success: number; failed: number }> {
+    const syncStatus = this.googleDriveService.getCurrentStatus();
+    
+    if (!syncStatus.isAuthenticated) {
+      throw new Error('Not authenticated with Google Drive');
+    }
+
+    const photos = await this.getStoredPhotos();
+    let success = 0;
+    let failed = 0;
+
+    for (const photo of photos) {
+      try {
+        if (photo.blob) {
+          const syncSuccess = await this.googleDriveService.syncPhoto(photo.blob, photo.id, photo.timestamp);
+          if (syncSuccess) {
+            success++;
+          } else {
+            failed++;
+          }
+        } else {
+          failed++;
+        }
+      } catch (error) {
+        console.error('Error syncing photo:', photo.id, error);
+        failed++;
+      }
+    }
+
+    return { success, failed };
   }
 
   private generateId(): string {

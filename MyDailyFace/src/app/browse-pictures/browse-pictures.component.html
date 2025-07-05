@@ -1,22 +1,100 @@
 <div class="browse-pictures-container">
   <div class="header">
     <h1>Your Photos</h1>
-    <p>View your daily selfies</p>
+    <p *ngIf="!isLoading && photos.length > 0">{{ photos.length }} photo{{ photos.length === 1 ? '' : 's' }}</p>
+    <p *ngIf="!isLoading && photos.length === 0">No photos yet</p>
+    <p *ngIf="isLoading">Loading photos...</p>
   </div>
 
-  <div class="photos-grid" *ngIf="photos.length > 0">
-    <div class="photo-item" *ngFor="let photo of photos" (click)="openPhoto(photo)">
-      <img [src]="getPhotoDataUrl(photo)" [alt]="'Photo from ' + (photo.timestamp | date:'short')" *ngIf="getPhotoDataUrl(photo)">
-      <div class="photo-loading" *ngIf="!getPhotoDataUrl(photo)">Loading...</div>
-      <div class="photo-date">{{ photo.timestamp | date:'MMM d, y' }}</div>
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="loading-spinner"></div>
+    <p>Loading your photos...</p>
+  </div>
+
+  <!-- Photos List -->
+  <div class="photos-list" *ngIf="!isLoading && photos.length > 0">
+    <div class="photo-item" *ngFor="let photo of photos; trackBy: trackByPhotoId" (click)="openPhoto(photo)">
+      <div class="photo-thumbnail">
+        <img 
+          [src]="getPhotoDataUrl(photo)" 
+          [alt]="'Photo from ' + formatDate(photo.timestamp)"
+          *ngIf="getPhotoDataUrl(photo)"
+          loading="lazy">
+        <div class="photo-loading" *ngIf="!getPhotoDataUrl(photo)">
+          <div class="loading-spinner-small"></div>
+        </div>
+      </div>
+      
+      <div class="photo-info">
+        <div class="photo-date-info">
+          <h3>{{ formatDate(photo.timestamp) }}</h3>
+          <p>{{ formatTime(photo.timestamp) }}</p>
+        </div>
+        
+        <button 
+          class="delete-button" 
+          (click)="confirmDeletePhoto(photo, $event)"
+          aria-label="Delete photo">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 
-  <div class="empty-state" *ngIf="photos.length === 0">
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && photos.length === 0">
     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M21 19V5C21 3.9 20.1 3 19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19ZM8.5 13.5L11 16.51L14.5 12L19 18H5L8.5 13.5Z" fill="#8e8e93"/>
     </svg>
     <h2>No photos yet</h2>
     <p>Take your first daily selfie to get started!</p>
+  </div>
+
+  <!-- Full Screen Photo View -->
+  <div class="photo-overlay" *ngIf="selectedPhoto && selectedPhotoDataUrl" (click)="closePhoto()">
+    <div class="photo-modal" (click)="$event.stopPropagation()">
+      <div class="photo-modal-header">
+        <div class="photo-modal-info">
+          <h3>{{ formatDate(selectedPhoto.timestamp) }}</h3>
+          <p>{{ formatTime(selectedPhoto.timestamp) }}</p>
+        </div>
+        <button class="close-button" (click)="closePhoto()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="photo-modal-content">
+        <img [src]="selectedPhotoDataUrl" [alt]="'Photo from ' + formatDate(selectedPhoto.timestamp)">
+      </div>
+      
+      <div class="photo-modal-actions">
+        <button class="delete-button-modal" (click)="confirmDeletePhoto(selectedPhoto, $event)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="currentColor"/>
+          </svg>
+          Delete Photo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="delete-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+    <div class="delete-modal" (click)="$event.stopPropagation()">
+      <div class="delete-modal-content">
+        <h3>Delete Photo?</h3>
+        <p>This photo will be permanently deleted and cannot be recovered.</p>
+        
+        <div class="delete-modal-actions">
+          <button class="cancel-button" (click)="cancelDelete()">Cancel</button>
+          <button class="confirm-delete-button" (click)="deletePhoto()">Delete</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

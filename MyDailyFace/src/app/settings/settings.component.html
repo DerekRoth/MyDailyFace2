@@ -5,6 +5,74 @@
   </div>
 
   <div class="settings-sections">
+    <!-- Google Drive Sync Section -->
+    <div class="settings-section">
+      <h2>Google Drive Sync</h2>
+      
+      <!-- Connection Status -->
+      <div class="setting-item">
+        <div class="setting-info">
+          <h3>Connection Status</h3>
+          <p *ngIf="!syncStatus.isAuthenticated" class="status-disconnected">Not connected</p>
+          <p *ngIf="syncStatus.isAuthenticated" class="status-connected">Connected to Google Drive</p>
+          <p *ngIf="syncStatus.error" class="status-error">{{ syncStatus.error }}</p>
+          <p *ngIf="!isGoogleDriveConfigured" class="status-error">Google Drive integration not configured</p>
+        </div>
+        <button 
+          *ngIf="!syncStatus.isAuthenticated" 
+          class="connect-button" 
+          (click)="connectGoogleDrive()"
+          [disabled]="!isGoogleDriveConfigured">
+          Connect
+        </button>
+        <button 
+          *ngIf="syncStatus.isAuthenticated" 
+          class="disconnect-button" 
+          (click)="disconnectGoogleDrive()">
+          Disconnect
+        </button>
+      </div>
+
+      <!-- Auto Sync Toggle -->
+      <div class="setting-item" *ngIf="syncStatus.isAuthenticated">
+        <div class="setting-info">
+          <h3>Auto Sync</h3>
+          <p>Automatically upload new photos to Google Drive</p>
+        </div>
+        <label class="toggle-switch">
+          <input 
+            type="checkbox" 
+            [checked]="syncStatus.isEnabled" 
+            (change)="onAutoSyncToggle($event)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <!-- Manual Sync -->
+      <div class="setting-item" *ngIf="syncStatus.isAuthenticated">
+        <div class="setting-info">
+          <h3>Manual Sync</h3>
+          <p>Upload all photos to Google Drive now</p>
+        </div>
+        <button 
+          class="sync-button" 
+          (click)="syncAllPhotos()"
+          [disabled]="syncStatus.isSyncing">
+          <span *ngIf="!syncStatus.isSyncing">Sync All</span>
+          <span *ngIf="syncStatus.isSyncing">Syncing...</span>
+        </button>
+      </div>
+
+      <!-- Google Drive Info -->
+      <div class="setting-item" *ngIf="isGoogleDriveConfigured">
+        <div class="setting-info">
+          <h3>About Google Drive Sync</h3>
+          <p>Photos are synced to a "MyDailyFace" folder in your Google Drive</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Storage Section -->
     <div class="settings-section">
       <h2>Storage</h2>
       <div class="setting-item">
@@ -24,19 +92,59 @@
       </div>
     </div>
 
+    <!-- About Section -->
     <div class="settings-section">
       <h2>About</h2>
       <div class="setting-item">
         <div class="setting-info">
           <h3>Version</h3>
-          <p>MyDailyFace v1.0.0</p>
+          <p (click)="onVersionTap()" style="cursor: pointer;">MyDailyFace v1.0.0</p>
         </div>
       </div>
       <div class="setting-item">
         <div class="setting-info">
           <h3>Privacy</h3>
-          <p>All photos are stored locally on your device</p>
+          <p>Photos stored locally and optionally synced to your Google Drive</p>
         </div>
+      </div>
+    </div>
+
+    <!-- Hidden Testing Section -->
+    <div class="settings-section" *ngIf="showTestingFeatures">
+      <h2 style="color: #ff9500;">🧪 Testing Features</h2>
+      
+      <div class="setting-item">
+        <div class="setting-info">
+          <h3>Generate Test Data</h3>
+          <p>Create 2 years of daily face photos for testing the Play feature</p>
+        </div>
+        <button 
+          class="test-button" 
+          (click)="generateTestData()"
+          [disabled]="isGeneratingTestData">
+          <span *ngIf="!isGeneratingTestData">Generate</span>
+          <span *ngIf="isGeneratingTestData">Generating...</span>
+        </button>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-info">
+          <h3>Clear Test Data</h3>
+          <p>Remove all test-generated photos (keeps real photos)</p>
+        </div>
+        <button class="danger-button" (click)="clearTestData()">
+          Clear Tests
+        </button>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-info">
+          <h3>Hide Testing</h3>
+          <p>Hide these testing features</p>
+        </div>
+        <button class="cancel-button" (click)="hideTestingFeatures()">
+          Hide
+        </button>
       </div>
     </div>
   </div>

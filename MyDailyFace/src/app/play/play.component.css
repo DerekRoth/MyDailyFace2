@@ -1,0 +1,264 @@
+.play-container {
+  height: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+  margin-top: 20px;
+}
+
+.header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1c1c1e;
+  margin-bottom: 8px;
+}
+
+.header p {
+  font-size: 16px;
+  color: #8e8e93;
+}
+
+/* Empty State */
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #8e8e93;
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1c1c1e;
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  font-size: 16px;
+  color: #8e8e93;
+}
+
+/* Photo Viewer */
+.photo-viewer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.photo-frame {
+  position: relative;
+  max-width: 100%;
+  max-height: 60vh;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  background-color: #f8f8f8;
+}
+
+.photo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  max-height: 60vh;
+}
+
+.photo-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  color: white;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.photo-counter {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.photo-date {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* Controls */
+.controls {
+  max-width: 400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.playback-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.control-btn,
+.play-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background-color: #f2f2f7;
+  color: #1c1c1e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 18px;
+}
+
+.play-btn {
+  width: 60px;
+  height: 60px;
+  background-color: #007aff;
+  color: white;
+  font-size: 20px;
+}
+
+.control-btn:hover,
+.play-btn:hover {
+  transform: scale(1.05);
+}
+
+.control-btn:active,
+.play-btn:active {
+  transform: scale(0.95);
+}
+
+.control-btn:disabled {
+  background-color: #e5e5ea;
+  color: #c7c7cc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.control-icon {
+  display: block;
+}
+
+/* Progress Bar */
+.progress-container {
+  margin-bottom: 16px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background-color: #e5e5ea;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #007aff;
+  transition: width 0.1s ease;
+}
+
+/* Playback Info */
+.playback-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.fps-info {
+  color: #8e8e93;
+  font-weight: 500;
+}
+
+.status {
+  color: #8e8e93;
+  font-weight: 500;
+}
+
+.status.playing {
+  color: #34c759;
+}
+
+/* Make the component element itself take full height */
+:host {
+  display: block;
+  height: 100%;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .play-container {
+    padding: 15px;
+  }
+  
+  .header h1 {
+    font-size: 28px;
+  }
+  
+  .photo-frame {
+    max-height: 50vh;
+  }
+  
+  .photo-info {
+    padding: 12px;
+    font-size: 12px;
+  }
+  
+  .control-btn,
+  .play-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+  
+  .play-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 18px;
+  }
+  
+  .playback-controls {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 360px) {
+  .empty-icon {
+    font-size: 48px;
+  }
+  
+  .empty-state h3 {
+    font-size: 20px;
+  }
+  
+  .playback-info {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+}

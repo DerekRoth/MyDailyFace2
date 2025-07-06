@@ -12,34 +12,45 @@
     <p>Loading your photos...</p>
   </div>
 
-  <!-- Photos List -->
+  <!-- Photos List with Sections -->
   <div class="photos-list" *ngIf="!isLoading && photos.length > 0">
-    <div class="photo-item" *ngFor="let photo of photos; trackBy: trackByPhotoId" (click)="openPhoto(photo)">
-      <div class="photo-thumbnail">
-        <img 
-          [src]="getPhotoDataUrl(photo)" 
-          [alt]="'Photo from ' + formatDate(photo.timestamp)"
-          *ngIf="getPhotoDataUrl(photo)"
-          loading="lazy">
-        <div class="photo-loading" *ngIf="!getPhotoDataUrl(photo)">
-          <div class="loading-spinner-small"></div>
-        </div>
+    <div class="photo-section" *ngFor="let section of photoSections; trackBy: trackBySectionId">
+      <!-- Section Header -->
+      <div class="section-header">
+        <h2>{{ section.displayName }}</h2>
+        <span class="section-count">{{ section.photos.length }}</span>
       </div>
       
-      <div class="photo-info">
-        <div class="photo-date-info">
-          <h3>{{ formatDate(photo.timestamp) }}</h3>
-          <p>{{ formatTime(photo.timestamp) }}</p>
+      <!-- Photos in Section -->
+      <div class="section-photos">
+        <div class="photo-item" *ngFor="let photo of section.photos; trackBy: trackByPhotoId" (click)="openPhoto(photo)">
+          <div class="photo-thumbnail">
+            <img 
+              [src]="getPhotoDataUrl(photo)" 
+              [alt]="'Photo from ' + formatDate(photo.timestamp)"
+              *ngIf="getPhotoDataUrl(photo)"
+              loading="lazy">
+            <div class="photo-loading" *ngIf="!getPhotoDataUrl(photo)">
+              <div class="loading-spinner-small"></div>
+            </div>
+          </div>
+          
+          <div class="photo-info">
+            <div class="photo-date-info">
+              <h3>{{ formatDate(photo.timestamp) }}</h3>
+              <p>{{ formatTime(photo.timestamp) }}</p>
+            </div>
+            
+            <button 
+              class="delete-button" 
+              (click)="confirmDeletePhoto(photo, $event)"
+              aria-label="Delete photo">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="currentColor"/>
+              </svg>
+            </button>
+          </div>
         </div>
-        
-        <button 
-          class="delete-button" 
-          (click)="confirmDeletePhoto(photo, $event)"
-          aria-label="Delete photo">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="currentColor"/>
-          </svg>
-        </button>
       </div>
     </div>
   </div>

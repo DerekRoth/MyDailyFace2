@@ -35,6 +35,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
   isGeneratingTestData = false;
   currentAnimationSpeed = 1;
   
+  // Overlay settings
+  overlayOpacity = 0.5;
+  
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -52,6 +55,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
     
     // Load current animation speed
     this.currentAnimationSpeed = this.testDataGenerator.getAnimationSpeed();
+    
+    // Load overlay settings
+    this.loadOverlaySettings();
     
     // Subscribe to sync status updates
     this.googleDriveService.syncStatus$
@@ -255,5 +261,18 @@ export class SettingsComponent implements OnInit, OnDestroy {
   getAnimationSpeedText(): string {
     if (this.currentAnimationSpeed === 1) return 'Normal';
     return `${this.currentAnimationSpeed}x slower`;
+  }
+
+  private loadOverlaySettings() {
+    const savedOpacity = localStorage.getItem('overlayOpacity');
+    if (savedOpacity) {
+      this.overlayOpacity = parseFloat(savedOpacity);
+    }
+  }
+
+  onOverlayOpacityChange(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this.overlayOpacity = parseFloat(target.value);
+    localStorage.setItem('overlayOpacity', this.overlayOpacity.toString());
   }
 }

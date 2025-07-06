@@ -19,6 +19,11 @@ export class TakePictureComponent implements OnInit, OnDestroy {
   isTakingPicture = false;
   error: string | null = null;
 
+  // Overlay feature
+  showOverlay = false;
+  overlayImageUrl: string | null = null;
+  overlayOpacity = 0.5; // Default opacity
+
   // Animation timing configuration (all times in milliseconds)
   private readonly ANIMATION_TIMINGS = {
     FLASH_DURATION: 500,              // How long the white flash shows
@@ -50,6 +55,8 @@ export class TakePictureComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.initializeCamera();
+    this.loadLatestPhoto();
+    this.loadOverlaySettings();
   }
 
   ngOnDestroy() {
@@ -99,6 +106,8 @@ export class TakePictureComponent implements OnInit, OnDestroy {
       const photo = await this.cameraService.takePictureFromVideo(video);
 
       if (photo) {
+        // Update overlay with the new latest photo
+        this.overlayImageUrl = await this.cameraService.getPhotoDataUrl(photo);
         // 5. Start animation to Browse tab after user sees freeze frame
         setTimeout(() => {
           this.animateToBottomNav();
@@ -229,5 +238,53 @@ export class TakePictureComponent implements OnInit, OnDestroy {
         // Animation complete - the state reset will happen from the parent setTimeout
       };
     }, this.testDataGenerator.getAdjustedTimeout(this.ANIMATION_TIMINGS.DOM_READY_DELAY));
+  }
+
+  toggleOverlay() {
+    this.showOverlay = !this.showOverlay;
+    // Save the user's choice
+    localStorage.setItem('overlayEnabled', this.showOverlay.toString());
+  }
+
+  private async loadLatestPhoto() {
+    try {
+      const photos = await this.cameraService.getStoredPhotos();
+      if (photos.length > 0) {
+        // Get the most recent photo (photos are sorted newest first)
+        const latestPhoto = photos[0];
+        this.overlayImageUrl = await this.cameraService.getPhotoDataUrl(latestPhoto);
+        
+        // Initialize overlay visibility based on saved preference or default to enabled
+        this.initializeOverlayVisibility();
+      }
+    } catch (error) {
+      console.error('Error loading latest photo for overlay:', error);
+    }
+  }
+
+  private loadOverlaySettings() {
+    const savedOpacity = localStorage.getItem('overlayOpacity');
+    if (savedOpacity) {
+      this.overlayOpacity = parseFloat(savedOpacity);
+    }
+    
+    // Listen for storage changes from other components
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'overlayOpacity' && event.newValue) {
+        this.overlayOpacity = parseFloat(event.newValue);
+      }
+    });
+  }
+
+  private initializeOverlayVisibility() {
+    const savedOverlayEnabled = localStorage.getItem('overlayEnabled');
+    
+    if (savedOverlayEnabled !== null) {
+      // Use saved preference
+      this.showOverlay = savedOverlayEnabled === 'true';
+    } else {
+      // Default to enabled if there's at least one photo
+      this.showOverlay = this.overlayImageUrl !== null;
+    }
   }
 }

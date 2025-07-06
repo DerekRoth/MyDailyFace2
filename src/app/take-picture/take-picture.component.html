@@ -23,6 +23,27 @@
       <button class="retry-button" (click)="initializeCamera()">Retry</button>
     </div>
 
+    <!-- Face alignment overlay -->
+    <div class="alignment-overlay" 
+         *ngIf="showOverlay && overlayImageUrl && isStreaming"
+         [style.opacity]="overlayOpacity">
+      <img [src]="overlayImageUrl" alt="Face alignment guide">
+    </div>
+
+    <!-- Overlay toggle button -->
+    <div class="overlay-toggle" *ngIf="isStreaming">
+      <button class="overlay-toggle-btn" 
+              [class.active]="showOverlay"
+              [disabled]="!overlayImageUrl"
+              (click)="toggleOverlay()"
+              title="Toggle face alignment guide">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 2L7.17 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4H16.83L15 2H9ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17Z" fill="currentColor"/>
+          <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="2 2"/>
+        </svg>
+      </button>
+    </div>
+
     <!-- Capture button overlay -->
     <div class="capture-overlay" *ngIf="isStreaming">
       <button class="capture-button" 

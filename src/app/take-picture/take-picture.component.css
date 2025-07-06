@@ -104,6 +104,73 @@
   transform: translateY(0);
 }
 
+/* Face alignment overlay */
+.alignment-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.alignment-overlay img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* Mirror to match video */
+}
+
+/* Overlay toggle button */
+.overlay-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 4;
+}
+
+.overlay-toggle-btn {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overlay-toggle-btn:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  transform: scale(1.05);
+}
+
+.overlay-toggle-btn.active {
+  background-color: #007aff;
+  color: white;
+}
+
+.overlay-toggle-btn.active:hover {
+  background-color: #0056b3;
+}
+
+.overlay-toggle-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.overlay-toggle-btn:disabled:hover {
+  transform: none;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
 /* Capture button overlay */
 .capture-overlay {
   position: absolute;

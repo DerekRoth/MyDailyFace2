@@ -4,7 +4,7 @@
   grid-template-areas: 
     "main"
     "nav";
-  height: 100vh;
+  height: 100dvh;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background-color: #f2f2f7;
 }

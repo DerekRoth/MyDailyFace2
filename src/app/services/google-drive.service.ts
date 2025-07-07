@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, interval } from 'rxjs';
-import { environment } from '../../environments/environment.js';
+import { environment } from '../../environments/environment';
 import { IndexedDbService } from './indexed-db.service';
 
 declare global {

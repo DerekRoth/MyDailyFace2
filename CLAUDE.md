@@ -131,8 +131,18 @@ Access by tapping version 7 times in Settings:
 ### GitHub Actions Workflow
 - **Triggers**: Push to main branch or manual workflow dispatch
 - **Build process**: Node.js 22, npm ci, Angular build with base-href
+- **Environment setup**: Creates environment.ts from example using GitHub secrets
 - **Deployment**: Uses official GitHub Pages actions for secure deployment
 - **Permissions**: Minimal required permissions for pages deployment
+
+### Required GitHub Configuration
+Set these in your repository Settings → Secrets and variables → Actions:
+
+**Variables** (Repository variables):
+- **GOOGLE_CLIENT_ID**: Your Google OAuth client ID (safe to be public)
+
+**Secrets** (Repository secrets):
+- **GOOGLE_API_KEY**: Your restricted Google Drive API key (keep private)
 
 ### Build Considerations
 - **Base href**: Set to `/MyDailyFace2/` for GitHub Pages

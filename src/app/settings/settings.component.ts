@@ -7,6 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { CameraService } from '../services/camera.service';
 import { GoogleDriveService, SyncStatus } from '../services/google-drive.service';
 import { TestDataGeneratorService } from '../services/test-data-generator.service';
+import { PwaInstallService } from '../services/pwa-install.service';
 
 @Component({
   selector: 'app-settings',
@@ -38,13 +39,20 @@ export class SettingsComponent implements OnInit, OnDestroy {
   // Overlay settings
   overlayOpacity = 0.5;
   
+  // PWA installation
+  canInstall = false;
+  isInstalled = false;
+  showInstallInstructions = false;
+  installInstructions: { platform: string; instructions: string[] } = { platform: '', instructions: [] };
+  
   private destroy$ = new Subject<void>();
 
   constructor(
     private cameraService: CameraService,
     private router: Router,
     private googleDriveService: GoogleDriveService,
-    private testDataGenerator: TestDataGeneratorService
+    private testDataGenerator: TestDataGeneratorService,
+    private pwaInstallService: PwaInstallService
   ) {}
 
   ngOnInit() {
@@ -71,6 +79,22 @@ export class SettingsComponent implements OnInit, OnDestroy {
       .subscribe(status => {
         this.syncStatus = status;
       });
+
+    // Subscribe to PWA installation status
+    this.pwaInstallService.canInstall
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(canInstall => {
+        this.canInstall = canInstall;
+      });
+
+    this.pwaInstallService.isInstalled
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(isInstalled => {
+        this.isInstalled = isInstalled;
+      });
+
+    // Get installation instructions
+    this.installInstructions = this.pwaInstallService.getInstallInstructions();
     
     // Update photo count when navigating to settings
     this.router.events
@@ -295,5 +319,27 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const target = event.target as HTMLInputElement;
     this.overlayOpacity = parseFloat(target.value);
     localStorage.setItem('overlayOpacity', this.overlayOpacity.toString());
+  }
+
+  // PWA Installation Methods
+  async installApp() {
+    if (this.canInstall) {
+      const success = await this.pwaInstallService.promptInstall();
+      if (success) {
+        console.log('App installation initiated');
+      } else {
+        console.log('App installation cancelled by user');
+      }
+    } else {
+      this.showInstallInstructions = true;
+    }
+  }
+
+  toggleInstallInstructions() {
+    this.showInstallInstructions = !this.showInstallInstructions;
+  }
+
+  closeInstallInstructions() {
+    this.showInstallInstructions = false;
   }
 }

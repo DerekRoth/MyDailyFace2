@@ -139,6 +139,68 @@
       </div>
     </div>
 
+    <!-- App Installation Section -->
+    <div class="settings-section">
+      <h2>App Installation</h2>
+      
+      <!-- Installation Status -->
+      <div class="setting-item" *ngIf="isInstalled">
+        <div class="setting-info">
+          <h3>Installation Status</h3>
+          <p class="status-connected">✅ App is installed on your device</p>
+        </div>
+      </div>
+
+      <!-- Install Button -->
+      <div class="setting-item" *ngIf="!isInstalled">
+        <div class="setting-info">
+          <h3>Install App</h3>
+          <p>Add MyDailyFace to your home screen for easy access</p>
+        </div>
+        <button class="install-button" (click)="installApp()">
+          <span *ngIf="canInstall">Install App</span>
+          <span *ngIf="!canInstall">Show Instructions</span>
+        </button>
+      </div>
+
+      <!-- Manual Installation Instructions -->
+      <div class="setting-item" *ngIf="!isInstalled">
+        <div class="setting-info">
+          <h3>Manual Installation</h3>
+          <p>Need help installing the app? View step-by-step instructions</p>
+        </div>
+        <button class="secondary-button" (click)="toggleInstallInstructions()">
+          <span *ngIf="!showInstallInstructions">Show Instructions</span>
+          <span *ngIf="showInstallInstructions">Hide Instructions</span>
+        </button>
+      </div>
+
+      <!-- Installation Instructions Modal -->
+      <div class="install-instructions-overlay" *ngIf="showInstallInstructions" (click)="closeInstallInstructions()">
+        <div class="install-instructions-modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h3>Install MyDailyFace</h3>
+            <button class="close-button" (click)="closeInstallInstructions()">×</button>
+          </div>
+          <div class="modal-content">
+            <h4>{{ installInstructions.platform }}</h4>
+            <ol>
+              <li *ngFor="let instruction of installInstructions.instructions">{{ instruction }}</li>
+            </ol>
+            <div class="modal-footer">
+              <p><strong>Benefits of installing:</strong></p>
+              <ul>
+                <li>Faster loading and better performance</li>
+                <li>Works offline for taking photos</li>
+                <li>Quick access from your home screen</li>
+                <li>Full-screen experience without browser bars</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- About Section -->
     <div class="settings-section">
       <h2>About</h2>

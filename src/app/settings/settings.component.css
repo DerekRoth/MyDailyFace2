@@ -513,3 +513,177 @@ input:checked + .toggle-slider:before {
   color: #ff3b30;
   font-weight: 500;
 }
+
+/* PWA Installation Styles */
+.install-button {
+  background-color: #34c759;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.install-button:hover {
+  background-color: #30b24d;
+}
+
+.install-button:active {
+  background-color: #2d9f47;
+}
+
+.secondary-button {
+  background-color: #f2f2f7;
+  color: #1c1c1e;
+  border: 1px solid #d1d1d6;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.secondary-button:hover {
+  background-color: #e5e5ea;
+}
+
+.secondary-button:active {
+  background-color: #d1d1d6;
+}
+
+/* Installation Instructions Modal */
+.install-instructions-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.install-instructions-modal {
+  background-color: white;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid #e5e5ea;
+}
+
+.modal-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1c1c1e;
+  margin: 0;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #8e8e93;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.close-button:hover {
+  background-color: #f2f2f7;
+}
+
+.modal-content {
+  padding: 20px;
+}
+
+.modal-content h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1c1c1e;
+  margin-bottom: 16px;
+}
+
+.modal-content ol {
+  margin-bottom: 24px;
+  padding-left: 20px;
+}
+
+.modal-content ol li {
+  margin-bottom: 8px;
+  line-height: 1.4;
+  color: #1c1c1e;
+}
+
+.modal-footer {
+  background-color: #f8f8f8;
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.modal-footer p {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1c1c1e;
+  margin-bottom: 8px;
+}
+
+.modal-footer ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.modal-footer ul li {
+  margin-bottom: 4px;
+  font-size: 14px;
+  color: #8e8e93;
+  line-height: 1.3;
+}
+
+/* Mobile responsive for modal */
+@media (max-width: 480px) {
+  .install-instructions-overlay {
+    padding: 10px;
+  }
+  
+  .install-instructions-modal {
+    max-height: 90vh;
+  }
+  
+  .modal-header {
+    padding: 15px;
+  }
+  
+  .modal-content {
+    padding: 15px;
+  }
+  
+  .setting-item .install-button,
+  .setting-item .secondary-button {
+    margin-top: 12px;
+    align-self: flex-end;
+  }
+}

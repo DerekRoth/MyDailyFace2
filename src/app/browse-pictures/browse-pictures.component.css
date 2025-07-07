@@ -299,8 +299,6 @@
   align-items: center;
   justify-content: center;
   z-index: 1;
-  /* Disable any global transitions for instant switching */
-  transition: none !important;
 }
 
 .single-photo-view img {
@@ -320,8 +318,6 @@
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   z-index: 2;
-  /* Disable any global transitions for instant switching */
-  transition: none !important;
   /* Hide scrollbar */
   scrollbar-width: none;
   -ms-overflow-style: none;

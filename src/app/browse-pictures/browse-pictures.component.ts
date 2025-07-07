@@ -157,21 +157,22 @@ export class BrowsePicturesComponent implements OnInit {
     // Find the current photo's thumbnail in the grid to animate back to it
     const currentPhoto = this.allPhotosFlat[this.currentPhotoIndex];
     if (currentPhoto) {
-      // Find the thumbnail element for the current photo
-      const thumbnails = document.querySelectorAll('.photo-item');
-      thumbnails.forEach((thumb) => {
-        const img = thumb.querySelector('img');
-        if (img && img.src.includes(currentPhoto.id)) {
-          const rect = thumb.getBoundingClientRect();
-          // Update transition origin to current photo's thumbnail
-          this.transitionOrigin = {
-            x: rect.left + rect.width / 2,
-            y: rect.top + rect.height / 2,
-            width: rect.width,
-            height: rect.height
-          };
-        }
-      });
+      // Find the thumbnail element using the data-photo-id attribute
+      const thumbnail = document.querySelector(`[data-photo-id="${currentPhoto.id}"]`) as HTMLElement;
+      if (thumbnail) {
+        const rect = thumbnail.getBoundingClientRect();
+        // Update transition origin to current photo's thumbnail
+        this.transitionOrigin = {
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2,
+          width: rect.width,
+          height: rect.height
+        };
+        console.log('Found current photo thumbnail for:', currentPhoto.id);
+      } else {
+        console.log('Could not find thumbnail for current photo:', currentPhoto.id);
+        // Keep the original transition origin as fallback
+      }
     }
     
     // Calculate the target scale based on thumbnail size vs fullscreen

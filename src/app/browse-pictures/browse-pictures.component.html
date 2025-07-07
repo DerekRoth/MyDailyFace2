@@ -23,7 +23,10 @@
       
       <!-- Photos in Section -->
       <div class="section-photos">
-        <div class="photo-item" *ngFor="let photo of section.photos; trackBy: trackByPhotoId" (click)="openPhoto(photo, $event)">
+        <div class="photo-item" 
+             *ngFor="let photo of section.photos; trackBy: trackByPhotoId" 
+             [attr.data-photo-id]="photo.id"
+             (click)="openPhoto(photo, $event)">
           <div class="photo-thumbnail">
             <img 
               [src]="getPhotoDataUrl(photo)" 

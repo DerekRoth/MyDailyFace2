@@ -23,7 +23,7 @@
       
       <!-- Photos in Section -->
       <div class="section-photos">
-        <div class="photo-item" *ngFor="let photo of section.photos; trackBy: trackByPhotoId" (click)="openPhoto(photo)">
+        <div class="photo-item" *ngFor="let photo of section.photos; trackBy: trackByPhotoId" (click)="openPhoto(photo, $event)">
           <div class="photo-thumbnail">
             <img 
               [src]="getPhotoDataUrl(photo)" 
@@ -48,33 +48,73 @@
     <p>Take your first daily selfie to get started!</p>
   </div>
 
-  <!-- Full Screen Photo View -->
-  <div class="photo-overlay" *ngIf="selectedPhoto && selectedPhotoDataUrl" (click)="closePhoto()">
-    <div class="photo-modal" (click)="$event.stopPropagation()">
-      <div class="photo-modal-header">
-        <div class="photo-modal-info">
-          <h3>{{ formatDate(selectedPhoto.timestamp) }}</h3>
-          <p>{{ formatTime(selectedPhoto.timestamp) }}</p>
+  <!-- Fullscreen Photo View with Zoom Transition -->
+  <div class="photo-fullscreen" 
+       *ngIf="showPhotoModal && openingPhotoDataUrl" 
+       [class.animate-open]="animatePhotoOpen"
+       [class.animate-close]="animatePhotoClose"
+       (touchstart)="onTouchStart($event)"
+       (touchmove)="onTouchMove($event)"
+       (touchend)="onTouchEnd($event)">
+    
+    <!-- Back Button -->
+    <div class="photo-header" *ngIf="showPhotoInterface">
+      <button class="back-button" (click)="closePhoto()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15.41 16.59L10.83 12L15.41 7.41L14 6L8 12L14 18L15.41 16.59Z" fill="white"/>
+        </svg>
+      </button>
+      
+      <!-- Photo Info -->
+      <div class="photo-info-header">
+        <h3>{{ currentDisplayedDate }}</h3>
+        <p>{{ currentDisplayedTime }}</p>
+      </div>
+      
+      <!-- Delete Button -->
+      <button class="delete-button-header" (click)="confirmDeleteCurrentPhoto($event)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="white"/>
+        </svg>
+      </button>
+    </div>
+    
+    <!-- Unified Photo Container -->
+    <div class="photo-container" 
+         [class.animate-open]="animatePhotoOpen"
+         [class.animate-close]="animatePhotoClose"
+         [style.transform-origin]="transitionOrigin ? transitionOrigin.x + 'px ' + transitionOrigin.y + 'px' : 'center'"
+         [style.transform]="swipeTransform"
+         [style.--close-scale]="closeScale">
+      
+      <!-- Single Photo View (for opening animation) -->
+      <div class="single-photo-view" [style.display]="showScrollablePhotos ? 'none' : 'flex'">
+        <img 
+          *ngIf="openingPhotoDataUrl" 
+          [src]="openingPhotoDataUrl" 
+          [alt]="'Photo'"
+          loading="lazy">
+      </div>
+      
+      <!-- Scrollable View (for navigation) -->
+      <div class="photo-scroll-container" 
+           [style.visibility]="showScrollablePhotos ? 'visible' : 'hidden'"
+           (scroll)="onPhotoScroll($event)">
+        <!-- Virtual scroll content -->
+        <div class="virtual-scroll-content" [style.width.px]="virtualContentWidth">
+          <!-- Only render visible photos -->
+          <div class="photo-slide" 
+               *ngFor="let visiblePhoto of visiblePhotos; let i = index"
+               [style.left.px]="visiblePhoto.position"
+               [style.width.px]="scrollContainerWidth">
+            <img 
+              *ngIf="visiblePhoto.dataUrl" 
+              [src]="visiblePhoto.dataUrl" 
+              [alt]="'Photo'">
+          </div>
         </div>
-        <button class="close-button" (click)="closePhoto()">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" fill="currentColor"/>
-          </svg>
-        </button>
       </div>
       
-      <div class="photo-modal-content">
-        <img [src]="selectedPhotoDataUrl" [alt]="'Photo from ' + formatDate(selectedPhoto.timestamp)">
-      </div>
-      
-      <div class="photo-modal-actions">
-        <button class="delete-button-modal" (click)="confirmDeletePhoto(selectedPhoto, $event)">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z" fill="currentColor"/>
-          </svg>
-          Delete Photo
-        </button>
-      </div>
     </div>
   </div>
 

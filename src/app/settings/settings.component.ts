@@ -59,6 +59,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
     // Load overlay settings
     this.loadOverlaySettings();
     
+    // Load debug menu visibility state
+    const savedDebugVisibility = localStorage.getItem('showTestingFeatures');
+    if (savedDebugVisibility === 'true') {
+      this.showTestingFeatures = true;
+    }
+    
     // Subscribe to sync status updates
     this.googleDriveService.syncStatus$
       .pipe(takeUntil(this.destroy$))
@@ -169,6 +175,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     if (this.versionTapCount >= 7) {
       this.showTestingFeatures = true;
       this.versionTapCount = 0;
+      // Save debug visibility state
+      localStorage.setItem('showTestingFeatures', 'true');
       alert('🧪 Testing features unlocked!');
     }
     
@@ -242,20 +250,18 @@ export class SettingsComponent implements OnInit, OnDestroy {
   hideTestingFeatures() {
     this.showTestingFeatures = false;
     this.versionTapCount = 0;
+    // Save debug visibility state
+    localStorage.setItem('showTestingFeatures', 'false');
   }
 
   setAnimationSpeed(multiplier: number) {
     this.currentAnimationSpeed = multiplier;
     this.testDataGenerator.setAnimationSpeed(multiplier);
-    
-    const speedText = multiplier === 1 ? 'Normal' : `${multiplier}x slower`;
-    alert(`🎬 Animation speed set to: ${speedText}`);
   }
 
   resetAnimationSpeed() {
     this.currentAnimationSpeed = 1;
     this.testDataGenerator.resetAnimationSpeed();
-    alert('🎬 Animation speed reset to normal');
   }
 
   getAnimationSpeedText(): string {

@@ -48,19 +48,38 @@
         </label>
       </div>
 
+      <!-- Sync Status -->
+      <div class="setting-item" *ngIf="syncStatus.isAuthenticated">
+        <div class="setting-info">
+          <h3>Sync Status</h3>
+          <p *ngIf="syncStatus.lastSync">Last sync: {{ syncStatus.lastSync | date:'short' }}</p>
+          <p *ngIf="!syncStatus.lastSync">Never synced</p>
+          <p *ngIf="syncStatus.isSyncing" class="status-syncing">Syncing in progress...</p>
+        </div>
+      </div>
+
       <!-- Manual Sync -->
       <div class="setting-item" *ngIf="syncStatus.isAuthenticated">
         <div class="setting-info">
           <h3>Manual Sync</h3>
-          <p>Upload all photos to Google Drive now</p>
+          <p>Force sync all unsynced photos now</p>
         </div>
-        <button 
-          class="sync-button" 
-          (click)="syncAllPhotos()"
-          [disabled]="syncStatus.isSyncing">
-          <span *ngIf="!syncStatus.isSyncing">Sync All</span>
-          <span *ngIf="syncStatus.isSyncing">Syncing...</span>
-        </button>
+        <div class="sync-buttons">
+          <button 
+            class="sync-button" 
+            (click)="forceSync()"
+            [disabled]="syncStatus.isSyncing">
+            <span *ngIf="!syncStatus.isSyncing">Force Sync</span>
+            <span *ngIf="syncStatus.isSyncing">Syncing...</span>
+          </button>
+          <button 
+            class="sync-button" 
+            (click)="syncAllPhotos()"
+            [disabled]="syncStatus.isSyncing">
+            <span *ngIf="!syncStatus.isSyncing">Sync All</span>
+            <span *ngIf="syncStatus.isSyncing">Syncing...</span>
+          </button>
+        </div>
       </div>
 
       <!-- Google Drive Info -->

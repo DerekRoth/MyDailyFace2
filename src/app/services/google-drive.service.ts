@@ -1,7 +1,14 @@
 import { Injectable } from '@angular/core';
-import { gapi } from 'gapi-script';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, interval } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { IndexedDbService } from './indexed-db.service';
+
+declare global {
+  interface Window {
+    google: any;
+    gapi: any;
+  }
+}
 
 export interface GoogleDriveConfig {
   clientId: string;
@@ -48,11 +55,18 @@ export class GoogleDriveService {
   public syncStatus$ = this.syncStatusSubject.asObservable();
   private isInitialized = false;
   private folderId: string | null = null;
+  private tokenClient: any = null;
+  private accessToken: string | null = null;
+  private autoSyncInterval: any = null;
+  private isSyncing: boolean = false;
 
-  constructor() {
+  constructor(private indexedDbService: IndexedDbService) {
     // Load auto-sync preference from localStorage
     const autoSyncEnabled = localStorage.getItem('googleDriveAutoSync') === 'true';
     this.updateSyncStatus({ isEnabled: autoSyncEnabled });
+    
+    // Start monitoring connection and sync when available
+    this.startAutoSync();
   }
 
   async initializeGapi(): Promise<void> {
@@ -63,18 +77,39 @@ export class GoogleDriveService {
     }
 
     try {
+      // Wait for Google APIs to load
+      await this.waitForGoogleAPIs();
+
+      // Initialize the Google API client
       await new Promise<void>((resolve, reject) => {
-        gapi.load('client:auth2', async () => {
+        window.gapi.load('client', async () => {
           try {
-            await gapi.client.init({
+            await window.gapi.client.init({
               apiKey: this.config.apiKey,
-              clientId: this.config.clientId,
-              discoveryDocs: this.config.discoveryDocs,
-              scope: this.config.scopes.join(' ')
+              discoveryDocs: this.config.discoveryDocs
+            });
+
+            // Initialize the Google Identity Services token client
+            this.tokenClient = window.google.accounts.oauth2.initTokenClient({
+              client_id: this.config.clientId,
+              scope: this.config.scopes.join(' '),
+              callback: (response: any) => {
+                if (response.error) {
+                  console.error('Token client error:', response.error);
+                  this.updateSyncStatus({ error: 'Authentication failed' });
+                  return;
+                }
+                this.accessToken = response.access_token;
+                this.updateSyncStatus({ 
+                  isAuthenticated: true, 
+                  error: null 
+                });
+                // Trigger automatic sync when authenticated
+                this.triggerBackgroundSync();
+              }
             });
             
             this.isInitialized = true;
-            this.updateAuthStatus();
             resolve();
           } catch (error) {
             reject(error);
@@ -88,22 +123,63 @@ export class GoogleDriveService {
     }
   }
 
+  private waitForGoogleAPIs(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Google APIs failed to load'));
+      }, 10000);
+
+      const checkAPIs = () => {
+        if (window.google && window.gapi) {
+          clearTimeout(timeout);
+          resolve();
+        } else {
+          setTimeout(checkAPIs, 100);
+        }
+      };
+
+      checkAPIs();
+    });
+  }
+
   async signIn(): Promise<boolean> {
     try {
       await this.initializeGapi();
-      const authInstance = gapi.auth2.getAuthInstance();
-      const user = await authInstance.signIn();
       
-      if (user.isSignedIn()) {
-        await this.ensureFolderExists();
-        this.updateAuthStatus();
-        this.updateSyncStatus({ 
-          isAuthenticated: true, 
-          error: null 
-        });
-        return true;
+      if (!this.tokenClient) {
+        throw new Error('Token client not initialized');
       }
-      return false;
+
+      // Request access token
+      this.tokenClient.requestAccessToken({ prompt: 'consent' });
+      
+      // Wait for the callback to set the access token
+      return new Promise((resolve) => {
+        const checkAuth = async () => {
+          if (this.accessToken) {
+            try {
+              await this.ensureFolderExists();
+              resolve(true);
+            } catch (error) {
+              console.error('Folder creation failed:', error);
+              resolve(false);
+            }
+          } else {
+            setTimeout(checkAuth, 100);
+          }
+        };
+        
+        // Start checking after a short delay
+        setTimeout(checkAuth, 100);
+        
+        // Timeout after 30 seconds
+        setTimeout(() => {
+          if (!this.accessToken) {
+            this.updateSyncStatus({ error: 'Authentication timeout' });
+            resolve(false);
+          }
+        }, 30000);
+      });
     } catch (error) {
       console.error('Sign-in failed:', error);
       this.updateSyncStatus({ error: 'Sign-in failed' });
@@ -113,11 +189,14 @@ export class GoogleDriveService {
 
   async signOut(): Promise<void> {
     try {
-      if (this.isInitialized) {
-        const authInstance = gapi.auth2.getAuthInstance();
-        await authInstance.signOut();
-        this.updateAuthStatus();
+      if (this.accessToken && window.google) {
+        window.google.accounts.oauth2.revoke(this.accessToken);
       }
+      this.accessToken = null;
+      this.updateSyncStatus({ 
+        isAuthenticated: false, 
+        error: null 
+      });
     } catch (error) {
       console.error('Sign-out failed:', error);
     }
@@ -143,7 +222,7 @@ export class GoogleDriveService {
       const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token}`
+          'Authorization': `Bearer ${this.accessToken}`
         },
         body: form
       });
@@ -161,13 +240,54 @@ export class GoogleDriveService {
     }
   }
 
-  async syncPhoto(photoBlob: Blob, photoId: string, timestamp: Date): Promise<boolean> {
+  async syncPhoto(photoBlob: Blob, photoId: string, timestamp: Date): Promise<string | null> {
     try {
       const fileName = `mydailyface_${photoId}_${timestamp.toISOString().split('T')[0]}.jpg`;
       const fileId = await this.uploadPhoto(photoBlob, fileName);
-      return fileId !== null;
+      
+      // Mark as synced in local storage
+      if (fileId) {
+        await this.indexedDbService.updatePhotoSyncStatus(photoId, fileId, true);
+      }
+      
+      return fileId;
     } catch (error) {
       console.error('Photo sync failed:', error);
+      return null;
+    }
+  }
+
+  async deletePhoto(photoId: string, timestamp: Date): Promise<boolean> {
+    try {
+      if (!this.isAuthenticated()) {
+        console.warn('Not authenticated with Google Drive');
+        return false;
+      }
+
+      // Find the file by searching for the specific filename pattern
+      const fileName = `mydailyface_${photoId}_${timestamp.toISOString().split('T')[0]}.jpg`;
+      
+      const response = await window.gapi.client.drive.files.list({
+        q: `name='${fileName}' and trashed=false`,
+        spaces: 'drive'
+      });
+
+      if (response.result.files && response.result.files.length > 0) {
+        const fileId = response.result.files[0].id;
+        
+        // Delete the file
+        await window.gapi.client.drive.files.delete({
+          fileId: fileId
+        });
+        
+        console.log('Photo deleted from Google Drive:', fileName);
+        return true;
+      } else {
+        console.warn('Photo not found in Google Drive:', fileName);
+        return false;
+      }
+    } catch (error) {
+      console.error('Failed to delete photo from Google Drive:', error);
       return false;
     }
   }
@@ -177,7 +297,7 @@ export class GoogleDriveService {
 
     try {
       // Check if folder already exists
-      const response = await (gapi.client as any).drive.files.list({
+      const response = await window.gapi.client.drive.files.list({
         q: `name='${this.FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
         spaces: 'drive'
       });
@@ -186,7 +306,7 @@ export class GoogleDriveService {
         this.folderId = response.result.files[0].id!;
       } else {
         // Create the folder
-        const folderResponse = await (gapi.client as any).drive.files.create({
+        const folderResponse = await window.gapi.client.drive.files.create({
           resource: {
             name: this.FOLDER_NAME,
             mimeType: 'application/vnd.google-apps.folder'
@@ -200,14 +320,6 @@ export class GoogleDriveService {
     }
   }
 
-  private updateAuthStatus(): void {
-    if (!this.isInitialized) return;
-    
-    const authInstance = gapi.auth2.getAuthInstance();
-    const isSignedIn = authInstance.isSignedIn.get();
-    
-    this.updateSyncStatus({ isAuthenticated: isSignedIn });
-  }
 
   private updateSyncStatus(updates: Partial<SyncStatus>): void {
     const currentStatus = this.syncStatusSubject.value;
@@ -218,7 +330,7 @@ export class GoogleDriveService {
   }
 
   isAuthenticated(): boolean {
-    return this.syncStatusSubject.value.isAuthenticated;
+    return !!this.accessToken && this.syncStatusSubject.value.isAuthenticated;
   }
 
   isConfigured(): boolean {
@@ -239,5 +351,86 @@ export class GoogleDriveService {
 
   getCurrentStatus(): SyncStatus {
     return this.syncStatusSubject.value;
+  }
+
+  private startAutoSync(): void {
+    // Check for unsynced photos every 30 seconds
+    this.autoSyncInterval = setInterval(() => {
+      this.triggerBackgroundSync();
+    }, 30000);
+  }
+
+  private async triggerBackgroundSync(): Promise<void> {
+    // Prevent multiple simultaneous syncs
+    if (this.isSyncing) return;
+    
+    const syncStatus = this.getCurrentStatus();
+    
+    // Only sync if enabled, authenticated, and online
+    if (!syncStatus.isEnabled || !syncStatus.isAuthenticated || !navigator.onLine) {
+      return;
+    }
+
+    this.isSyncing = true;
+    this.updateSyncStatus({ isSyncing: true });
+
+    try {
+      const unsyncedPhotos = await this.indexedDbService.getUnsyncedPhotos();
+      
+      if (unsyncedPhotos.length === 0) {
+        this.updateSyncStatus({ 
+          isSyncing: false,
+          lastSync: new Date()
+        });
+        this.isSyncing = false;
+        return;
+      }
+
+      let syncedCount = 0;
+      let failedCount = 0;
+
+      for (const photo of unsyncedPhotos) {
+        try {
+          const fileId = await this.syncPhoto(photo.blob, photo.id, photo.timestamp);
+          if (fileId) {
+            syncedCount++;
+          } else {
+            failedCount++;
+          }
+        } catch (error) {
+          console.error('Failed to sync photo:', photo.id, error);
+          failedCount++;
+        }
+      }
+
+      console.log(`Background sync completed: ${syncedCount} synced, ${failedCount} failed`);
+      
+      this.updateSyncStatus({ 
+        isSyncing: false,
+        lastSync: new Date(),
+        syncedPhotos: this.syncStatusSubject.value.syncedPhotos + syncedCount,
+        error: failedCount > 0 ? `${failedCount} photos failed to sync` : null
+      });
+
+    } catch (error) {
+      console.error('Background sync error:', error);
+      this.updateSyncStatus({ 
+        isSyncing: false,
+        error: 'Background sync failed'
+      });
+    } finally {
+      this.isSyncing = false;
+    }
+  }
+
+  async forceSync(): Promise<void> {
+    await this.triggerBackgroundSync();
+  }
+
+  stopAutoSync(): void {
+    if (this.autoSyncInterval) {
+      clearInterval(this.autoSyncInterval);
+      this.autoSyncInterval = null;
+    }
   }
 }

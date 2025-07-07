@@ -137,6 +137,21 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.googleDriveService.enableAutoSync(enabled);
   }
 
+  async forceSync() {
+    if (!this.syncStatus.isAuthenticated) {
+      alert('Please connect to Google Drive first');
+      return;
+    }
+
+    try {
+      await this.googleDriveService.forceSync();
+      alert('Force sync completed! Check the sync status above for details.');
+    } catch (error) {
+      console.error('Force sync failed:', error);
+      alert('Force sync failed. Please try again.');
+    }
+  }
+
   async syncAllPhotos() {
     if (!this.syncStatus.isAuthenticated) {
       alert('Please connect to Google Drive first');

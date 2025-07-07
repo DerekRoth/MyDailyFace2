@@ -54,8 +54,7 @@ export class CameraService {
               blob
             };
             
-            // Auto-sync to Google Drive if enabled
-            await this.autoSyncPhoto(photo);
+            // Background sync will handle syncing automatically
             
             resolve(photo);
           } catch (error) {
@@ -117,9 +116,27 @@ export class CameraService {
 
   async deletePhoto(photoId: string): Promise<void> {
     try {
+      // Get photo info before deleting from local storage
+      const photoRecord = await this.indexedDbService.getPhoto(photoId);
+      
+      // Delete from local storage
       await this.indexedDbService.deletePhoto(photoId);
+      
+      // Delete from Google Drive if authenticated and photo exists
+      if (photoRecord) {
+        const syncStatus = this.googleDriveService.getCurrentStatus();
+        if (syncStatus.isAuthenticated) {
+          try {
+            await this.googleDriveService.deletePhoto(photoId, photoRecord.timestamp);
+          } catch (error) {
+            console.warn('Failed to delete photo from Google Drive:', error);
+            // Don't throw error since local deletion succeeded
+          }
+        }
+      }
     } catch (error) {
       console.error('Error deleting photo:', error);
+      throw error;
     }
   }
 
@@ -140,27 +157,6 @@ export class CameraService {
     }
   }
 
-  private async autoSyncPhoto(photo: CameraPhoto): Promise<void> {
-    try {
-      const syncStatus = this.googleDriveService.getCurrentStatus();
-      
-      // Check if auto-sync is enabled and user is authenticated
-      if (!syncStatus.isEnabled || !syncStatus.isAuthenticated || !photo.blob) {
-        return;
-      }
-
-      // Sync the photo in the background
-      const success = await this.googleDriveService.syncPhoto(photo.blob, photo.id, photo.timestamp);
-      
-      if (success) {
-        console.log('Photo automatically synced to Google Drive:', photo.id);
-      } else {
-        console.warn('Failed to auto-sync photo to Google Drive:', photo.id);
-      }
-    } catch (error) {
-      console.error('Error during auto-sync:', error);
-    }
-  }
 
   async syncAllPhotosToGoogleDrive(): Promise<{ success: number; failed: number }> {
     const syncStatus = this.googleDriveService.getCurrentStatus();
@@ -176,8 +172,8 @@ export class CameraService {
     for (const photo of photos) {
       try {
         if (photo.blob) {
-          const syncSuccess = await this.googleDriveService.syncPhoto(photo.blob, photo.id, photo.timestamp);
-          if (syncSuccess) {
+          const fileId = await this.googleDriveService.syncPhoto(photo.blob, photo.id, photo.timestamp);
+          if (fileId) {
             success++;
           } else {
             failed++;

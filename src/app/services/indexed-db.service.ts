@@ -5,6 +5,8 @@ export interface PhotoRecord {
   blob: Blob;
   timestamp: Date;
   thumbnail?: string;
+  googleDriveFileId?: string;
+  syncedToGoogleDrive?: boolean;
 }
 
 @Injectable({
@@ -128,6 +130,49 @@ export class IndexedDbService {
       const request = store.count();
       
       request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async updatePhotoSyncStatus(id: string, googleDriveFileId: string | null, synced: boolean): Promise<void> {
+    await this.ensureDBReady();
+    
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([this.storeName], 'readwrite');
+      const store = transaction.objectStore(this.storeName);
+      
+      // First get the existing photo
+      const getRequest = store.get(id);
+      getRequest.onsuccess = () => {
+        const photo = getRequest.result;
+        if (photo) {
+          photo.googleDriveFileId = googleDriveFileId;
+          photo.syncedToGoogleDrive = synced;
+          
+          const putRequest = store.put(photo);
+          putRequest.onsuccess = () => resolve();
+          putRequest.onerror = () => reject(putRequest.error);
+        } else {
+          reject(new Error('Photo not found'));
+        }
+      };
+      getRequest.onerror = () => reject(getRequest.error);
+    });
+  }
+
+  async getUnsyncedPhotos(): Promise<PhotoRecord[]> {
+    await this.ensureDBReady();
+    
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([this.storeName], 'readonly');
+      const store = transaction.objectStore(this.storeName);
+      const request = store.getAll();
+      
+      request.onsuccess = () => {
+        const allPhotos = request.result;
+        const unsyncedPhotos = allPhotos.filter(photo => !photo.syncedToGoogleDrive);
+        resolve(unsyncedPhotos);
+      };
       request.onerror = () => reject(request.error);
     });
   }

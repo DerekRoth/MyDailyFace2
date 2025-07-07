@@ -481,3 +481,35 @@ input:checked + .toggle-slider:before {
     width: 100%;
   }
 }
+
+/* Sync Buttons */
+.sync-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sync-buttons .sync-button {
+  flex: 1;
+  min-width: 100px;
+}
+
+/* Status indicators */
+.status-syncing {
+  color: #007aff;
+  font-weight: 500;
+}
+
+.status-connected {
+  color: #34c759;
+  font-weight: 500;
+}
+
+.status-disconnected {
+  color: #8e8e93;
+}
+
+.status-error {
+  color: #ff3b30;
+  font-weight: 500;
+}

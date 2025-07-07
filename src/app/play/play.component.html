@@ -1,76 +1,85 @@
-<div class="play-container">
-  <div class="header">
-    <h1>Play Timeline</h1>
-    <p>Watch your daily photos over time</p>
-  </div>
-
+<div class="video-player-container">
   <!-- Empty State -->
   <div class="empty-state" *ngIf="photos.length === 0">
-    <div class="empty-icon">📷</div>
+    <div class="empty-icon">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+        <circle cx="12" cy="13" r="4"/>
+      </svg>
+    </div>
     <h3>No Photos Yet</h3>
     <p>Take some photos first to see your timeline</p>
   </div>
 
-  <!-- Photo Display -->
-  <div class="photo-viewer" *ngIf="photos.length > 0">
-    <div class="photo-frame">
+  <!-- Video Player -->
+  <div class="video-player" *ngIf="photos.length > 0">
+    <!-- Photo Display with Black Bars -->
+    <div class="photo-display">
       <img 
         *ngIf="currentPhotoUrl" 
         [src]="currentPhotoUrl" 
         [alt]="'Photo ' + (currentPhotoIndex + 1)"
         class="photo-image">
-      
-      <div class="photo-info">
-        <span class="photo-counter">{{ currentPhotoIndex + 1 }} / {{ photos.length }}</span>
-        <span class="photo-date" *ngIf="photos[currentPhotoIndex]">
-          {{ formatDate(photos[currentPhotoIndex].timestamp) }}
-        </span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Controls -->
-  <div class="controls" *ngIf="photos.length > 0">
-    <!-- Playback Controls -->
-    <div class="playback-controls">
-      <button class="control-btn" (click)="goToFirstPhoto()" [disabled]="isPlaying">
-        <span class="control-icon">⏮</span>
-      </button>
-      
-      <button class="control-btn" (click)="previousPhoto()" [disabled]="isPlaying">
-        <span class="control-icon">⏪</span>
-      </button>
-      
-      <button class="play-btn" (click)="togglePlayback()">
-        <span class="control-icon" *ngIf="!isPlaying">▶️</span>
-        <span class="control-icon" *ngIf="isPlaying">⏸️</span>
-      </button>
-      
-      <button class="control-btn" (click)="nextPhoto()" [disabled]="isPlaying">
-        <span class="control-icon">⏩</span>
-      </button>
-      
-      <button class="control-btn" (click)="goToLastPhoto()" [disabled]="isPlaying">
-        <span class="control-icon">⏭</span>
-      </button>
     </div>
 
-    <!-- Progress Bar -->
-    <div class="progress-container">
-      <div class="progress-bar">
-        <div 
-          class="progress-fill" 
-          [style.width.%]="getProgressPercentage()">
+    <!-- Video Player Controls Overlay -->
+    <div class="controls-overlay">
+      <!-- Bottom Controls -->
+      <div class="bottom-controls">
+        <!-- Progress Bar -->
+        <div class="progress-container" 
+             (click)="seekToPosition($event)"
+             (touchend)="seekToPositionTouch($event)">
+          <div class="progress-track">
+            <div class="progress-fill" [style.width.%]="getProgressPercentage()"></div>
+            <div class="progress-thumb" 
+                 [style.left.%]="getProgressPercentage()"
+                 (mousedown)="handleMouseDown($event)"
+                 (touchstart)="handleTouchStart($event)"></div>
+          </div>
+        </div>
+
+        <!-- Control Buttons -->
+        <div class="control-buttons">
+          <button class="control-btn" (click)="goToFirstPhoto()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+            </svg>
+          </button>
+          
+          <button class="control-btn" (click)="previousPhoto()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+            </svg>
+          </button>
+          
+          <button class="play-btn" (click)="togglePlayback()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" *ngIf="!isPlaying">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" *ngIf="isPlaying">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+            </svg>
+          </button>
+          
+          <button class="control-btn" (click)="nextPhoto()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </svg>
+          </button>
+          
+          <button class="control-btn" (click)="goToLastPhoto()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Photo Counter -->
+        <div class="photo-counter">
+          {{ currentPhotoIndex + 1 }} / {{ photos.length }}
         </div>
       </div>
-    </div>
-
-    <!-- Playback Info -->
-    <div class="playback-info">
-      <span class="fps-info">{{ FPS }} fps</span>
-      <span class="status" [class.playing]="isPlaying">
-        {{ isPlaying ? 'Playing' : 'Paused' }}
-      </span>
     </div>
   </div>
 </div>

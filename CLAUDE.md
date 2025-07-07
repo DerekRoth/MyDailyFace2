@@ -75,10 +75,10 @@ MyDailyFace is a Progressive Web App (PWA) built with Angular 19 that allows use
 npm run start
 
 # Production build
-ng build --base-href /MyDailyFace2/
+npm run build -- --base-href /MyDailyFace/
 
 # Deploy to GitHub Pages
-npx angular-cli-ghpages --dir=dist/my-daily-face/browser
+# Automated via GitHub Actions on push to main branch
 ```
 
 ### Environment Setup
@@ -123,12 +123,19 @@ Access by tapping version 7 times in Settings:
 ## Deployment
 
 ### GitHub Pages
-- **URL**: https://derekroth.github.io/MyDailyFace2/
+- **URL**: https://derekroth.github.io/MyDailyFace/
+- **Automated deployment**: GitHub Actions workflow builds and deploys on push to main
 - **Build output**: `dist/my-daily-face/browser/` → GitHub Pages root
 - **PWA support**: Service worker for offline functionality
 
+### GitHub Actions Workflow
+- **Triggers**: Push to main branch or manual workflow dispatch
+- **Build process**: Node.js 22, npm ci, Angular build with base-href
+- **Deployment**: Uses official GitHub Pages actions for secure deployment
+- **Permissions**: Minimal required permissions for pages deployment
+
 ### Build Considerations
-- **Base href**: Must be set to `/MyDailyFace2/` for GitHub Pages
+- **Base href**: Set to `/MyDailyFace/` for GitHub Pages
 - **Browser subfolder**: Angular 19 outputs to `browser/` subdirectory
 - **Bundle warnings**: Settings and browse-pictures components exceed 4KB budget
 

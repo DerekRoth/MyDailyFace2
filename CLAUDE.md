@@ -123,7 +123,7 @@ Access by tapping version 7 times in Settings:
 ## Deployment
 
 ### GitHub Pages
-- **URL**: https://derekroth.github.io/MyDailyFace/
+- **URL**: https://derekroth.github.io/MyDailyFace2/
 - **Automated deployment**: GitHub Actions workflow builds and deploys on push to main
 - **Build output**: `dist/my-daily-face/browser/` → GitHub Pages root
 - **PWA support**: Service worker for offline functionality
@@ -135,7 +135,7 @@ Access by tapping version 7 times in Settings:
 - **Permissions**: Minimal required permissions for pages deployment
 
 ### Build Considerations
-- **Base href**: Set to `/MyDailyFace/` for GitHub Pages
+- **Base href**: Set to `/MyDailyFace2/` for GitHub Pages
 - **Browser subfolder**: Angular 19 outputs to `browser/` subdirectory
 - **Bundle warnings**: Settings and browse-pictures components exceed 4KB budget
 

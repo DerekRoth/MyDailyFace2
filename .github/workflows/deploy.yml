@@ -31,7 +31,7 @@ jobs:
       run: npm ci
 
     - name: Build
-      run: npm run build -- --base-href /MyDailyFace/
+      run: npm run build -- --base-href /MyDailyFace2/
 
     - name: Setup Pages
       uses: actions/configure-pages@v4

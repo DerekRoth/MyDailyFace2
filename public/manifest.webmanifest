@@ -1,9 +1,42 @@
 {
   "name": "MyDailyFace",
   "short_name": "MyDailyFace",
+  "description": "Take daily selfies and track your face changes over time with sophisticated camera animations and Google Drive sync",
+  "id": "mydailyface",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",
+  "theme_color": "#007AFF",
+  "background_color": "#FFFFFF",
+  "orientation": "portrait-primary",
+  "categories": ["photography", "utilities", "lifestyle"],
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "iarc_rating_id": "e84b072d-71de-5b85-a9a3-a7426ac863d7",
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+  "screenshots": [
+    {
+      "src": "screenshots/narrow-screenshot.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "screenshots/wide-screenshot.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "scope_extensions": [
+    {
+      "origin": "https://derekroth.github.io"
+    }
+  ],
   "icons": [
     {
       "src": "icons/icon-72x72.png",

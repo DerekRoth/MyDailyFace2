@@ -228,6 +228,28 @@ input:checked + .toggle-slider:before {
   transform: translateX(22px);
 }
 
+/* Legal Links */
+.legal-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legal-link {
+  color: #007aff;
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.legal-link:hover {
+  text-decoration: underline;
+}
+
+.legal-separator {
+  color: #86868b;
+  font-size: 14px;
+}
+
 /* Google Drive Setup Form */
 .google-drive-setup {
   margin-top: 16px;

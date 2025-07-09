@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" target-language="fr" datatype="plaintext" original="ng2.template">
+    <body>
+      <trans-unit id="settings.title" datatype="html">
+        <source>Settings</source>
+        <target>Paramètres</target>
+      </trans-unit>
+      <trans-unit id="settings.subtitle" datatype="html">
+        <source>Manage your app preferences</source>
+        <target>Gérez vos préférences d'application</target>
+      </trans-unit>
+      <trans-unit id="settings.appearance" datatype="html">
+        <source>Appearance</source>
+        <target>Apparence</target>
+      </trans-unit>
+      <trans-unit id="settings.language" datatype="html">
+        <source>Language</source>
+        <target>Langue</target>
+      </trans-unit>
+      <trans-unit id="settings.language_description" datatype="html">
+        <source>Choose your preferred language</source>
+        <target>Choisissez votre langue préférée</target>
+      </trans-unit>
+      <trans-unit id="settings.theme" datatype="html">
+        <source>Theme</source>
+        <target>Thème</target>
+      </trans-unit>
+      <trans-unit id="settings.theme_description" datatype="html">
+        <source>Choose your preferred app theme</source>
+        <target>Choisissez votre thème d'application préféré</target>
+      </trans-unit>
+      <trans-unit id="settings.theme_light" datatype="html">
+        <source>Light</source>
+        <target>Clair</target>
+      </trans-unit>
+      <trans-unit id="settings.theme_dark" datatype="html">
+        <source>Dark</source>
+        <target>Sombre</target>
+      </trans-unit>
+      <trans-unit id="settings.theme_system" datatype="html">
+        <source>System</source>
+        <target>Système</target>
+      </trans-unit>
+      <trans-unit id="settings.google_drive_sync" datatype="html">
+        <source>Google Drive Sync</source>
+        <target>Synchronisation Google Drive</target>
+      </trans-unit>
+      <trans-unit id="nav.take_picture" datatype="html">
+        <source>Take Picture</source>
+        <target>Prendre photo</target>
+      </trans-unit>
+      <trans-unit id="nav.browse" datatype="html">
+        <source>Browse</source>
+        <target>Parcourir</target>
+      </trans-unit>
+      <trans-unit id="nav.play" datatype="html">
+        <source>Play</source>
+        <target>Lire</target>
+      </trans-unit>
+      <trans-unit id="nav.settings" datatype="html">
+        <source>Settings</source>
+        <target>Paramètres</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

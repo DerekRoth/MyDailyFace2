@@ -66,6 +66,7 @@ MyDailyFace is a Progressive Web App (PWA) built with Angular 19 that allows use
 - **IndexedDbService**: Local photo storage with efficient retrieval
 - **GoogleDriveService**: OAuth 2.0 integration with restricted API keys
 - **TestDataGeneratorService**: SVG face generation and animation debugging
+- **LocaleService**: Multi-language support with browser detection
 
 ## Development Notes
 
@@ -76,6 +77,11 @@ npm run start
 
 # Production build
 npm run build -- --base-href /MyDailyFace/
+
+# Internationalization builds
+npm run build:i18n          # Build all languages
+npm run build:prod          # Production build with all languages
+npm run extract-i18n        # Extract translatable text
 
 # Deploy to GitHub Pages
 # Automated via GitHub Actions on push to main branch
@@ -105,6 +111,13 @@ Access by tapping version 7 times in Settings:
 - **Test data generation**: 2 years of daily SVG faces
 - **Animation speed controls**: 2x, 5x, 10x slowdown
 - **Clear test data**: Remove only generated photos
+
+### Internationalization (i18n)
+- **Supported languages**: English, French, German, Italian, Portuguese
+- **Browser language detection**: Automatically detects user's preferred language
+- **Manual language switching**: Available in Settings > Appearance > Language
+- **Translation files**: Located in `src/locale/messages.{lang}.xlf`
+- **Angular i18n**: Built-in Angular internationalization with XLF format
 
 ## Security Considerations
 
@@ -191,6 +204,7 @@ Set these in your repository Settings → Secrets and variables → Actions:
 - `src/app/services/camera.service.ts` - Camera and photo capture logic
 - `src/app/services/google-drive.service.ts:32-50` - OAuth initialization
 - `src/app/services/test-data-generator.service.ts:255-259` - Animation speed helpers
+- `src/app/services/locale.service.ts` - Multi-language support and browser detection
 
 ### Key UI Components
 - `src/app/settings/settings.component.ts:147-166` - Hidden debug menu activation

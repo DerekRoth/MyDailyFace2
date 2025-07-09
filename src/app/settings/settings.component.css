@@ -461,6 +461,54 @@ input:checked + .toggle-slider:before {
   padding: 0 10px;
 }
 
+/* Language selector styles */
+.language-selector {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.language-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--bg-tertiary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 0;
+}
+
+.language-option:hover {
+  background-color: var(--bg-secondary);
+  border-color: var(--button-primary);
+}
+
+.language-option.active {
+  background-color: var(--button-primary);
+  color: white;
+  border-color: var(--button-primary);
+}
+
+.language-flag {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.language-name {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--text-primary);
+  transition: color 0.2s ease;
+}
+
+.language-option.active .language-name {
+  color: white;
+}
+
 /* Theme selector styles */
 .theme-selector {
   display: flex;

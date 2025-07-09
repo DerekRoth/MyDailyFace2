@@ -9,10 +9,12 @@ import { GoogleDriveService, SyncStatus } from '../services/google-drive.service
 import { TestDataGeneratorService } from '../services/test-data-generator.service';
 import { PwaInstallService } from '../services/pwa-install.service';
 import { ThemeService, ThemePreference } from '../services/theme.service';
+import { LocaleService, SupportedLanguage } from '../services/locale.service';
+import { TranslatePipe } from '../pipes/translate.pipe';
 
 @Component({
   selector: 'app-settings',
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.css'
 })
@@ -49,6 +51,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
   // Theme settings
   currentThemePreference: ThemePreference = 'system';
   
+  // Language settings
+  currentLanguage = 'en';
+  supportedLanguages: SupportedLanguage[] = [];
+  
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -57,7 +63,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     private googleDriveService: GoogleDriveService,
     private testDataGenerator: TestDataGeneratorService,
     private pwaInstallService: PwaInstallService,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private localeService: LocaleService
   ) {}
 
   ngOnInit() {
@@ -103,6 +110,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
     
     // Load theme preference
     this.currentThemePreference = this.themeService.getCurrentPreference();
+    
+    // Load language settings
+    this.supportedLanguages = this.localeService.supportedLanguages;
+    this.currentLanguage = this.localeService.currentLanguage;
     
     // Update photo count when navigating to settings
     this.router.events
@@ -355,5 +366,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
   onThemeChange(preference: ThemePreference) {
     this.currentThemePreference = preference;
     this.themeService.setPreference(preference);
+  }
+
+  // Language Methods
+  onLanguageChange(languageCode: string) {
+    this.currentLanguage = languageCode;
+    this.localeService.setLanguage(languageCode);
   }
 }

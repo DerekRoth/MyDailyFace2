@@ -5,6 +5,9 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:i18n": "ng build --localize",
+    "build:prod": "ng build --configuration production --localize",
+    "extract-i18n": "ng extract-i18n",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
@@ -14,6 +17,7 @@
     "@angular/compiler": "^19.2.0",
     "@angular/core": "^19.2.0",
     "@angular/forms": "^19.2.0",
+    "@angular/localize": "^19.2.14",
     "@angular/platform-browser": "^19.2.0",
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",

@@ -9,6 +9,15 @@
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
+      "i18n": {
+        "sourceLocale": "en",
+        "locales": {
+          "fr": "src/locale/messages.fr.xlf",
+          "de": "src/locale/messages.de.xlf",
+          "it": "src/locale/messages.it.xlf",
+          "pt": "src/locale/messages.pt.xlf"
+        }
+      },
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:application",
@@ -17,7 +26,7 @@
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
-              "zone.js"
+              "src/polyfills.ts"
             ],
             "tsConfig": "tsconfig.app.json",
             "assets": [
@@ -29,7 +38,8 @@
             "styles": [
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [],
+            "i18nMissingTranslation": "warning"
           },
           "configurations": {
             "production": {
@@ -52,6 +62,30 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "fr": {
+              "aot": true,
+              "outputPath": "dist/my-daily-face/fr",
+              "i18nLocale": "fr",
+              "i18nFormat": "xlf"
+            },
+            "de": {
+              "aot": true,
+              "outputPath": "dist/my-daily-face/de",
+              "i18nLocale": "de",
+              "i18nFormat": "xlf"
+            },
+            "it": {
+              "aot": true,
+              "outputPath": "dist/my-daily-face/it",
+              "i18nLocale": "it",
+              "i18nFormat": "xlf"
+            },
+            "pt": {
+              "aot": true,
+              "outputPath": "dist/my-daily-face/pt",
+              "i18nLocale": "pt",
+              "i18nFormat": "xlf"
             }
           },
           "defaultConfiguration": "production"
@@ -75,7 +109,7 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "polyfills": [
-              "zone.js",
+              "src/polyfills.ts",
               "zone.js/testing"
             ],
             "tsConfig": "tsconfig.spec.json",

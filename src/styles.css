@@ -5,11 +5,52 @@
   box-sizing: border-box;
 }
 
+/* Theme CSS Variables */
+:root {
+  --animation-speed-multiplier: 1;
+  
+  /* Light theme colors */
+  --bg-primary: #f2f2f7;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f8f8f8;
+  --text-primary: #1c1c1e;
+  --text-secondary: #8e8e93;
+  --border-color: #c6c6c8;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --button-primary: #007aff;
+  --button-primary-hover: #0056b3;
+  --button-primary-active: #004494;
+  --button-disabled: #c7c7cc;
+  --nav-bg: #f8f8f8;
+  --nav-border: #c6c6c8;
+  --nav-active: #007aff;
+  --nav-inactive: #8e8e93;
+}
+
+[data-theme="dark"] {
+  /* Dark theme colors */
+  --bg-primary: #000000;
+  --bg-secondary: #1c1c1e;
+  --bg-tertiary: #2c2c2e;
+  --text-primary: #ffffff;
+  --text-secondary: #8e8e93;
+  --border-color: #38383a;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --button-primary: #0a84ff;
+  --button-primary-hover: #0056b3;
+  --button-primary-active: #004494;
+  --button-disabled: #48484a;
+  --nav-bg: #1c1c1e;
+  --nav-border: #38383a;
+  --nav-active: #0a84ff;
+  --nav-inactive: #8e8e93;
+}
+
 html, body {
   height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  background-color: #f2f2f7;
-  color: #1c1c1e;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   /* Disable text selection */
@@ -54,7 +95,7 @@ input, textarea {
 
 /* iOS-style button */
 .ios-button {
-  background-color: #007aff;
+  background-color: var(--button-primary);
   color: white;
   border: none;
   border-radius: 8px;
@@ -67,31 +108,28 @@ input, textarea {
 }
 
 .ios-button:hover {
-  background-color: #0056b3;
+  background-color: var(--button-primary-hover);
 }
 
 .ios-button:active {
-  background-color: #004494;
+  background-color: var(--button-primary-active);
 }
 
 .ios-button:disabled {
-  background-color: #c7c7cc;
+  background-color: var(--button-disabled);
   cursor: not-allowed;
 }
 
 /* iOS-style card */
 .ios-card {
-  background-color: white;
+  background-color: var(--bg-secondary);
   border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px var(--shadow-color);
   margin: 16px;
   overflow: hidden;
 }
 
-/* Animation debugging support */
-:root {
-  --animation-speed-multiplier: 1;
-}
+/* Animation debugging support moved to theme variables above */
 
 /* Apply speed multiplier to specific animations */
 /* Animation durations are now set in component CSS files */

@@ -8,6 +8,7 @@ import { CameraService } from '../services/camera.service';
 import { GoogleDriveService, SyncStatus } from '../services/google-drive.service';
 import { TestDataGeneratorService } from '../services/test-data-generator.service';
 import { PwaInstallService } from '../services/pwa-install.service';
+import { ThemeService, ThemePreference } from '../services/theme.service';
 
 @Component({
   selector: 'app-settings',
@@ -45,6 +46,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
   showInstallInstructions = false;
   installInstructions: { platform: string; instructions: string[] } = { platform: '', instructions: [] };
   
+  // Theme settings
+  currentThemePreference: ThemePreference = 'system';
+  
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -52,7 +56,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     private router: Router,
     private googleDriveService: GoogleDriveService,
     private testDataGenerator: TestDataGeneratorService,
-    private pwaInstallService: PwaInstallService
+    private pwaInstallService: PwaInstallService,
+    private themeService: ThemeService
   ) {}
 
   ngOnInit() {
@@ -95,6 +100,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
     // Get installation instructions
     this.installInstructions = this.pwaInstallService.getInstallInstructions();
+    
+    // Load theme preference
+    this.currentThemePreference = this.themeService.getCurrentPreference();
     
     // Update photo count when navigating to settings
     this.router.events
@@ -341,5 +349,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   closeInstallInstructions() {
     this.showInstallInstructions = false;
+  }
+
+  // Theme Methods
+  onThemeChange(preference: ThemePreference) {
+    this.currentThemePreference = preference;
+    this.themeService.setPreference(preference);
   }
 }

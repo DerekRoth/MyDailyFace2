@@ -91,9 +91,48 @@
       </div>
     </div>
 
-    <!-- Camera Settings Section -->
+    <!-- Appearance Settings Section -->
     <div class="settings-section">
-      <h2>Camera</h2>
+      <h2>Appearance</h2>
+      
+      <!-- Theme Selection -->
+      <div class="setting-item">
+        <div class="setting-info">
+          <h3>Theme</h3>
+          <p>Choose your preferred app theme</p>
+        </div>
+        <div class="theme-selector">
+          <label class="theme-option">
+            <input 
+              type="radio" 
+              name="theme" 
+              value="light" 
+              [checked]="currentThemePreference === 'light'"
+              (change)="onThemeChange('light')">
+            <span class="theme-label">Light</span>
+          </label>
+          <label class="theme-option">
+            <input 
+              type="radio" 
+              name="theme" 
+              value="dark" 
+              [checked]="currentThemePreference === 'dark'"
+              (change)="onThemeChange('dark')">
+            <span class="theme-label">Dark</span>
+          </label>
+          <label class="theme-option">
+            <input 
+              type="radio" 
+              name="theme" 
+              value="system" 
+              [checked]="currentThemePreference === 'system'"
+              (change)="onThemeChange('system')">
+            <span class="theme-label">System</span>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Face Alignment Overlay Opacity -->
       <div class="setting-item">
         <div class="setting-info">
           <h3>Face Alignment Overlay Opacity</h3>

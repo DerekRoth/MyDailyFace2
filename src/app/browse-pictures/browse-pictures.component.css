@@ -16,13 +16,13 @@
 .header h1 {
   font-size: 32px;
   font-weight: 700;
-  color: #1c1c1e;
+  color: var(--text-primary);
   margin-bottom: 8px;
 }
 
 .header p {
   font-size: 16px;
-  color: #8e8e93;
+  color: var(--text-secondary);
 }
 
 /* Loading State */
@@ -40,7 +40,7 @@
   width: 32px;
   height: 32px;
   border: 3px solid rgba(0, 122, 255, 0.3);
-  border-top: 3px solid #007aff;
+  border-top: 3px solid var(--button-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
@@ -50,7 +50,7 @@
   width: 20px;
   height: 20px;
   border: 2px solid rgba(0, 122, 255, 0.3);
-  border-top: 2px solid #007aff;
+  border-top: 2px solid var(--button-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -81,8 +81,8 @@
   justify-content: space-between;
   padding: 12px 20px 8px 20px;
   margin-bottom: 12px;
-  border-bottom: 1px solid #e5e5ea;
-  background-color: rgba(248, 248, 248, 0.95);
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--nav-bg);
   backdrop-filter: blur(20px);
   position: sticky;
   top: 0;
@@ -94,7 +94,7 @@
 .section-header h2 {
   font-size: 20px;
   font-weight: 600;
-  color: #1c1c1e;
+  color: var(--text-primary);
   margin: 0;
   letter-spacing: -0.3px;
 }
@@ -102,8 +102,8 @@
 .section-count {
   font-size: 14px;
   font-weight: 500;
-  color: #8e8e93;
-  background-color: #f2f2f7;
+  color: var(--text-secondary);
+  background-color: var(--bg-primary);
   padding: 4px 8px;
   border-radius: 10px;
   min-width: 24px;
@@ -123,7 +123,7 @@
   cursor: pointer;
   transition: opacity 0.2s ease;
   overflow: hidden;
-  background-color: #f2f2f7;
+  background-color: var(--bg-primary);
 }
 
 .photo-item:hover {
@@ -175,13 +175,13 @@
 .empty-state h2 {
   font-size: 24px;
   font-weight: 600;
-  color: #1c1c1e;
+  color: var(--text-primary);
   margin-bottom: 8px;
 }
 
 .empty-state p {
   font-size: 16px;
-  color: #8e8e93;
+  color: var(--text-secondary);
   line-height: 1.4;
 }
 
@@ -355,25 +355,25 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid #f2f2f7;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .photo-modal-info h3 {
   font-size: 18px;
   font-weight: 600;
-  color: #1c1c1e;
+  color: var(--text-primary);
   margin-bottom: 4px;
 }
 
 .photo-modal-info p {
   font-size: 14px;
-  color: #8e8e93;
+  color: var(--text-secondary);
 }
 
 .close-button {
   background: none;
   border: none;
-  color: #8e8e93;
+  color: var(--text-secondary);
   padding: 8px;
   border-radius: 6px;
   cursor: pointer;
@@ -381,7 +381,7 @@
 }
 
 .close-button:hover {
-  background-color: #f2f2f7;
+  background-color: var(--bg-primary);
 }
 
 .photo-modal-content {
@@ -390,7 +390,7 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background-color: #f8f8f8;
+  background-color: var(--bg-tertiary);
 }
 
 .photo-modal-content img {
@@ -402,7 +402,7 @@
 
 .photo-modal-actions {
   padding: 16px 20px;
-  border-top: 1px solid #f2f2f7;
+  border-top: 1px solid var(--border-color);
 }
 
 .delete-button-modal {
@@ -446,7 +446,7 @@
 }
 
 .delete-modal {
-  background-color: white;
+  background-color: var(--bg-secondary);
   border-radius: 16px;
   width: 90%;
   max-width: 320px;
@@ -461,13 +461,13 @@
 .delete-modal-content h3 {
   font-size: 18px;
   font-weight: 600;
-  color: #1c1c1e;
+  color: var(--text-primary);
   margin-bottom: 8px;
 }
 
 .delete-modal-content p {
   font-size: 14px;
-  color: #8e8e93;
+  color: var(--text-secondary);
   line-height: 1.4;
   margin-bottom: 24px;
 }
@@ -479,8 +479,8 @@
 
 .cancel-button {
   flex: 1;
-  background-color: #f2f2f7;
-  color: #1c1c1e;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   border: none;
   border-radius: 8px;
   padding: 12px 16px;
@@ -491,7 +491,7 @@
 }
 
 .cancel-button:hover {
-  background-color: #e5e5ea;
+  background-color: var(--border-color);
 }
 
 .confirm-delete-button {

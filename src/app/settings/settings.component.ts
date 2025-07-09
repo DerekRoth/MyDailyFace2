@@ -354,9 +354,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
     }
   }
 
-  toggleInstallInstructions() {
-    this.showInstallInstructions = !this.showInstallInstructions;
-  }
 
   closeInstallInstructions() {
     this.showInstallInstructions = false;

@@ -220,18 +220,6 @@
         </button>
       </div>
 
-      <!-- Manual Installation Instructions -->
-      <div class="setting-item" *ngIf="!isInstalled">
-        <div class="setting-info">
-          <h3>Manual Installation</h3>
-          <p>Need help installing the app? View step-by-step instructions</p>
-        </div>
-        <button class="secondary-button" (click)="toggleInstallInstructions()">
-          <span *ngIf="!showInstallInstructions">Show Instructions</span>
-          <span *ngIf="showInstallInstructions">Hide Instructions</span>
-        </button>
-      </div>
-
       <!-- Installation Instructions Modal -->
       <div class="install-instructions-overlay" *ngIf="showInstallInstructions" (click)="closeInstallInstructions()">
         <div class="install-instructions-modal" (click)="$event.stopPropagation()">

@@ -9,7 +9,7 @@ The multi-language system is now fully configured and ready to use!
 1. ✅ **@angular/localize package installed** (v19.2.14)
 2. ✅ **Polyfill configured in src/polyfills.ts** - Proper polyfill setup
 3. ✅ **Real-time language switching** - Uses translation pipe instead of i18n attributes
-4. ✅ **Language selection UI in Settings**
+4. ✅ **Language dropdown in Settings** - Clean dropdown with flags and names
 5. ✅ **LocaleService for language management**
 6. ✅ **Translation pipe for dynamic text**
 7. ✅ **Browser language detection**
@@ -42,7 +42,7 @@ Translation files are located in `src/locale/`:
 ## Features
 
 - **Browser language detection** - Automatically detects user's preferred language
-- **Language selection UI** - Available in Settings > Appearance > Language
+- **Language dropdown UI** - Available in Settings > Appearance > Language
 - **LocaleService** - Manages language switching and persistence
 - **5 supported languages** - English, French, German, Italian, Portuguese
 

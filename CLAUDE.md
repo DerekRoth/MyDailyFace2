@@ -115,7 +115,7 @@ Access by tapping version 7 times in Settings:
 ### Internationalization (i18n)
 - **Supported languages**: English, French, German, Italian, Portuguese
 - **Browser language detection**: Automatically detects user's preferred language
-- **Manual language switching**: Available in Settings > Appearance > Language
+- **Manual language switching**: Dropdown in Settings > Appearance > Language
 - **Translation files**: Located in `src/locale/messages.{lang}.xlf`
 - **Angular i18n**: Built-in Angular internationalization with XLF format
 

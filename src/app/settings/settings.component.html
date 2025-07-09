@@ -102,14 +102,14 @@
           <p>{{ 'settings.language_description' | translate }}</p>
         </div>
         <div class="language-selector">
-          <button 
-            *ngFor="let lang of supportedLanguages" 
-            class="language-option"
-            [class.active]="currentLanguage === lang.code"
-            (click)="onLanguageChange(lang.code)">
-            <span class="language-flag">{{ lang.flag }}</span>
-            <span class="language-name">{{ lang.name }}</span>
-          </button>
+          <select 
+            class="language-dropdown"
+            [value]="currentLanguage"
+            (change)="onLanguageChange($event)">
+            <option *ngFor="let lang of supportedLanguages" [value]="lang.code">
+              {{ lang.flag }} {{ lang.name }}
+            </option>
+          </select>
         </div>
       </div>
       

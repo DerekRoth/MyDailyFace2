@@ -369,7 +369,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   // Language Methods
-  onLanguageChange(languageCode: string) {
+  onLanguageChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const languageCode = target.value;
     this.currentLanguage = languageCode;
     this.localeService.setLanguage(languageCode);
   }

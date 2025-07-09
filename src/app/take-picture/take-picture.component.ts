@@ -3,10 +3,12 @@ import { Router } from '@angular/router';
 import { CameraService, CameraPhoto } from '../services/camera.service';
 import { TestDataGeneratorService } from '../services/test-data-generator.service';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe } from '../pipes/translate.pipe';
+import { LocaleService } from '../services/locale.service';
 
 @Component({
   selector: 'app-take-picture',
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './take-picture.component.html',
   styleUrl: './take-picture.component.css'
 })
@@ -50,7 +52,8 @@ export class TakePictureComponent implements OnInit, OnDestroy {
   constructor(
     private cameraService: CameraService,
     private router: Router,
-    private testDataGenerator: TestDataGeneratorService
+    private testDataGenerator: TestDataGeneratorService,
+    private localeService: LocaleService
   ) {}
 
   ngOnInit() {
@@ -77,7 +80,7 @@ export class TakePictureComponent implements OnInit, OnDestroy {
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
-      this.error = 'Unable to access camera. Please ensure camera permissions are granted.';
+      this.error = this.localeService.getTranslation('take_picture.camera_access_error');
     }
   }
 
@@ -118,13 +121,13 @@ export class TakePictureComponent implements OnInit, OnDestroy {
           this.resetAnimationState();
         }, this.testDataGenerator.getAdjustedTimeout(this.ANIMATION_TIMINGS.NAVIGATION_TIME));
       } else {
-        this.error = 'Failed to save picture. Please try again.';
+        this.error = this.localeService.getTranslation('take_picture.save_error');
         this.resetAnimationState();
       }
 
     } catch (error) {
       console.error('Error taking picture:', error);
-      this.error = 'Failed to take picture. Please try again.';
+      this.error = this.localeService.getTranslation('take_picture.capture_error');
       this.resetAnimationState();
     } finally {
       this.isTakingPicture = false;
@@ -286,5 +289,18 @@ export class TakePictureComponent implements OnInit, OnDestroy {
       // Default to enabled if there's at least one photo
       this.showOverlay = this.overlayImageUrl !== null;
     }
+  }
+
+  // Helper methods for i18n
+  getOverlayAltText(): string {
+    return this.localeService.getTranslation('take_picture.overlay_alt');
+  }
+
+  getToggleTooltip(): string {
+    return this.localeService.getTranslation('take_picture.toggle_tooltip');
+  }
+
+  getCapturedPhotoAltText(): string {
+    return this.localeService.getTranslation('take_picture.captured_photo_alt');
   }
 }

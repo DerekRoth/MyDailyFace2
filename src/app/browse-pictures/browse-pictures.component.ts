@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CameraService, CameraPhoto } from '../services/camera.service';
 import { TestDataGeneratorService } from '../services/test-data-generator.service';
+import { TranslatePipe } from '../pipes/translate.pipe';
+import { LocaleService } from '../services/locale.service';
 
 interface PhotoSection {
   monthYear: string;
@@ -11,7 +13,7 @@ interface PhotoSection {
 
 @Component({
   selector: 'app-browse-pictures',
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './browse-pictures.component.html',
   styleUrl: './browse-pictures.component.css'
 })
@@ -56,7 +58,8 @@ export class BrowsePicturesComponent implements OnInit {
 
   constructor(
     private cameraService: CameraService,
-    private testDataGenerator: TestDataGeneratorService
+    private testDataGenerator: TestDataGeneratorService,
+    private localeService: LocaleService
   ) {}
 
   ngOnInit() {
@@ -325,11 +328,11 @@ export class BrowsePicturesComponent implements OnInit {
     const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
     
     if (diffInDays === 0) {
-      return 'Today';
+      return this.localeService.getTranslation('date.today');
     } else if (diffInDays === 1) {
-      return 'Yesterday';
+      return this.localeService.getTranslation('date.yesterday');
     } else if (diffInDays < 7) {
-      return `${diffInDays} days ago`;
+      return this.localeService.getTranslation('date.days_ago').replace('{days}', diffInDays.toString());
     } else {
       return date.toLocaleDateString('en-US', { 
         month: 'short', 
@@ -387,8 +390,18 @@ export class BrowsePicturesComponent implements OnInit {
     const now = new Date();
     
     const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      this.localeService.getTranslation('month.january'),
+      this.localeService.getTranslation('month.february'),
+      this.localeService.getTranslation('month.march'),
+      this.localeService.getTranslation('month.april'),
+      this.localeService.getTranslation('month.may'),
+      this.localeService.getTranslation('month.june'),
+      this.localeService.getTranslation('month.july'),
+      this.localeService.getTranslation('month.august'),
+      this.localeService.getTranslation('month.september'),
+      this.localeService.getTranslation('month.october'),
+      this.localeService.getTranslation('month.november'),
+      this.localeService.getTranslation('month.december')
     ];
     
     if (year === now.getFullYear()) {
@@ -536,5 +549,23 @@ export class BrowsePicturesComponent implements OnInit {
       this.currentDisplayedDate = this.formatDate(new Date(currentPhoto.timestamp));
       this.currentDisplayedTime = this.formatTime(new Date(currentPhoto.timestamp));
     }
+  }
+
+  // Helper methods for i18n
+  getPhotoCountText(): string {
+    if (this.photos.length === 1) {
+      return this.localeService.getTranslation('browse.photo_count_single');
+    } else {
+      return this.localeService.getTranslation('browse.photo_count_plural').replace('{count}', this.photos.length.toString());
+    }
+  }
+
+  getPhotoAltText(photo: CameraPhoto): string {
+    const template = this.localeService.getTranslation('browse.photo_alt');
+    return template.replace('{date}', this.formatDate(photo.timestamp));
+  }
+
+  getGenericPhotoAltText(): string {
+    return this.localeService.getTranslation('browse.generic_photo_alt');
   }
 }

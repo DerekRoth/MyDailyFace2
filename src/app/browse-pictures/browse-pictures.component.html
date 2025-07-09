@@ -1,15 +1,15 @@
 <div class="browse-pictures-container">
   <div class="header">
-    <h1>Your Photos</h1>
-    <p *ngIf="!isLoading && photos.length > 0">{{ photos.length }} photo{{ photos.length === 1 ? '' : 's' }}</p>
-    <p *ngIf="!isLoading && photos.length === 0">No photos yet</p>
-    <p *ngIf="isLoading">Loading photos...</p>
+    <h1>{{ 'browse.title' | translate }}</h1>
+    <p *ngIf="!isLoading && photos.length > 0">{{ getPhotoCountText() }}</p>
+    <p *ngIf="!isLoading && photos.length === 0">{{ 'browse.no_photos_header' | translate }}</p>
+    <p *ngIf="isLoading">{{ 'browse.loading_photos' | translate }}</p>
   </div>
 
   <!-- Loading State -->
   <div class="loading-state" *ngIf="isLoading">
     <div class="loading-spinner"></div>
-    <p>Loading your photos...</p>
+    <p>{{ 'browse.loading_state' | translate }}</p>
   </div>
 
   <!-- Photos List with Sections -->
@@ -30,7 +30,7 @@
           <div class="photo-thumbnail">
             <img 
               [src]="getPhotoDataUrl(photo)" 
-              [alt]="'Photo from ' + formatDate(photo.timestamp)"
+              [alt]="getPhotoAltText(photo)"
               *ngIf="getPhotoDataUrl(photo)"
               loading="lazy">
             <div class="photo-loading" *ngIf="!getPhotoDataUrl(photo)">
@@ -47,8 +47,8 @@
     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M21 19V5C21 3.9 20.1 3 19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19ZM8.5 13.5L11 16.51L14.5 12L19 18H5L8.5 13.5Z" fill="#8e8e93"/>
     </svg>
-    <h2>No photos yet</h2>
-    <p>Take your first daily selfie to get started!</p>
+    <h2>{{ 'browse.empty_state_title' | translate }}</h2>
+    <p>{{ 'browse.empty_state_description' | translate }}</p>
   </div>
 
   <!-- Fullscreen Photo View with Zoom Transition -->
@@ -95,7 +95,7 @@
         <img 
           *ngIf="openingPhotoDataUrl" 
           [src]="openingPhotoDataUrl" 
-          [alt]="'Photo'"
+          [alt]="getGenericPhotoAltText()"
           loading="lazy">
       </div>
       
@@ -113,7 +113,7 @@
             <img 
               *ngIf="visiblePhoto.dataUrl" 
               [src]="visiblePhoto.dataUrl" 
-              [alt]="'Photo'">
+              [alt]="getGenericPhotoAltText()">
           </div>
         </div>
       </div>
@@ -125,12 +125,12 @@
   <div class="delete-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
     <div class="delete-modal" (click)="$event.stopPropagation()">
       <div class="delete-modal-content">
-        <h3>Delete Photo?</h3>
-        <p>This photo will be permanently deleted and cannot be recovered.</p>
+        <h3>{{ 'browse.delete_confirm_title' | translate }}</h3>
+        <p>{{ 'browse.delete_confirm_message' | translate }}</p>
         
         <div class="delete-modal-actions">
-          <button class="cancel-button" (click)="cancelDelete()">Cancel</button>
-          <button class="confirm-delete-button" (click)="deletePhoto()">Delete</button>
+          <button class="cancel-button" (click)="cancelDelete()">{{ 'browse.delete_cancel' | translate }}</button>
+          <button class="confirm-delete-button" (click)="deletePhoto()">{{ 'browse.delete_confirm' | translate }}</button>
         </div>
       </div>
     </div>

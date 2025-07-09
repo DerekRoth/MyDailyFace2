@@ -11,7 +11,7 @@
     <!-- Loading overlay -->
     <div class="camera-overlay" *ngIf="!isStreaming && !error">
       <div class="loading-spinner"></div>
-      <p>Initializing camera...</p>
+      <p>{{ 'take_picture.initializing_camera' | translate }}</p>
     </div>
     
     <!-- Error overlay -->
@@ -20,14 +20,14 @@
         <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="#FF3B30"/>
       </svg>
       <p>{{ error }}</p>
-      <button class="retry-button" (click)="initializeCamera()">Retry</button>
+      <button class="retry-button" (click)="initializeCamera()">{{ 'take_picture.retry' | translate }}</button>
     </div>
 
     <!-- Face alignment overlay -->
     <div class="alignment-overlay" 
          *ngIf="showOverlay && overlayImageUrl && isStreaming"
          [style.opacity]="overlayOpacity">
-      <img [src]="overlayImageUrl" alt="Face alignment guide">
+      <img [src]="overlayImageUrl" [alt]="getOverlayAltText()">
     </div>
 
     <!-- Overlay toggle button -->
@@ -36,7 +36,7 @@
               [class.active]="showOverlay"
               [disabled]="!overlayImageUrl"
               (click)="toggleOverlay()"
-              title="Toggle face alignment guide">
+              [title]="getToggleTooltip()">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M9 2L7.17 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4H16.83L15 2H9ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17Z" fill="currentColor"/>
           <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="2 2"/>
@@ -64,7 +64,7 @@
   
   <!-- Freeze frame animation -->
   <div #freezeFrame class="freeze-frame" *ngIf="showFreezeFrame" [class.animate-to-browse]="animatingToBrowse">
-    <img [src]="freezeFrameUrl" alt="Captured photo">
+    <img [src]="freezeFrameUrl" [alt]="getCapturedPhotoAltText()">
   </div>
 
   <canvas #canvas style="display: none;"></canvas>

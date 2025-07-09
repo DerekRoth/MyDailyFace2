@@ -7,8 +7,8 @@
         <circle cx="12" cy="13" r="4"/>
       </svg>
     </div>
-    <h3>No Photos Yet</h3>
-    <p>Take some photos first to see your timeline</p>
+    <h3>{{ 'play.no_photos_title' | translate }}</h3>
+    <p>{{ 'play.no_photos_description' | translate }}</p>
   </div>
 
   <!-- Video Player -->
@@ -18,7 +18,7 @@
       <img 
         *ngIf="currentPhotoUrl" 
         [src]="currentPhotoUrl" 
-        [alt]="'Photo ' + (currentPhotoIndex + 1)"
+        [alt]="getPhotoAltText()"
         class="photo-image">
     </div>
 

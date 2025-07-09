@@ -1,10 +1,12 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CameraService, CameraPhoto } from '../services/camera.service';
+import { TranslatePipe } from '../pipes/translate.pipe';
+import { LocaleService } from '../services/locale.service';
 
 @Component({
   selector: 'app-play',
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './play.component.html',
   styleUrl: './play.component.css'
 })
@@ -28,7 +30,10 @@ export class PlayComponent implements OnInit, OnDestroy {
   readonly FPS = 10;
   readonly INTERVAL_MS = 1000 / this.FPS; // 100ms for 10 FPS
 
-  constructor(private cameraService: CameraService) {}
+  constructor(
+    private cameraService: CameraService,
+    private localeService: LocaleService
+  ) {}
 
   async ngOnInit() {
     await this.loadPhotos();
@@ -310,5 +315,11 @@ export class PlayComponent implements OnInit, OnDestroy {
     }
     
     this.dragHandlers = {};
+  }
+
+  // Helper methods for i18n
+  getPhotoAltText(): string {
+    const template = this.localeService.getTranslation('play.photo_alt');
+    return template.replace('{index}', (this.currentPhotoIndex + 1).toString());
   }
 }

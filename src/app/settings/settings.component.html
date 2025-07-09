@@ -12,32 +12,32 @@
       <!-- Connection Status -->
       <div class="setting-item">
         <div class="setting-info">
-          <h3>Connection Status</h3>
-          <p *ngIf="!syncStatus.isAuthenticated" class="status-disconnected">Not connected</p>
-          <p *ngIf="syncStatus.isAuthenticated" class="status-connected">Connected to Google Drive</p>
+          <h3>{{ 'settings.connection_status' | translate }}</h3>
+          <p *ngIf="!syncStatus.isAuthenticated" class="status-disconnected">{{ 'settings.not_connected' | translate }}</p>
+          <p *ngIf="syncStatus.isAuthenticated" class="status-connected">{{ 'settings.connected_to_drive' | translate }}</p>
           <p *ngIf="syncStatus.error" class="status-error">{{ syncStatus.error }}</p>
-          <p *ngIf="!isGoogleDriveConfigured" class="status-error">Google Drive integration not configured</p>
+          <p *ngIf="!isGoogleDriveConfigured" class="status-error">{{ 'settings.drive_not_configured' | translate }}</p>
         </div>
         <button 
           *ngIf="!syncStatus.isAuthenticated" 
           class="connect-button" 
           (click)="connectGoogleDrive()"
           [disabled]="!isGoogleDriveConfigured">
-          Connect
+          {{ 'settings.connect' | translate }}
         </button>
         <button 
           *ngIf="syncStatus.isAuthenticated" 
           class="disconnect-button" 
           (click)="disconnectGoogleDrive()">
-          Disconnect
+          {{ 'settings.disconnect' | translate }}
         </button>
       </div>
 
       <!-- Auto Sync Toggle -->
       <div class="setting-item" *ngIf="syncStatus.isAuthenticated">
         <div class="setting-info">
-          <h3>Auto Sync</h3>
-          <p>Automatically upload new photos to Google Drive</p>
+          <h3>{{ 'settings.auto_sync' | translate }}</h3>
+          <p>{{ 'settings.auto_sync_description' | translate }}</p>
         </div>
         <label class="toggle-switch">
           <input 
@@ -51,33 +51,33 @@
       <!-- Sync Status -->
       <div class="setting-item" *ngIf="syncStatus.isAuthenticated">
         <div class="setting-info">
-          <h3>Sync Status</h3>
-          <p *ngIf="syncStatus.lastSync">Last sync: {{ syncStatus.lastSync | date:'short' }}</p>
-          <p *ngIf="!syncStatus.lastSync">Never synced</p>
-          <p *ngIf="syncStatus.isSyncing" class="status-syncing">Syncing in progress...</p>
+          <h3>{{ 'settings.sync_status' | translate }}</h3>
+          <p *ngIf="syncStatus.lastSync">{{ getLastSyncText() }}</p>
+          <p *ngIf="!syncStatus.lastSync">{{ 'settings.never_synced' | translate }}</p>
+          <p *ngIf="syncStatus.isSyncing" class="status-syncing">{{ 'settings.syncing_in_progress' | translate }}</p>
         </div>
       </div>
 
       <!-- Manual Sync -->
       <div class="setting-item" *ngIf="syncStatus.isAuthenticated">
         <div class="setting-info">
-          <h3>Manual Sync</h3>
-          <p>Force sync all unsynced photos now</p>
+          <h3>{{ 'settings.manual_sync' | translate }}</h3>
+          <p>{{ 'settings.manual_sync_description' | translate }}</p>
         </div>
         <div class="sync-buttons">
           <button 
             class="sync-button" 
             (click)="forceSync()"
             [disabled]="syncStatus.isSyncing">
-            <span *ngIf="!syncStatus.isSyncing">Force Sync</span>
-            <span *ngIf="syncStatus.isSyncing">Syncing...</span>
+            <span *ngIf="!syncStatus.isSyncing">{{ 'settings.force_sync' | translate }}</span>
+            <span *ngIf="syncStatus.isSyncing">{{ 'settings.syncing' | translate }}</span>
           </button>
           <button 
             class="sync-button" 
             (click)="syncAllPhotos()"
             [disabled]="syncStatus.isSyncing">
-            <span *ngIf="!syncStatus.isSyncing">Sync All</span>
-            <span *ngIf="syncStatus.isSyncing">Syncing...</span>
+            <span *ngIf="!syncStatus.isSyncing">{{ 'settings.sync_all' | translate }}</span>
+            <span *ngIf="syncStatus.isSyncing">{{ 'settings.syncing' | translate }}</span>
           </button>
         </div>
       </div>
@@ -85,8 +85,8 @@
       <!-- Google Drive Info -->
       <div class="setting-item" *ngIf="isGoogleDriveConfigured">
         <div class="setting-info">
-          <h3>About Google Drive Sync</h3>
-          <p>Photos are synced to a "MyDailyFace" folder in your Google Drive</p>
+          <h3>{{ 'settings.about_google_drive_sync' | translate }}</h3>
+          <p>{{ 'settings.google_drive_folder_info' | translate }}</p>
         </div>
       </div>
     </div>
@@ -104,9 +104,10 @@
         <div class="language-selector">
           <select 
             class="language-dropdown"
-            [value]="currentLanguage"
             (change)="onLanguageChange($event)">
-            <option *ngFor="let lang of supportedLanguages" [value]="lang.code">
+            <option *ngFor="let lang of supportedLanguages" 
+                    [value]="lang.code"
+                    [selected]="lang.code === currentLanguage">
               {{ lang.flag }} {{ lang.name }}
             </option>
           </select>
@@ -153,8 +154,8 @@
       <!-- Face Alignment Overlay Opacity -->
       <div class="setting-item">
         <div class="setting-info">
-          <h3>Face Alignment Overlay Opacity</h3>
-          <p>Adjust transparency of face alignment guide ({{ (overlayOpacity * 100).toFixed(0) }}%)</p>
+          <h3>{{ 'settings.overlay_opacity' | translate }}</h3>
+          <p>{{ getOverlayOpacityText() }}</p>
         </div>
       </div>
       <div class="setting-item">
@@ -178,45 +179,45 @@
 
     <!-- Storage Section -->
     <div class="settings-section">
-      <h2>Storage</h2>
+      <h2>{{ 'settings.storage' | translate }}</h2>
       <div class="setting-item">
         <div class="setting-info">
-          <h3>Photos Stored</h3>
-          <p>{{ photoCount }} photos saved locally</p>
+          <h3>{{ 'settings.photos_stored' | translate }}</h3>
+          <p>{{ getPhotosStoredText() }}</p>
         </div>
       </div>
       <div class="setting-item">
         <div class="setting-info">
-          <h3>Clear All Photos</h3>
-          <p>Remove all stored photos from device</p>
+          <h3>{{ 'settings.clear_all_photos' | translate }}</h3>
+          <p>{{ 'settings.clear_all_photos_description' | translate }}</p>
         </div>
         <button class="danger-button" (click)="clearAllPhotos()">
-          Clear All
+          <span>{{ 'settings.clear_all' | translate }}</span>
         </button>
       </div>
     </div>
 
     <!-- App Installation Section -->
     <div class="settings-section">
-      <h2>App Installation</h2>
+      <h2>{{ 'settings.app_installation' | translate }}</h2>
       
       <!-- Installation Status -->
       <div class="setting-item" *ngIf="isInstalled">
         <div class="setting-info">
-          <h3>Installation Status</h3>
-          <p class="status-connected">✅ App is installed on your device</p>
+          <h3>{{ 'settings.installation_status' | translate }}</h3>
+          <p class="status-connected">{{ 'settings.app_installed' | translate }}</p>
         </div>
       </div>
 
       <!-- Install Button -->
       <div class="setting-item" *ngIf="!isInstalled">
         <div class="setting-info">
-          <h3>Install App</h3>
-          <p>Add MyDailyFace to your home screen for easy access</p>
+          <h3>{{ 'settings.install_app' | translate }}</h3>
+          <p>{{ 'settings.install_app_description' | translate }}</p>
         </div>
         <button class="install-button" (click)="installApp()">
-          <span *ngIf="canInstall">Install App</span>
-          <span *ngIf="!canInstall">Show Instructions</span>
+          <span *ngIf="canInstall">{{ 'settings.install_app' | translate }}</span>
+          <span *ngIf="!canInstall">{{ 'settings.show_instructions' | translate }}</span>
         </button>
       </div>
 
@@ -248,27 +249,27 @@
 
     <!-- About Section -->
     <div class="settings-section">
-      <h2>About</h2>
+      <h2>{{ 'settings.about' | translate }}</h2>
       <div class="setting-item">
         <div class="setting-info">
-          <h3>Version</h3>
-          <p (click)="onVersionTap()" style="cursor: pointer;">MyDailyFace v1.0.0</p>
+          <h3>{{ 'settings.version' | translate }}</h3>
+          <p (click)="onVersionTap()" style="cursor: pointer;">{{ 'settings.version_number' | translate }}</p>
         </div>
       </div>
       <div class="setting-item">
         <div class="setting-info">
-          <h3>Privacy</h3>
-          <p>Photos stored locally and optionally synced to your Google Drive</p>
+          <h3>{{ 'settings.privacy' | translate }}</h3>
+          <p>{{ 'settings.privacy_description' | translate }}</p>
         </div>
       </div>
       
       <div class="setting-item">
         <div class="setting-info">
-          <h3>Legal</h3>
+          <h3>{{ 'settings.legal' | translate }}</h3>
           <div class="legal-links">
-            <a routerLink="/privacy" class="legal-link">Privacy Policy</a>
+            <a routerLink="/privacy" class="legal-link">{{ 'settings.privacy_policy' | translate }}</a>
             <span class="legal-separator">•</span>
-            <a routerLink="/terms" class="legal-link">Terms of Service</a>
+            <a routerLink="/terms" class="legal-link">{{ 'settings.terms_of_service' | translate }}</a>
           </div>
         </div>
       </div>
@@ -298,7 +299,7 @@
           <p>Remove all test-generated photos (keeps real photos)</p>
         </div>
         <button class="danger-button" (click)="clearTestData()">
-          Clear Tests
+          <span>Clear Tests</span>
         </button>
       </div>
 
@@ -318,22 +319,22 @@
           <button class="speed-button" 
                   [class.active]="currentAnimationSpeed === 1"
                   (click)="setAnimationSpeed(1)">
-            Normal
+            <span>{{ 'settings.animation_speed_normal' | translate }}</span>
           </button>
           <button class="speed-button" 
                   [class.active]="currentAnimationSpeed === 2"
                   (click)="setAnimationSpeed(2)">
-            2x
+            <span>2x</span>
           </button>
           <button class="speed-button" 
                   [class.active]="currentAnimationSpeed === 5"
                   (click)="setAnimationSpeed(5)">
-            5x
+            <span>5x</span>
           </button>
           <button class="speed-button" 
                   [class.active]="currentAnimationSpeed === 10"
                   (click)="setAnimationSpeed(10)">
-            10x
+            <span>10x</span>
           </button>
         </div>
       </div>
@@ -344,7 +345,7 @@
           <p>Hide these testing features</p>
         </div>
         <button class="cancel-button" (click)="hideTestingFeatures()">
-          Hide
+          <span>Hide</span>
         </button>
       </div>
     </div>

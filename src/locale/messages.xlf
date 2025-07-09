@@ -62,6 +62,526 @@
         <source>Settings</source>
         <target>Settings</target>
       </trans-unit>
+      <!-- Browse Pictures Component -->
+      <trans-unit id="browse.title" datatype="html">
+        <source>Your Photos</source>
+        <target>Your Photos</target>
+      </trans-unit>
+      <trans-unit id="browse.photo_count" datatype="html">
+        <source>{photos.length, plural, =1 {1 photo} other {{{photos.length}} photos}}</source>
+        <target>{photos.length, plural, =1 {1 photo} other {{{photos.length}} photos}}</target>
+      </trans-unit>
+      <trans-unit id="browse.no_photos_header" datatype="html">
+        <source>No photos yet</source>
+        <target>No photos yet</target>
+      </trans-unit>
+      <trans-unit id="browse.loading_photos" datatype="html">
+        <source>Loading photos...</source>
+        <target>Loading photos...</target>
+      </trans-unit>
+      <trans-unit id="browse.loading_state" datatype="html">
+        <source>Loading your photos...</source>
+        <target>Loading your photos...</target>
+      </trans-unit>
+      <trans-unit id="browse.empty_state_title" datatype="html">
+        <source>No photos yet</source>
+        <target>No photos yet</target>
+      </trans-unit>
+      <trans-unit id="browse.empty_state_description" datatype="html">
+        <source>Take your first daily selfie to get started!</source>
+        <target>Take your first daily selfie to get started!</target>
+      </trans-unit>
+      <trans-unit id="browse.delete_confirm_title" datatype="html">
+        <source>Delete Photo?</source>
+        <target>Delete Photo?</target>
+      </trans-unit>
+      <trans-unit id="browse.delete_confirm_message" datatype="html">
+        <source>This photo will be permanently deleted and cannot be recovered.</source>
+        <target>This photo will be permanently deleted and cannot be recovered.</target>
+      </trans-unit>
+      <trans-unit id="browse.delete_cancel" datatype="html">
+        <source>Cancel</source>
+        <target>Cancel</target>
+      </trans-unit>
+      <trans-unit id="browse.delete_confirm" datatype="html">
+        <source>Delete</source>
+        <target>Delete</target>
+      </trans-unit>
+      <!-- Take Picture Component -->
+      <trans-unit id="take_picture.initializing_camera" datatype="html">
+        <source>Initializing camera...</source>
+        <target>Initializing camera...</target>
+      </trans-unit>
+      <trans-unit id="take_picture.retry" datatype="html">
+        <source>Retry</source>
+        <target>Retry</target>
+      </trans-unit>
+      <trans-unit id="take_picture.overlay_alt" datatype="html">
+        <source>Face alignment guide</source>
+        <target>Face alignment guide</target>
+      </trans-unit>
+      <trans-unit id="take_picture.toggle_tooltip" datatype="html">
+        <source>Toggle face alignment guide</source>
+        <target>Toggle face alignment guide</target>
+      </trans-unit>
+      <trans-unit id="take_picture.captured_photo_alt" datatype="html">
+        <source>Captured photo</source>
+        <target>Captured photo</target>
+      </trans-unit>
+      <trans-unit id="take_picture.camera_access_error" datatype="html">
+        <source>Unable to access camera. Please ensure camera permissions are granted.</source>
+        <target>Unable to access camera. Please ensure camera permissions are granted.</target>
+      </trans-unit>
+      <trans-unit id="take_picture.save_error" datatype="html">
+        <source>Failed to save picture. Please try again.</source>
+        <target>Failed to save picture. Please try again.</target>
+      </trans-unit>
+      <trans-unit id="take_picture.capture_error" datatype="html">
+        <source>Failed to take picture. Please try again.</source>
+        <target>Failed to take picture. Please try again.</target>
+      </trans-unit>
+      <!-- Play Component -->
+      <trans-unit id="play.no_photos_title" datatype="html">
+        <source>No Photos Yet</source>
+        <target>No Photos Yet</target>
+      </trans-unit>
+      <trans-unit id="play.no_photos_description" datatype="html">
+        <source>Take some photos first to see your timeline</source>
+        <target>Take some photos first to see your timeline</target>
+      </trans-unit>
+      <trans-unit id="play.photo_alt" datatype="html">
+        <source>Photo ${this.currentPhotoIndex + 1}</source>
+        <target>Photo ${this.currentPhotoIndex + 1}</target>
+      </trans-unit>
+      <!-- Date Formatting -->
+      <trans-unit id="date.today" datatype="html">
+        <source>Today</source>
+        <target>Today</target>
+      </trans-unit>
+      <trans-unit id="date.yesterday" datatype="html">
+        <source>Yesterday</source>
+        <target>Yesterday</target>
+      </trans-unit>
+      <trans-unit id="date.days_ago" datatype="html">
+        <source>${diffInDays} days ago</source>
+        <target>${diffInDays} days ago</target>
+      </trans-unit>
+      <!-- Month Names -->
+      <trans-unit id="month.january" datatype="html">
+        <source>January</source>
+        <target>January</target>
+      </trans-unit>
+      <trans-unit id="month.february" datatype="html">
+        <source>February</source>
+        <target>February</target>
+      </trans-unit>
+      <trans-unit id="month.march" datatype="html">
+        <source>March</source>
+        <target>March</target>
+      </trans-unit>
+      <trans-unit id="month.april" datatype="html">
+        <source>April</source>
+        <target>April</target>
+      </trans-unit>
+      <trans-unit id="month.may" datatype="html">
+        <source>May</source>
+        <target>May</target>
+      </trans-unit>
+      <trans-unit id="month.june" datatype="html">
+        <source>June</source>
+        <target>June</target>
+      </trans-unit>
+      <trans-unit id="month.july" datatype="html">
+        <source>July</source>
+        <target>July</target>
+      </trans-unit>
+      <trans-unit id="month.august" datatype="html">
+        <source>August</source>
+        <target>August</target>
+      </trans-unit>
+      <trans-unit id="month.september" datatype="html">
+        <source>September</source>
+        <target>September</target>
+      </trans-unit>
+      <trans-unit id="month.october" datatype="html">
+        <source>October</source>
+        <target>October</target>
+      </trans-unit>
+      <trans-unit id="month.november" datatype="html">
+        <source>November</source>
+        <target>November</target>
+      </trans-unit>
+      <trans-unit id="month.december" datatype="html">
+        <source>December</source>
+        <target>December</target>
+      </trans-unit>
+      <!-- Settings Component -->
+      <trans-unit id="settings.connection_status" datatype="html">
+        <source>Connection Status</source>
+        <target>Connection Status</target>
+      </trans-unit>
+      <trans-unit id="settings.not_connected" datatype="html">
+        <source>Not connected</source>
+        <target>Not connected</target>
+      </trans-unit>
+      <trans-unit id="settings.connected_to_drive" datatype="html">
+        <source>Connected to Google Drive</source>
+        <target>Connected to Google Drive</target>
+      </trans-unit>
+      <trans-unit id="settings.drive_not_configured" datatype="html">
+        <source>Google Drive integration not configured</source>
+        <target>Google Drive integration not configured</target>
+      </trans-unit>
+      <trans-unit id="settings.connect" datatype="html">
+        <source>Connect</source>
+        <target>Connect</target>
+      </trans-unit>
+      <trans-unit id="settings.disconnect" datatype="html">
+        <source>Disconnect</source>
+        <target>Disconnect</target>
+      </trans-unit>
+      <trans-unit id="settings.auto_sync" datatype="html">
+        <source>Auto Sync</source>
+        <target>Auto Sync</target>
+      </trans-unit>
+      <trans-unit id="settings.auto_sync_description" datatype="html">
+        <source>Automatically upload new photos to Google Drive</source>
+        <target>Automatically upload new photos to Google Drive</target>
+      </trans-unit>
+      <trans-unit id="settings.sync_status" datatype="html">
+        <source>Sync Status</source>
+        <target>Sync Status</target>
+      </trans-unit>
+      <trans-unit id="settings.last_sync" datatype="html">
+        <source>Last sync: {{ syncStatus.lastSync | date:'short' }}</source>
+        <target>Last sync: {{ syncStatus.lastSync | date:'short' }}</target>
+      </trans-unit>
+      <trans-unit id="settings.never_synced" datatype="html">
+        <source>Never synced</source>
+        <target>Never synced</target>
+      </trans-unit>
+      <trans-unit id="settings.syncing_in_progress" datatype="html">
+        <source>Syncing in progress...</source>
+        <target>Syncing in progress...</target>
+      </trans-unit>
+      <trans-unit id="settings.manual_sync" datatype="html">
+        <source>Manual Sync</source>
+        <target>Manual Sync</target>
+      </trans-unit>
+      <trans-unit id="settings.manual_sync_description" datatype="html">
+        <source>Force sync all unsynced photos now</source>
+        <target>Force sync all unsynced photos now</target>
+      </trans-unit>
+      <trans-unit id="settings.force_sync" datatype="html">
+        <source>Force Sync</source>
+        <target>Force Sync</target>
+      </trans-unit>
+      <trans-unit id="settings.syncing" datatype="html">
+        <source>Syncing...</source>
+        <target>Syncing...</target>
+      </trans-unit>
+      <trans-unit id="settings.sync_all" datatype="html">
+        <source>Sync All</source>
+        <target>Sync All</target>
+      </trans-unit>
+      <trans-unit id="settings.about_google_drive_sync" datatype="html">
+        <source>About Google Drive Sync</source>
+        <target>About Google Drive Sync</target>
+      </trans-unit>
+      <trans-unit id="settings.google_drive_folder_info" datatype="html">
+        <source>Photos are synced to a "MyDailyFace" folder in your Google Drive</source>
+        <target>Photos are synced to a "MyDailyFace" folder in your Google Drive</target>
+      </trans-unit>
+      <trans-unit id="settings.overlay_opacity" datatype="html">
+        <source>Face Alignment Overlay Opacity</source>
+        <target>Face Alignment Overlay Opacity</target>
+      </trans-unit>
+      <trans-unit id="settings.overlay_opacity_description" datatype="html">
+        <source>Adjust transparency of face alignment guide ({{ (overlayOpacity * 100).toFixed(0) }}%)</source>
+        <target>Adjust transparency of face alignment guide ({{ (overlayOpacity * 100).toFixed(0) }}%)</target>
+      </trans-unit>
+      <trans-unit id="settings.opacity_10" datatype="html">
+        <source>10%</source>
+        <target>10%</target>
+      </trans-unit>
+      <trans-unit id="settings.opacity_50" datatype="html">
+        <source>50%</source>
+        <target>50%</target>
+      </trans-unit>
+      <trans-unit id="settings.opacity_100" datatype="html">
+        <source>100%</source>
+        <target>100%</target>
+      </trans-unit>
+      <trans-unit id="settings.storage" datatype="html">
+        <source>Storage</source>
+        <target>Storage</target>
+      </trans-unit>
+      <trans-unit id="settings.photos_stored" datatype="html">
+        <source>Photos Stored</source>
+        <target>Photos Stored</target>
+      </trans-unit>
+      <trans-unit id="settings.photos_saved_locally" datatype="html">
+        <source>{{ photoCount }} photos saved locally</source>
+        <target>{{ photoCount }} photos saved locally</target>
+      </trans-unit>
+      <trans-unit id="settings.clear_all_photos" datatype="html">
+        <source>Clear All Photos</source>
+        <target>Clear All Photos</target>
+      </trans-unit>
+      <trans-unit id="settings.clear_all_photos_description" datatype="html">
+        <source>Remove all stored photos from device</source>
+        <target>Remove all stored photos from device</target>
+      </trans-unit>
+      <trans-unit id="settings.clear_all" datatype="html">
+        <source>Clear All</source>
+        <target>Clear All</target>
+      </trans-unit>
+      <trans-unit id="settings.app_installation" datatype="html">
+        <source>App Installation</source>
+        <target>App Installation</target>
+      </trans-unit>
+      <trans-unit id="settings.installation_status" datatype="html">
+        <source>Installation Status</source>
+        <target>Installation Status</target>
+      </trans-unit>
+      <trans-unit id="settings.app_installed" datatype="html">
+        <source>✅ App is installed on your device</source>
+        <target>✅ App is installed on your device</target>
+      </trans-unit>
+      <trans-unit id="settings.install_app" datatype="html">
+        <source>Install App</source>
+        <target>Install App</target>
+      </trans-unit>
+      <trans-unit id="settings.install_app_description" datatype="html">
+        <source>Add MyDailyFace to your home screen for easy access</source>
+        <target>Add MyDailyFace to your home screen for easy access</target>
+      </trans-unit>
+      <trans-unit id="settings.install_app_button" datatype="html">
+        <source>Install App</source>
+        <target>Install App</target>
+      </trans-unit>
+      <trans-unit id="settings.show_instructions" datatype="html">
+        <source>Show Instructions</source>
+        <target>Show Instructions</target>
+      </trans-unit>
+      <trans-unit id="settings.install_modal_title" datatype="html">
+        <source>Install MyDailyFace</source>
+        <target>Install MyDailyFace</target>
+      </trans-unit>
+      <trans-unit id="settings.close" datatype="html">
+        <source>×</source>
+        <target>×</target>
+      </trans-unit>
+      <trans-unit id="settings.benefits_of_installing" datatype="html">
+        <source>Benefits of installing:</source>
+        <target>Benefits of installing:</target>
+      </trans-unit>
+      <trans-unit id="settings.benefit_performance" datatype="html">
+        <source>Faster loading and better performance</source>
+        <target>Faster loading and better performance</target>
+      </trans-unit>
+      <trans-unit id="settings.benefit_offline" datatype="html">
+        <source>Works offline for taking photos</source>
+        <target>Works offline for taking photos</target>
+      </trans-unit>
+      <trans-unit id="settings.benefit_access" datatype="html">
+        <source>Quick access from your home screen</source>
+        <target>Quick access from your home screen</target>
+      </trans-unit>
+      <trans-unit id="settings.benefit_fullscreen" datatype="html">
+        <source>Full-screen experience without browser bars</source>
+        <target>Full-screen experience without browser bars</target>
+      </trans-unit>
+      <trans-unit id="settings.about" datatype="html">
+        <source>About</source>
+        <target>About</target>
+      </trans-unit>
+      <trans-unit id="settings.version" datatype="html">
+        <source>Version</source>
+        <target>Version</target>
+      </trans-unit>
+      <trans-unit id="settings.version_number" datatype="html">
+        <source>MyDailyFace v1.0.0</source>
+        <target>MyDailyFace v1.0.0</target>
+      </trans-unit>
+      <trans-unit id="settings.privacy" datatype="html">
+        <source>Privacy</source>
+        <target>Privacy</target>
+      </trans-unit>
+      <trans-unit id="settings.privacy_description" datatype="html">
+        <source>Photos stored locally and optionally synced to your Google Drive</source>
+        <target>Photos stored locally and optionally synced to your Google Drive</target>
+      </trans-unit>
+      <trans-unit id="settings.legal" datatype="html">
+        <source>Legal</source>
+        <target>Legal</target>
+      </trans-unit>
+      <trans-unit id="settings.privacy_policy" datatype="html">
+        <source>Privacy Policy</source>
+        <target>Privacy Policy</target>
+      </trans-unit>
+      <trans-unit id="settings.terms_of_service" datatype="html">
+        <source>Terms of Service</source>
+        <target>Terms of Service</target>
+      </trans-unit>
+      <!-- Testing Features -->
+      <trans-unit id="settings.testing_features" datatype="html">
+        <source>🧪 Testing Features</source>
+        <target>🧪 Testing Features</target>
+      </trans-unit>
+      <trans-unit id="settings.generate_test_data" datatype="html">
+        <source>Generate Test Data</source>
+        <target>Generate Test Data</target>
+      </trans-unit>
+      <trans-unit id="settings.generate_test_data_description" datatype="html">
+        <source>Create 2 years of daily face photos for testing the Play feature</source>
+        <target>Create 2 years of daily face photos for testing the Play feature</target>
+      </trans-unit>
+      <trans-unit id="settings.generate" datatype="html">
+        <source>Generate</source>
+        <target>Generate</target>
+      </trans-unit>
+      <trans-unit id="settings.generating" datatype="html">
+        <source>Generating...</source>
+        <target>Generating...</target>
+      </trans-unit>
+      <trans-unit id="settings.clear_test_data" datatype="html">
+        <source>Clear Test Data</source>
+        <target>Clear Test Data</target>
+      </trans-unit>
+      <trans-unit id="settings.clear_test_data_description" datatype="html">
+        <source>Remove all test-generated photos (keeps real photos)</source>
+        <target>Remove all test-generated photos (keeps real photos)</target>
+      </trans-unit>
+      <trans-unit id="settings.clear_tests" datatype="html">
+        <source>Clear Tests</source>
+        <target>Clear Tests</target>
+      </trans-unit>
+      <trans-unit id="settings.animation_speed" datatype="html">
+        <source>Animation Speed</source>
+        <target>Animation Speed</target>
+      </trans-unit>
+      <trans-unit id="settings.animation_speed_description" datatype="html">
+        <source>Slow down animations for debugging (Current: {{ getAnimationSpeedText() }})</source>
+        <target>Slow down animations for debugging (Current: {{ getAnimationSpeedText() }})</target>
+      </trans-unit>
+      <trans-unit id="settings.speed_options" datatype="html">
+        <source>Speed Options</source>
+        <target>Speed Options</target>
+      </trans-unit>
+      <trans-unit id="settings.speed_options_description" datatype="html">
+        <source>Choose animation slowdown multiplier</source>
+        <target>Choose animation slowdown multiplier</target>
+      </trans-unit>
+      <trans-unit id="settings.speed_normal" datatype="html">
+        <source>Normal</source>
+        <target>Normal</target>
+      </trans-unit>
+      <trans-unit id="settings.speed_2x" datatype="html">
+        <source>2x</source>
+        <target>2x</target>
+      </trans-unit>
+      <trans-unit id="settings.speed_5x" datatype="html">
+        <source>5x</source>
+        <target>5x</target>
+      </trans-unit>
+      <trans-unit id="settings.speed_10x" datatype="html">
+        <source>10x</source>
+        <target>10x</target>
+      </trans-unit>
+      <trans-unit id="settings.hide_testing" datatype="html">
+        <source>Hide Testing</source>
+        <target>Hide Testing</target>
+      </trans-unit>
+      <trans-unit id="settings.hide_testing_description" datatype="html">
+        <source>Hide these testing features</source>
+        <target>Hide these testing features</target>
+      </trans-unit>
+      <trans-unit id="settings.hide" datatype="html">
+        <source>Hide</source>
+        <target>Hide</target>
+      </trans-unit>
+      <!-- Alert Messages -->
+      <trans-unit id="settings.confirm_delete_all_photos" datatype="html">
+        <source>Are you sure you want to delete all photos? This action cannot be undone.</source>
+        <target>Are you sure you want to delete all photos? This action cannot be undone.</target>
+      </trans-unit>
+      <trans-unit id="settings.alert_google_drive_not_configured" datatype="html">
+        <source>Google Drive integration not configured. Please contact the app developer.</source>
+        <target>Google Drive integration not configured. Please contact the app developer.</target>
+      </trans-unit>
+      <trans-unit id="settings.alert_google_drive_connected" datatype="html">
+        <source>Successfully connected to Google Drive!</source>
+        <target>Successfully connected to Google Drive!</target>
+      </trans-unit>
+      <trans-unit id="settings.alert_google_drive_connection_failed" datatype="html">
+        <source>Failed to connect to Google Drive. Please try again.</source>
+        <target>Failed to connect to Google Drive. Please try again.</target>
+      </trans-unit>
+      <trans-unit id="settings.alert_google_drive_connection_error" datatype="html">
+        <source>Error connecting to Google Drive. Please try again later.</source>
+        <target>Error connecting to Google Drive. Please try again later.</target>
+      </trans-unit>
+      <trans-unit id="settings.confirm_disconnect_google_drive" datatype="html">
+        <source>Are you sure you want to disconnect from Google Drive?</source>
+        <target>Are you sure you want to disconnect from Google Drive?</target>
+      </trans-unit>
+      <trans-unit id="settings.alert_connect_google_drive_first" datatype="html">
+        <source>Please connect to Google Drive first</source>
+        <target>Please connect to Google Drive first</target>
+      </trans-unit>
+      <trans-unit id="settings.alert_force_sync_completed" datatype="html">
+        <source>Force sync completed! Check the sync status above for details.</source>
+        <target>Force sync completed! Check the sync status above for details.</target>
+      </trans-unit>
+      <trans-unit id="settings.alert_force_sync_failed" datatype="html">
+        <source>Force sync failed. Please try again.</source>
+        <target>Force sync failed. Please try again.</target>
+      </trans-unit>
+      <trans-unit id="settings.confirm_sync_all_photos" datatype="html">
+        <source>This will upload all your photos to Google Drive. Continue?</source>
+        <target>This will upload all your photos to Google Drive. Continue?</target>
+      </trans-unit>
+      <trans-unit id="settings.alert_sync_completed" datatype="html">
+        <source>Sync completed! ${result.success} photos uploaded successfully.${result.failed > 0 ? ` ${result.failed} photos failed.` : ''}</source>
+        <target>Sync completed! ${result.success} photos uploaded successfully.${result.failed > 0 ? ` ${result.failed} photos failed.` : ''}</target>
+      </trans-unit>
+      <trans-unit id="settings.alert_sync_failed" datatype="html">
+        <source>Sync failed. Please try again.</source>
+        <target>Sync failed. Please try again.</target>
+      </trans-unit>
+      <trans-unit id="settings.alert_testing_features_unlocked" datatype="html">
+        <source>🧪 Testing features unlocked!</source>
+        <target>🧪 Testing features unlocked!</target>
+      </trans-unit>
+      <trans-unit id="settings.confirm_generate_test_data" datatype="html">
+        <source>⚠️ This will generate ~730 test photos (2 years of daily photos). This may take a few minutes and use significant storage space. Continue?</source>
+        <target>⚠️ This will generate ~730 test photos (2 years of daily photos). This may take a few minutes and use significant storage space. Continue?</target>
+      </trans-unit>
+      <trans-unit id="settings.alert_test_data_generation_complete" datatype="html">
+        <source>✅ Test data generation complete!\n\n📸 ${result.success} photos generated\n❌ ${result.failed} failed\n⏱️ Duration: ${duration} seconds\n\nGo to the Play tab to see your 2-year timeline!</source>
+        <target>✅ Test data generation complete!\n\n📸 ${result.success} photos generated\n❌ ${result.failed} failed\n⏱️ Duration: ${duration} seconds\n\nGo to the Play tab to see your 2-year timeline!</target>
+      </trans-unit>
+      <trans-unit id="settings.confirm_clear_test_data" datatype="html">
+        <source>⚠️ This will delete all test-generated photos (keeping real photos). Continue?</source>
+        <target>⚠️ This will delete all test-generated photos (keeping real photos). Continue?</target>
+      </trans-unit>
+      <trans-unit id="settings.alert_test_data_cleared" datatype="html">
+        <source>✅ Test data cleared successfully!</source>
+        <target>✅ Test data cleared successfully!</target>
+      </trans-unit>
+      <trans-unit id="settings.alert_test_data_clear_failed" datatype="html">
+        <source>❌ Failed to clear test data. Check console for details.</source>
+        <target>❌ Failed to clear test data. Check console for details.</target>
+      </trans-unit>
+      <trans-unit id="settings.animation_speed_normal" datatype="html">
+        <source>Normal</source>
+        <target>Normal</target>
+      </trans-unit>
+      <trans-unit id="settings.animation_speed_slower" datatype="html">
+        <source>${this.currentAnimationSpeed}x slower</source>
+        <target>${this.currentAnimationSpeed}x slower</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

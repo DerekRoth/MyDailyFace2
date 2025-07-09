@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Router, NavigationEnd, RouterLink } from '@angular/router';
 import { filter, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
@@ -52,7 +52,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   currentThemePreference: ThemePreference = 'system';
   
   // Language settings
-  currentLanguage = 'en';
+  currentLanguage = '';
   supportedLanguages: SupportedLanguage[] = [];
   
   private destroy$ = new Subject<void>();
@@ -64,8 +64,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
     private testDataGenerator: TestDataGeneratorService,
     private pwaInstallService: PwaInstallService,
     private themeService: ThemeService,
-    private localeService: LocaleService
-  ) {}
+    private localeService: LocaleService,
+    private cdr: ChangeDetectorRef
+  ) {
+    // Initialize language settings immediately
+    this.supportedLanguages = this.localeService.supportedLanguages;
+    this.currentLanguage = this.localeService.currentLanguage;
+  }
 
   ngOnInit() {
     this.updatePhotoCount();
@@ -111,9 +116,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
     // Load theme preference
     this.currentThemePreference = this.themeService.getCurrentPreference();
     
-    // Load language settings
-    this.supportedLanguages = this.localeService.supportedLanguages;
-    this.currentLanguage = this.localeService.currentLanguage;
+    // Subscribe to language changes
+    this.localeService.currentLanguage$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(language => {
+        this.currentLanguage = language;
+        this.cdr.detectChanges(); // Force change detection
+      });
     
     // Update photo count when navigating to settings
     this.router.events
@@ -138,7 +147,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   async clearAllPhotos() {
-    if (confirm('Are you sure you want to delete all photos? This action cannot be undone.')) {
+    if (confirm($localize`:@@settings.confirm_delete_all_photos:Are you sure you want to delete all photos? This action cannot be undone.`)) {
       await this.cameraService.deleteAllPhotos();
       await this.updatePhotoCount();
     }
@@ -147,25 +156,25 @@ export class SettingsComponent implements OnInit, OnDestroy {
   // Google Drive Methods
   async connectGoogleDrive() {
     if (!this.isGoogleDriveConfigured) {
-      alert('Google Drive integration not configured. Please contact the app developer.');
+      alert($localize`:@@settings.alert_google_drive_not_configured:Google Drive integration not configured. Please contact the app developer.`);
       return;
     }
 
     try {
       const success = await this.googleDriveService.signIn();
       if (success) {
-        alert('Successfully connected to Google Drive!');
+        alert($localize`:@@settings.alert_google_drive_connected:Successfully connected to Google Drive!`);
       } else {
-        alert('Failed to connect to Google Drive. Please try again.');
+        alert($localize`:@@settings.alert_google_drive_connection_failed:Failed to connect to Google Drive. Please try again.`);
       }
     } catch (error) {
       console.error('Google Drive connection error:', error);
-      alert('Error connecting to Google Drive. Please try again later.');
+      alert($localize`:@@settings.alert_google_drive_connection_error:Error connecting to Google Drive. Please try again later.`);
     }
   }
 
   async disconnectGoogleDrive() {
-    if (confirm('Are you sure you want to disconnect from Google Drive?')) {
+    if (confirm($localize`:@@settings.confirm_disconnect_google_drive:Are you sure you want to disconnect from Google Drive?`)) {
       await this.googleDriveService.signOut();
       this.toggleAutoSync(false);
     }
@@ -182,26 +191,26 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   async forceSync() {
     if (!this.syncStatus.isAuthenticated) {
-      alert('Please connect to Google Drive first');
+      alert($localize`:@@settings.alert_connect_google_drive_first:Please connect to Google Drive first`);
       return;
     }
 
     try {
       await this.googleDriveService.forceSync();
-      alert('Force sync completed! Check the sync status above for details.');
+      alert($localize`:@@settings.alert_force_sync_completed:Force sync completed! Check the sync status above for details.`);
     } catch (error) {
       console.error('Force sync failed:', error);
-      alert('Force sync failed. Please try again.');
+      alert($localize`:@@settings.alert_force_sync_failed:Force sync failed. Please try again.`);
     }
   }
 
   async syncAllPhotos() {
     if (!this.syncStatus.isAuthenticated) {
-      alert('Please connect to Google Drive first');
+      alert($localize`:@@settings.alert_connect_google_drive_first:Please connect to Google Drive first`);
       return;
     }
 
-    if (confirm('This will upload all your photos to Google Drive. Continue?')) {
+    if (confirm($localize`:@@settings.confirm_sync_all_photos:This will upload all your photos to Google Drive. Continue?`)) {
       try {
         // Update sync status to show syncing
         this.googleDriveService['updateSyncStatus']({ isSyncing: true });
@@ -214,14 +223,14 @@ export class SettingsComponent implements OnInit, OnDestroy {
           error: null
         });
         
-        alert(`Sync completed! ${result.success} photos uploaded successfully.${result.failed > 0 ? ` ${result.failed} photos failed.` : ''}`);
+        alert($localize`:@@settings.alert_sync_completed:Sync completed! ${result.success} photos uploaded successfully.${result.failed > 0 ? ` ${result.failed} photos failed.` : ''}`);
       } catch (error) {
         console.error('Sync failed:', error);
         this.googleDriveService['updateSyncStatus']({ 
           isSyncing: false,
           error: error instanceof Error ? error.message : 'Sync failed'
         });
-        alert('Sync failed. Please try again.');
+        alert($localize`:@@settings.alert_sync_failed:Sync failed. Please try again.`);
       }
     }
   }
@@ -235,7 +244,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       this.versionTapCount = 0;
       // Save debug visibility state
       localStorage.setItem('showTestingFeatures', 'true');
-      alert('🧪 Testing features unlocked!');
+      alert($localize`:@@settings.alert_testing_features_unlocked:🧪 Testing features unlocked!`);
     }
     
     // Reset counter after 3 seconds of no taps
@@ -249,11 +258,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   async generateTestData() {
     if (this.isGeneratingTestData) return;
     
-    const confirmed = confirm(
-      '⚠️ This will generate ~730 test photos (2 years of daily photos). ' +
-      'This may take a few minutes and use significant storage space. ' +
-      'Continue?'
-    );
+    const confirmed = confirm($localize`:@@settings.confirm_generate_test_data:⚠️ This will generate ~730 test photos (2 years of daily photos). This may take a few minutes and use significant storage space. Continue?`);
     
     if (!confirmed) return;
     
@@ -270,13 +275,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       
       await this.updatePhotoCount();
       
-      alert(
-        `✅ Test data generation complete!\n\n` +
-        `📸 ${result.success} photos generated\n` +
-        `❌ ${result.failed} failed\n` +
-        `⏱️ Duration: ${duration} seconds\n\n` +
-        `Go to the Play tab to see your 2-year timeline!`
-      );
+      alert($localize`:@@settings.alert_test_data_generation_complete:✅ Test data generation complete!\n\n📸 ${result.success} photos generated\n❌ ${result.failed} failed\n⏱️ Duration: ${duration} seconds\n\nGo to the Play tab to see your 2-year timeline!`);
       
       console.log('🧪 Test data generation completed:', result);
     } catch (error) {
@@ -288,20 +287,17 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   async clearTestData() {
-    const confirmed = confirm(
-      '⚠️ This will delete all test-generated photos (keeping real photos). ' +
-      'Continue?'
-    );
+    const confirmed = confirm($localize`:@@settings.confirm_clear_test_data:⚠️ This will delete all test-generated photos (keeping real photos). Continue?`);
     
     if (!confirmed) return;
     
     try {
       await this.testDataGenerator.clearTestData();
       await this.updatePhotoCount();
-      alert('✅ Test data cleared successfully!');
+      alert($localize`:@@settings.alert_test_data_cleared:✅ Test data cleared successfully!`);
     } catch (error) {
       console.error('Error clearing test data:', error);
-      alert('❌ Failed to clear test data. Check console for details.');
+      alert($localize`:@@settings.alert_test_data_clear_failed:❌ Failed to clear test data. Check console for details.`);
     }
   }
 
@@ -323,8 +319,30 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   getAnimationSpeedText(): string {
-    if (this.currentAnimationSpeed === 1) return 'Normal';
-    return `${this.currentAnimationSpeed}x slower`;
+    if (this.currentAnimationSpeed === 1) {
+      return this.localeService.getTranslation('settings.animation_speed_normal');
+    }
+    return this.localeService.getTranslation('settings.animation_speed_slower').replace('{speed}', this.currentAnimationSpeed.toString());
+  }
+
+  getLastSyncText(): string {
+    if (this.syncStatus.lastSync) {
+      const template = this.localeService.getTranslation('settings.last_sync');
+      const dateStr = this.syncStatus.lastSync.toLocaleString();
+      return template.replace('{date}', dateStr);
+    }
+    return '';
+  }
+
+  getOverlayOpacityText(): string {
+    const template = this.localeService.getTranslation('settings.overlay_opacity_description');
+    const opacityPercent = (this.overlayOpacity * 100).toFixed(0);
+    return template.replace('{opacity}', opacityPercent);
+  }
+
+  getPhotosStoredText(): string {
+    const template = this.localeService.getTranslation('settings.photos_saved_locally');
+    return template.replace('{count}', this.photoCount.toString());
   }
 
   private loadOverlaySettings() {
@@ -369,7 +387,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   onLanguageChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     const languageCode = target.value;
-    this.currentLanguage = languageCode;
+    // Don't update currentLanguage directly - let the subscription handle it
     this.localeService.setLanguage(languageCode);
   }
 }

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { LocaleService } from './locale.service';
 
 export interface InstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -14,7 +15,7 @@ export class PwaInstallService {
   private installable$ = new BehaviorSubject<boolean>(false);
   private installed$ = new BehaviorSubject<boolean>(false);
 
-  constructor() {
+  constructor(private localeService: LocaleService) {
     this.initializeInstallPrompt();
     this.checkIfInstalled();
   }
@@ -103,23 +104,23 @@ export class PwaInstallService {
       // Chrome desktop
       if (!userAgent.includes('mobile')) {
         return {
-          platform: 'Chrome Desktop',
+          platform: this.localeService.getTranslation('install.chrome_desktop'),
           instructions: [
-            'Look for the install icon (⬇️ or ⊕) in the address bar',
-            'Click the icon and select "Install MyDailyFace"',
-            'Or click the three dots menu (⋮) → "Install MyDailyFace"',
-            'The app will be added to your desktop and Start menu'
+            this.localeService.getTranslation('install.chrome_desktop_1'),
+            this.localeService.getTranslation('install.chrome_desktop_2'),
+            this.localeService.getTranslation('install.chrome_desktop_3'),
+            this.localeService.getTranslation('install.chrome_desktop_4')
           ]
         };
       } else {
         // Chrome mobile
         return {
-          platform: 'Chrome Mobile',
+          platform: this.localeService.getTranslation('install.chrome_mobile'),
           instructions: [
-            'Tap the three dots menu (⋮) in the top right',
-            'Select "Add to Home screen" or "Install app"',
-            'Tap "Add" to confirm',
-            'The app will appear on your home screen'
+            this.localeService.getTranslation('install.chrome_mobile_1'),
+            this.localeService.getTranslation('install.chrome_mobile_2'),
+            this.localeService.getTranslation('install.chrome_mobile_3'),
+            this.localeService.getTranslation('install.chrome_mobile_4')
           ]
         };
       }
@@ -127,53 +128,53 @@ export class PwaInstallService {
       // Safari mobile
       if (userAgent.includes('mobile')) {
         return {
-          platform: 'Safari Mobile',
+          platform: this.localeService.getTranslation('install.safari_mobile'),
           instructions: [
-            'Tap the Share button (□↗) at the bottom of the screen',
-            'Scroll down and tap "Add to Home Screen"',
-            'Tap "Add" to confirm',
-            'The app will appear on your home screen'
+            this.localeService.getTranslation('install.safari_mobile_1'),
+            this.localeService.getTranslation('install.safari_mobile_2'),
+            this.localeService.getTranslation('install.safari_mobile_3'),
+            this.localeService.getTranslation('install.safari_mobile_4')
           ]
         };
       } else {
         // Safari desktop
         return {
-          platform: 'Safari Desktop',
+          platform: this.localeService.getTranslation('install.safari_desktop'),
           instructions: [
-            'Click Safari menu → "Add to Dock"',
-            'Or drag the URL to your dock',
-            'The app will open in its own window'
+            this.localeService.getTranslation('install.safari_desktop_1'),
+            this.localeService.getTranslation('install.safari_desktop_2'),
+            this.localeService.getTranslation('install.safari_desktop_3')
           ]
         };
       }
     } else if (userAgent.includes('firefox')) {
       return {
-        platform: 'Firefox',
+        platform: this.localeService.getTranslation('install.firefox'),
         instructions: [
-          'Click the three lines menu (☰) in the top right',
-          'Select "Install MyDailyFace"',
-          'Or look for the install icon in the address bar',
-          'Click "Install" to add to your system'
+          this.localeService.getTranslation('install.firefox_1'),
+          this.localeService.getTranslation('install.firefox_2'),
+          this.localeService.getTranslation('install.firefox_3'),
+          this.localeService.getTranslation('install.firefox_4')
         ]
       };
     } else if (userAgent.includes('edg')) {
       return {
-        platform: 'Microsoft Edge',
+        platform: this.localeService.getTranslation('install.edge'),
         instructions: [
-          'Look for the install icon (⊕) in the address bar',
-          'Click the icon and select "Install MyDailyFace"',
-          'Or click the three dots menu (⋯) → "Apps" → "Install MyDailyFace"',
-          'The app will be added to your desktop and Start menu'
+          this.localeService.getTranslation('install.edge_1'),
+          this.localeService.getTranslation('install.edge_2'),
+          this.localeService.getTranslation('install.edge_3'),
+          this.localeService.getTranslation('install.edge_4')
         ]
       };
     } else {
       return {
-        platform: 'Your Browser',
+        platform: this.localeService.getTranslation('install.generic'),
         instructions: [
-          'Look for an install icon in the address bar',
-          'Check your browser\'s menu for "Install" or "Add to Home Screen"',
-          'The app can be installed for offline use',
-          'Contact support if you need help with installation'
+          this.localeService.getTranslation('install.generic_1'),
+          this.localeService.getTranslation('install.generic_2'),
+          this.localeService.getTranslation('install.generic_3'),
+          this.localeService.getTranslation('install.generic_4')
         ]
       };
     }

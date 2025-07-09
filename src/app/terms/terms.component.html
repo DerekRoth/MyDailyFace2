@@ -1,89 +1,89 @@
 <div class="legal-page">
   <div class="back-button">
-    <a routerLink="/settings">← Back to Settings</a>
+    <a routerLink="/settings">← {{ 'legal.back_to_settings' | translate }}</a>
   </div>
   
-  <h1>Terms of Service</h1>
-  <p><strong>Last updated:</strong> {{lastUpdated}}</p>
+  <h1>{{ 'terms.title' | translate }}</h1>
+  <p><strong>{{ getLastUpdatedText() }}</strong></p>
 
-  <h2>Welcome to MyDailyFace</h2>
-  <p>These Terms of Service govern your use of the MyDailyFace web application ("the App"). By using the App, you agree to these terms.</p>
+  <h2>{{ 'terms.welcome_title' | translate }}</h2>
+  <p>{{ 'terms.welcome_text' | translate }}</p>
 
-  <h2>Description of Service</h2>
-  <p>MyDailyFace is a personal photo diary application that allows you to:</p>
+  <h2>{{ 'terms.service_title' | translate }}</h2>
+  <p>{{ 'terms.service_text' | translate }}</p>
   <ul>
-    <li>Capture daily selfies using your device's camera</li>
-    <li>Store photos locally in your browser</li>
-    <li>Optionally backup photos to your personal Google Drive</li>
-    <li>View and play back your photo collection</li>
+    <li>{{ 'terms.service_item1' | translate }}</li>
+    <li>{{ 'terms.service_item2' | translate }}</li>
+    <li>{{ 'terms.service_item3' | translate }}</li>
+    <li>{{ 'terms.service_item4' | translate }}</li>
   </ul>
 
-  <h2>Your Responsibilities</h2>
-  <p>When using MyDailyFace, you agree to:</p>
+  <h2>{{ 'terms.responsibilities_title' | translate }}</h2>
+  <p>{{ 'terms.responsibilities_text' | translate }}</p>
   <ul>
-    <li>Use the App only for personal, non-commercial purposes</li>
-    <li>Not use the App for any illegal or harmful activities</li>
-    <li>Be responsible for the content of photos you capture</li>
-    <li>Respect the privacy and rights of others</li>
-    <li>Keep your Google Drive credentials secure (if using backup)</li>
+    <li>{{ 'terms.responsibilities_item1' | translate }}</li>
+    <li>{{ 'terms.responsibilities_item2' | translate }}</li>
+    <li>{{ 'terms.responsibilities_item3' | translate }}</li>
+    <li>{{ 'terms.responsibilities_item4' | translate }}</li>
+    <li>{{ 'terms.responsibilities_item5' | translate }}</li>
   </ul>
 
-  <h2>Data and Privacy</h2>
-  <p>Your data belongs to you:</p>
+  <h2>{{ 'terms.privacy_title' | translate }}</h2>
+  <p>{{ 'terms.privacy_text' | translate }}</p>
   <ul>
-    <li>Photos are stored locally on your device</li>
-    <li>Google Drive backup is optional and goes to your personal Drive</li>
-    <li>You can delete your data at any time</li>
-    <li>See our <a routerLink="/privacy">Privacy Policy</a> for details</li>
+    <li>{{ 'terms.privacy_item1' | translate }}</li>
+    <li>{{ 'terms.privacy_item2' | translate }}</li>
+    <li>{{ 'terms.privacy_item3' | translate }}</li>
+    <li>{{ 'terms.privacy_item4' | translate }} <a routerLink="/privacy">{{ 'settings.privacy_policy' | translate }}</a></li>
   </ul>
 
-  <h2>Camera Access</h2>
-  <p>The App requires camera access to function. You can:</p>
+  <h2>{{ 'terms.camera_title' | translate }}</h2>
+  <p>{{ 'terms.camera_text' | translate }}</p>
   <ul>
-    <li>Grant or deny camera permissions through your browser</li>
-    <li>Revoke camera access at any time in browser settings</li>
-    <li>Use the App only when you choose to take photos</li>
+    <li>{{ 'terms.camera_item1' | translate }}</li>
+    <li>{{ 'terms.camera_item2' | translate }}</li>
+    <li>{{ 'terms.camera_item3' | translate }}</li>
   </ul>
 
-  <h2>Google Drive Integration</h2>
-  <p>If you enable Google Drive backup:</p>
+  <h2>{{ 'terms.drive_title' | translate }}</h2>
+  <p>{{ 'terms.drive_text' | translate }}</p>
   <ul>
-    <li>You authorize the App to create a "MyDailyFace" folder in your Drive</li>
-    <li>You can revoke this access through your Google Account settings</li>
-    <li>The App only accesses the folder it creates</li>
-    <li>You remain in full control of your Google Drive data</li>
+    <li>{{ 'terms.drive_item1' | translate }}</li>
+    <li>{{ 'terms.drive_item2' | translate }}</li>
+    <li>{{ 'terms.drive_item3' | translate }}</li>
+    <li>{{ 'terms.drive_item4' | translate }}</li>
   </ul>
 
-  <h2>Availability</h2>
-  <p>This App is provided "as is" without warranties:</p>
+  <h2>{{ 'terms.availability_title' | translate }}</h2>
+  <p>{{ 'terms.availability_text' | translate }}</p>
   <ul>
-    <li>We strive to keep the App available but cannot guarantee uptime</li>
-    <li>Features may be added, modified, or removed</li>
-    <li>You should backup important photos independently</li>
+    <li>{{ 'terms.availability_item1' | translate }}</li>
+    <li>{{ 'terms.availability_item2' | translate }}</li>
+    <li>{{ 'terms.availability_item3' | translate }}</li>
   </ul>
 
-  <h2>Limitation of Liability</h2>
-  <p>To the maximum extent permitted by law:</p>
+  <h2>{{ 'terms.liability_title' | translate }}</h2>
+  <p>{{ 'terms.liability_text' | translate }}</p>
   <ul>
-    <li>We are not liable for any data loss or technical issues</li>
-    <li>Use of the App is at your own risk</li>
-    <li>We are not responsible for Google Drive service availability</li>
+    <li>{{ 'terms.liability_item1' | translate }}</li>
+    <li>{{ 'terms.liability_item2' | translate }}</li>
+    <li>{{ 'terms.liability_item3' | translate }}</li>
   </ul>
 
-  <h2>Termination</h2>
-  <p>You can stop using the App at any time by:</p>
+  <h2>{{ 'terms.termination_title' | translate }}</h2>
+  <p>{{ 'terms.termination_text' | translate }}</p>
   <ul>
-    <li>Closing the App in your browser</li>
-    <li>Clearing your browser data</li>
-    <li>Revoking Google Drive access (if enabled)</li>
+    <li>{{ 'terms.termination_item1' | translate }}</li>
+    <li>{{ 'terms.termination_item2' | translate }}</li>
+    <li>{{ 'terms.termination_item3' | translate }}</li>
   </ul>
 
-  <h2>Changes to Terms</h2>
-  <p>We may update these terms occasionally. Continued use of the App after changes constitutes acceptance of the updated terms.</p>
+  <h2>{{ 'terms.changes_title' | translate }}</h2>
+  <p>{{ 'terms.changes_text' | translate }}</p>
 
-  <h2>Contact</h2>
-  <p>For questions about these terms, contact us at: <a href="mailto:{{contactEmail}}">{{contactEmail}}</a></p>
+  <h2>{{ 'terms.contact_title' | translate }}</h2>
+  <p>{{ getContactText() }}</p>
 
-  <h2>Governing Law</h2>
-  <p>These terms are governed by the laws of the jurisdiction where the App is operated, without regard to conflict of law principles.</p>
+  <h2>{{ 'terms.law_title' | translate }}</h2>
+  <p>{{ 'terms.law_text' | translate }}</p>
 </div>

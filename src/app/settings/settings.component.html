@@ -225,8 +225,8 @@
       <div class="install-instructions-overlay" *ngIf="showInstallInstructions" (click)="closeInstallInstructions()">
         <div class="install-instructions-modal" (click)="$event.stopPropagation()">
           <div class="modal-header">
-            <h3>Install MyDailyFace</h3>
-            <button class="close-button" (click)="closeInstallInstructions()">×</button>
+            <h3>{{ 'settings.install_modal_title' | translate }}</h3>
+            <button class="close-button" (click)="closeInstallInstructions()">{{ 'settings.close' | translate }}</button>
           </div>
           <div class="modal-content">
             <h4>{{ installInstructions.platform }}</h4>
@@ -234,12 +234,12 @@
               <li *ngFor="let instruction of installInstructions.instructions">{{ instruction }}</li>
             </ol>
             <div class="modal-footer">
-              <p><strong>Benefits of installing:</strong></p>
+              <p><strong>{{ 'settings.benefits_of_installing' | translate }}</strong></p>
               <ul>
-                <li>Faster loading and better performance</li>
-                <li>Works offline for taking photos</li>
-                <li>Quick access from your home screen</li>
-                <li>Full-screen experience without browser bars</li>
+                <li>{{ 'settings.benefit_performance' | translate }}</li>
+                <li>{{ 'settings.benefit_offline' | translate }}</li>
+                <li>{{ 'settings.benefit_access' | translate }}</li>
+                <li>{{ 'settings.benefit_fullscreen' | translate }}</li>
               </ul>
             </div>
           </div>
@@ -277,43 +277,43 @@
 
     <!-- Hidden Testing Section -->
     <div class="settings-section" *ngIf="showTestingFeatures">
-      <h2 style="color: #ff9500;">🧪 Testing Features</h2>
+      <h2 style="color: #ff9500;">🧪 {{ 'settings.testing_features' | translate }}</h2>
       
       <div class="setting-item">
         <div class="setting-info">
-          <h3>Generate Test Data</h3>
-          <p>Create 2 years of daily face photos for testing the Play feature</p>
+          <h3>{{ 'settings.generate_test_data' | translate }}</h3>
+          <p>{{ 'settings.generate_test_data_description' | translate }}</p>
         </div>
         <button 
           class="test-button" 
           (click)="generateTestData()"
           [disabled]="isGeneratingTestData">
-          <span *ngIf="!isGeneratingTestData">Generate</span>
-          <span *ngIf="isGeneratingTestData">Generating...</span>
+          <span *ngIf="!isGeneratingTestData">{{ 'settings.generate' | translate }}</span>
+          <span *ngIf="isGeneratingTestData">{{ 'settings.generating' | translate }}</span>
         </button>
       </div>
 
       <div class="setting-item">
         <div class="setting-info">
-          <h3>Clear Test Data</h3>
-          <p>Remove all test-generated photos (keeps real photos)</p>
+          <h3>{{ 'settings.clear_test_data' | translate }}</h3>
+          <p>{{ 'settings.clear_test_data_description' | translate }}</p>
         </div>
         <button class="danger-button" (click)="clearTestData()">
-          <span>Clear Tests</span>
+          <span>{{ 'settings.clear_tests' | translate }}</span>
         </button>
       </div>
 
       <div class="setting-item">
         <div class="setting-info">
-          <h3>Animation Speed</h3>
-          <p>Slow down animations for debugging (Current: {{ getAnimationSpeedText() }})</p>
+          <h3>{{ 'settings.animation_speed' | translate }}</h3>
+          <p>{{ getAnimationSpeedDescriptionText() }}</p>
         </div>
       </div>
       
       <div class="setting-item">
         <div class="setting-info">
-          <h3>Speed Options</h3>
-          <p>Choose animation slowdown multiplier</p>
+          <h3>{{ 'settings.speed_options' | translate }}</h3>
+          <p>{{ 'settings.speed_options_description' | translate }}</p>
         </div>
         <div class="speed-controls">
           <button class="speed-button" 
@@ -341,11 +341,11 @@
 
       <div class="setting-item">
         <div class="setting-info">
-          <h3>Hide Testing</h3>
-          <p>Hide these testing features</p>
+          <h3>{{ 'settings.hide_testing' | translate }}</h3>
+          <p>{{ 'settings.hide_testing_description' | translate }}</p>
         </div>
         <button class="cancel-button" (click)="hideTestingFeatures()">
-          <span>Hide</span>
+          <span>{{ 'settings.hide' | translate }}</span>
         </button>
       </div>
     </div>

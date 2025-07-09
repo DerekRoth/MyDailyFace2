@@ -147,7 +147,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   async clearAllPhotos() {
-    if (confirm($localize`:@@settings.confirm_delete_all_photos:Are you sure you want to delete all photos? This action cannot be undone.`)) {
+    if (confirm(this.localeService.getTranslation('settings.confirm_delete_all_photos'))) {
       await this.cameraService.deleteAllPhotos();
       await this.updatePhotoCount();
     }
@@ -156,25 +156,25 @@ export class SettingsComponent implements OnInit, OnDestroy {
   // Google Drive Methods
   async connectGoogleDrive() {
     if (!this.isGoogleDriveConfigured) {
-      alert($localize`:@@settings.alert_google_drive_not_configured:Google Drive integration not configured. Please contact the app developer.`);
+      alert(this.localeService.getTranslation('settings.alert_google_drive_not_configured'));
       return;
     }
 
     try {
       const success = await this.googleDriveService.signIn();
       if (success) {
-        alert($localize`:@@settings.alert_google_drive_connected:Successfully connected to Google Drive!`);
+        alert(this.localeService.getTranslation('settings.alert_google_drive_connected'));
       } else {
-        alert($localize`:@@settings.alert_google_drive_connection_failed:Failed to connect to Google Drive. Please try again.`);
+        alert(this.localeService.getTranslation('settings.alert_google_drive_connection_failed'));
       }
     } catch (error) {
       console.error('Google Drive connection error:', error);
-      alert($localize`:@@settings.alert_google_drive_connection_error:Error connecting to Google Drive. Please try again later.`);
+      alert(this.localeService.getTranslation('settings.alert_google_drive_connection_error'));
     }
   }
 
   async disconnectGoogleDrive() {
-    if (confirm($localize`:@@settings.confirm_disconnect_google_drive:Are you sure you want to disconnect from Google Drive?`)) {
+    if (confirm(this.localeService.getTranslation('settings.confirm_disconnect_google_drive'))) {
       await this.googleDriveService.signOut();
       this.toggleAutoSync(false);
     }
@@ -191,26 +191,26 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   async forceSync() {
     if (!this.syncStatus.isAuthenticated) {
-      alert($localize`:@@settings.alert_connect_google_drive_first:Please connect to Google Drive first`);
+      alert(this.localeService.getTranslation('settings.alert_connect_google_drive_first'));
       return;
     }
 
     try {
       await this.googleDriveService.forceSync();
-      alert($localize`:@@settings.alert_force_sync_completed:Force sync completed! Check the sync status above for details.`);
+      alert(this.localeService.getTranslation('settings.alert_force_sync_completed'));
     } catch (error) {
       console.error('Force sync failed:', error);
-      alert($localize`:@@settings.alert_force_sync_failed:Force sync failed. Please try again.`);
+      alert(this.localeService.getTranslation('settings.alert_force_sync_failed'));
     }
   }
 
   async syncAllPhotos() {
     if (!this.syncStatus.isAuthenticated) {
-      alert($localize`:@@settings.alert_connect_google_drive_first:Please connect to Google Drive first`);
+      alert(this.localeService.getTranslation('settings.alert_connect_google_drive_first'));
       return;
     }
 
-    if (confirm($localize`:@@settings.confirm_sync_all_photos:This will upload all your photos to Google Drive. Continue?`)) {
+    if (confirm(this.localeService.getTranslation('settings.confirm_sync_all_photos'))) {
       try {
         // Update sync status to show syncing
         this.googleDriveService['updateSyncStatus']({ isSyncing: true });
@@ -223,14 +223,16 @@ export class SettingsComponent implements OnInit, OnDestroy {
           error: null
         });
         
-        alert($localize`:@@settings.alert_sync_completed:Sync completed! ${result.success} photos uploaded successfully.${result.failed > 0 ? ` ${result.failed} photos failed.` : ''}`);
+        const template = this.localeService.getTranslation('settings.alert_sync_completed');
+        const failedText = result.failed > 0 ? ` ${result.failed} photos failed.` : '';
+        alert(template.replace('{success}', result.success.toString()).replace('{failed}', failedText));
       } catch (error) {
         console.error('Sync failed:', error);
         this.googleDriveService['updateSyncStatus']({ 
           isSyncing: false,
           error: error instanceof Error ? error.message : 'Sync failed'
         });
-        alert($localize`:@@settings.alert_sync_failed:Sync failed. Please try again.`);
+        alert(this.localeService.getTranslation('settings.alert_sync_failed'));
       }
     }
   }
@@ -244,7 +246,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       this.versionTapCount = 0;
       // Save debug visibility state
       localStorage.setItem('showTestingFeatures', 'true');
-      alert($localize`:@@settings.alert_testing_features_unlocked:🧪 Testing features unlocked!`);
+      alert(this.localeService.getTranslation('settings.alert_testing_features_unlocked'));
     }
     
     // Reset counter after 3 seconds of no taps
@@ -258,7 +260,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   async generateTestData() {
     if (this.isGeneratingTestData) return;
     
-    const confirmed = confirm($localize`:@@settings.confirm_generate_test_data:⚠️ This will generate ~730 test photos (2 years of daily photos). This may take a few minutes and use significant storage space. Continue?`);
+    const confirmed = confirm(this.localeService.getTranslation('settings.confirm_generate_test_data'));
     
     if (!confirmed) return;
     
@@ -275,29 +277,33 @@ export class SettingsComponent implements OnInit, OnDestroy {
       
       await this.updatePhotoCount();
       
-      alert($localize`:@@settings.alert_test_data_generation_complete:✅ Test data generation complete!\n\n📸 ${result.success} photos generated\n❌ ${result.failed} failed\n⏱️ Duration: ${duration} seconds\n\nGo to the Play tab to see your 2-year timeline!`);
+      const template = this.localeService.getTranslation('settings.alert_test_data_generation_complete');
+      alert(template
+        .replace('{success}', result.success.toString())
+        .replace('{failed}', result.failed.toString())
+        .replace('{duration}', duration.toString()));
       
       console.log('🧪 Test data generation completed:', result);
     } catch (error) {
       console.error('Test data generation failed:', error);
-      alert('❌ Test data generation failed. Check console for details.');
+      alert(this.localeService.getTranslation('settings.alert_test_data_clear_failed'));
     } finally {
       this.isGeneratingTestData = false;
     }
   }
 
   async clearTestData() {
-    const confirmed = confirm($localize`:@@settings.confirm_clear_test_data:⚠️ This will delete all test-generated photos (keeping real photos). Continue?`);
+    const confirmed = confirm(this.localeService.getTranslation('settings.confirm_clear_test_data'));
     
     if (!confirmed) return;
     
     try {
       await this.testDataGenerator.clearTestData();
       await this.updatePhotoCount();
-      alert($localize`:@@settings.alert_test_data_cleared:✅ Test data cleared successfully!`);
+      alert(this.localeService.getTranslation('settings.alert_test_data_cleared'));
     } catch (error) {
       console.error('Error clearing test data:', error);
-      alert($localize`:@@settings.alert_test_data_clear_failed:❌ Failed to clear test data. Check console for details.`);
+      alert(this.localeService.getTranslation('settings.alert_test_data_clear_failed'));
     }
   }
 
@@ -343,6 +349,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
   getPhotosStoredText(): string {
     const template = this.localeService.getTranslation('settings.photos_saved_locally');
     return template.replace('{count}', this.photoCount.toString());
+  }
+
+  getAnimationSpeedDescriptionText(): string {
+    const template = this.localeService.getTranslation('settings.animation_speed_description');
+    return template.replace('{speed}', this.getAnimationSpeedText());
   }
 
   private loadOverlaySettings() {

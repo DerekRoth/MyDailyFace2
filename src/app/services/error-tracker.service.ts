@@ -14,6 +14,7 @@ export interface ErrorEntry {
 })
 export class ErrorTrackerService {
   private errors$ = new BehaviorSubject<ErrorEntry[]>([]);
+  private overlayVisible$ = new BehaviorSubject<boolean>(false);
   private maxErrors = 50; // Keep only last 50 errors
   private originalConsole = {
     error: console.error.bind(console),
@@ -29,6 +30,12 @@ export class ErrorTrackerService {
     if (savedDebugVisibility === 'true') {
       this.startTracking();
     }
+    
+    // Load overlay visibility state
+    const savedOverlayVisibility = localStorage.getItem('showErrorOverlay');
+    if (savedOverlayVisibility === 'true') {
+      this.overlayVisible$.next(true);
+    }
   }
 
   get errors() {
@@ -37,6 +44,14 @@ export class ErrorTrackerService {
 
   get currentErrors() {
     return this.errors$.value;
+  }
+
+  get overlayVisible() {
+    return this.overlayVisible$.asObservable();
+  }
+
+  get isOverlayVisible() {
+    return this.overlayVisible$.value;
   }
 
   startTracking() {
@@ -122,5 +137,16 @@ export class ErrorTrackerService {
 
   clearErrors() {
     this.errors$.next([]);
+  }
+
+  toggleOverlay() {
+    const newVisibility = !this.overlayVisible$.value;
+    this.overlayVisible$.next(newVisibility);
+    localStorage.setItem('showErrorOverlay', newVisibility.toString());
+  }
+
+  setOverlayVisible(visible: boolean) {
+    this.overlayVisible$.next(visible);
+    localStorage.setItem('showErrorOverlay', visible.toString());
   }
 }

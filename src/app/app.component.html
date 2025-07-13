@@ -33,4 +33,30 @@
       <span>{{ 'nav.settings' | translate }}</span>
     </a>
   </nav>
+
+  <!-- Error Overlay -->
+  <div class="error-overlay" *ngIf="showErrorOverlay">
+    <div class="error-overlay-header">
+      <h3>Console Errors ({{ errors.length }})</h3>
+      <div class="error-overlay-controls">
+        <button class="clear-button" (click)="clearErrors()">Clear</button>
+        <button class="close-button" (click)="toggleErrorOverlay()">×</button>
+      </div>
+    </div>
+    <div class="error-overlay-content">
+      <div *ngIf="errors.length === 0" class="no-errors">
+        No errors logged yet
+      </div>
+      <div *ngFor="let error of errors; trackBy: trackByErrorIndex" 
+           class="error-entry" 
+           [ngClass]="getErrorTypeClass(error.type)">
+        <div class="error-header">
+          <span class="error-type">{{ error.type.toUpperCase() }}</span>
+          <span class="error-time">{{ formatErrorTime(error.timestamp) }}</span>
+        </div>
+        <div class="error-message">{{ error.message }}</div>
+        <div class="error-source" *ngIf="error.source">{{ error.source }}</div>
+      </div>
+    </div>
+  </div>
 </div>

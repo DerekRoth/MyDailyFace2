@@ -136,6 +136,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
       .subscribe(errors => {
         this.errors = errors;
       });
+
+    // Subscribe to overlay visibility
+    this.errorTracker.overlayVisible
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(visible => {
+        this.showErrorOverlay = visible;
+      });
     
     // Update photo count when navigating to settings
     this.router.events
@@ -351,10 +358,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   // Error tracking methods
   toggleErrorOverlay() {
-    this.showErrorOverlay = !this.showErrorOverlay;
-    if (this.showErrorOverlay) {
-      this.errorTracker.startTracking();
-    }
+    this.errorTracker.toggleOverlay();
   }
 
   clearErrors() {

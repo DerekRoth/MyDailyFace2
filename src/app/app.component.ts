@@ -1,30 +1,62 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { filter, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 import { SwUpdate } from '@angular/service-worker';
+import { CommonModule } from '@angular/common';
 import { TranslatePipe } from './pipes/translate.pipe';
+import { ErrorTrackerService, ErrorEntry } from './services/error-tracker.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe, CommonModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   title = 'MyDailyFace';
+  
+  // Error overlay state
+  showErrorOverlay = false;
+  errors: ErrorEntry[] = [];
+  
+  private destroy$ = new Subject<void>();
 
-  constructor(private router: Router, private swUpdate: SwUpdate) {}
+  constructor(
+    private router: Router, 
+    private swUpdate: SwUpdate,
+    private errorTracker: ErrorTrackerService
+  ) {}
 
   ngOnInit() {
     // Debug navigation
     this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
+      .pipe(filter(event => event instanceof NavigationEnd), takeUntil(this.destroy$))
       .subscribe((event: NavigationEnd) => {
         console.log('Navigation to:', event.url);
       });
 
+    // Subscribe to error tracking
+    this.errorTracker.errors
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(errors => {
+        this.errors = errors;
+      });
+
+    // Subscribe to overlay visibility
+    this.errorTracker.overlayVisible
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(visible => {
+        this.showErrorOverlay = visible;
+      });
+
     // Service worker update handling
     this.checkForUpdates();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private checkForUpdates() {
@@ -79,5 +111,26 @@ export class AppComponent implements OnInit {
 
   onNavClick(route: string) {
     console.log('Nav clicked:', route);
+  }
+
+  // Error overlay methods
+  toggleErrorOverlay() {
+    this.errorTracker.toggleOverlay();
+  }
+
+  clearErrors() {
+    this.errorTracker.clearErrors();
+  }
+
+  formatErrorTime(timestamp: Date): string {
+    return timestamp.toLocaleTimeString();
+  }
+
+  getErrorTypeClass(type: string): string {
+    return `error-type-${type.toLowerCase()}`;
+  }
+
+  trackByErrorIndex(index: number): number {
+    return index;
   }
 }

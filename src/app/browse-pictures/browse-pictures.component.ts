@@ -294,6 +294,16 @@ export class BrowsePicturesComponent implements OnInit {
     if (!this.photoToDelete) return;
 
     try {
+      // Check if we're viewing the photo being deleted in fullscreen
+      const currentPhoto = this.allPhotosFlat[this.currentPhotoIndex];
+      const isDeletingCurrentPhoto = currentPhoto?.id === this.photoToDelete.id;
+      
+      if (isDeletingCurrentPhoto && this.showPhotoModal) {
+        // We're in fullscreen mode - animate the deletion
+        await this.animatePhotoDeletion();
+      }
+      
+      // Actually delete from storage
       await this.cameraService.deletePhoto(this.photoToDelete.id);
       
       // Remove from local arrays
@@ -303,18 +313,19 @@ export class BrowsePicturesComponent implements OnInit {
       // Regroup photos after deletion
       this.groupPhotosByMonth();
       
-      // Update current photo if viewing deleted photo
-      const currentPhoto = this.allPhotosFlat[this.currentPhotoIndex];
-      if (currentPhoto?.id === this.photoToDelete.id) {
+      // Update current photo if we were viewing deleted photo
+      if (isDeletingCurrentPhoto) {
         if (this.allPhotosFlat.length > 0) {
           // Adjust current index if needed
           if (this.currentPhotoIndex >= this.allPhotosFlat.length) {
             this.currentPhotoIndex = this.allPhotosFlat.length - 1;
           }
-          // Update visible photos and display info
-          const containerWidth = window.innerWidth;
-          await this.updateVisiblePhotos(containerWidth);
-          this.updateDisplayedInfo();
+          // Update visible photos and display info only if still in fullscreen mode
+          if (this.showPhotoModal) {
+            const containerWidth = window.innerWidth;
+            await this.updateVisiblePhotos(containerWidth);
+            this.updateDisplayedInfo();
+          }
         } else {
           // No photos left, close the viewer
           this.closePhoto();
@@ -325,6 +336,63 @@ export class BrowsePicturesComponent implements OnInit {
     } catch (error) {
       console.error('Error deleting photo:', error);
       // Could add user-facing error message here
+    }
+  }
+
+  private async animatePhotoDeletion(): Promise<void> {
+    return new Promise((resolve) => {
+      // Find the current photo element in the scrollable view
+      const currentPhotoSlide = document.querySelector('.photo-slide img') as HTMLElement;
+      
+      if (currentPhotoSlide) {
+        // Apply fade-out animation with debug speed support
+        const fadeOutDuration = this.testDataGenerator.getAdjustedTimeout(300);
+        
+        currentPhotoSlide.style.transition = `opacity ${fadeOutDuration}ms ease-out`;
+        currentPhotoSlide.style.opacity = '0';
+        
+        // Wait for fade-out to complete, then move to next photo
+        setTimeout(() => {
+          // Move to the next photo (or previous if at end)
+          this.moveToNextPhotoAfterDeletion();
+          resolve();
+        }, fadeOutDuration);
+      } else {
+        // No animation element found, just resolve immediately
+        resolve();
+      }
+    });
+  }
+
+  private moveToNextPhotoAfterDeletion(): void {
+    if (this.allPhotosFlat.length <= 1) {
+      // Only one photo (the one being deleted), no need to move
+      return;
+    }
+    
+    // Determine next photo index
+    let nextIndex = this.currentPhotoIndex;
+    
+    // If we're not at the last photo, stay at the same index (which will show the next photo)
+    // If we're at the last photo, move to the previous one
+    if (this.currentPhotoIndex >= this.allPhotosFlat.length - 1) {
+      nextIndex = this.currentPhotoIndex - 1;
+    }
+    
+    // Update current index
+    this.currentPhotoIndex = nextIndex;
+    
+    // Animate the scroll container to the new position
+    const container = document.querySelector('.photo-scroll-container') as HTMLElement;
+    if (container && this.scrollContainerWidth > 0) {
+      const targetScroll = this.currentPhotoIndex * this.scrollContainerWidth;
+      
+      // Use smooth scrolling for the transition
+      container.style.scrollBehavior = 'smooth';
+      container.scrollLeft = targetScroll;
+      
+      // Update display info immediately for responsiveness
+      this.updateDisplayedInfo();
     }
   }
 

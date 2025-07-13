@@ -179,6 +179,14 @@ Set these in your repository Settings → Secrets and variables → Actions:
 - **Upload failures**: Verify folder creation permissions
 - **CORS issues**: Ensure proper domain restrictions
 
+### Debug Overlay & Global UI Persistence
+- **Problem**: UI elements in page components disappear during navigation
+- **Solution**: Move persistent UI to app component level with service-based state management
+- **Pattern**: Use BehaviorSubject in service for cross-component state sharing
+- **Implementation**: Error overlay moved from settings component to app component for global persistence
+- **State Management**: `ErrorTrackerService` manages both error collection and overlay visibility
+- **Persistence**: LocalStorage integration ensures overlay state survives page refreshes
+
 ## Development Workflow
 
 ### Adding New Features
@@ -205,6 +213,8 @@ Set these in your repository Settings → Secrets and variables → Actions:
 - `src/app/services/google-drive.service.ts:32-50` - OAuth initialization
 - `src/app/services/test-data-generator.service.ts:255-259` - Animation speed helpers
 - `src/app/services/locale.service.ts` - Multi-language support and browser detection
+- `src/app/services/error-tracker.service.ts:142-151` - Global error overlay state management
+- `src/app/app.component.ts:39-51,117-137` - App-level error overlay implementation
 
 ### Key UI Components
 - `src/app/settings/settings.component.ts:147-166` - Hidden debug menu activation

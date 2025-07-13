@@ -391,7 +391,12 @@ export class GoogleDriveService {
 
       for (const photo of unsyncedPhotos) {
         try {
-          const fileId = await this.syncPhoto(photo.blob, photo.id, photo.timestamp);
+          const blob = photo.data ? this.indexedDbService.arrayBufferToBlob(photo.data) : null;
+          if (!blob) {
+            failedCount++;
+            continue;
+          }
+          const fileId = await this.syncPhoto(blob, photo.id, photo.timestamp);
           if (fileId) {
             syncedCount++;
           } else {

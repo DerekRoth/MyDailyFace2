@@ -6,7 +6,7 @@ export interface CameraPhoto {
   id: string;
   timestamp: Date;
   dataUrl?: string;
-  blob?: Blob;
+  data?: ArrayBuffer;
 }
 
 @Injectable({
@@ -48,10 +48,18 @@ export class CameraService {
           try {
             await this.indexedDbService.savePhoto(blob, id, timestamp);
             
+            // Convert blob to ArrayBuffer for the return object too
+            const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result as ArrayBuffer);
+              reader.onerror = () => reject(reader.error);
+              reader.readAsArrayBuffer(blob);
+            });
+
             const photo: CameraPhoto = {
               id,
               timestamp,
-              blob
+              data: arrayBuffer
             };
             
             // Background sync will handle syncing automatically
@@ -75,7 +83,7 @@ export class CameraService {
       return photoRecords.map(record => ({
         id: record.id,
         timestamp: record.timestamp,
-        blob: record.blob
+        data: record.data
       }));
     } catch (error) {
       console.error('Error getting stored photos:', error);
@@ -88,23 +96,34 @@ export class CameraService {
       return photo.dataUrl;
     }
     
-    if (photo.blob) {
+    if (photo.data) {
       return new Promise((resolve) => {
+        const blob = this.indexedDbService.arrayBufferToBlob(photo.data!);
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result as string);
         reader.onerror = () => resolve(null);
-        reader.readAsDataURL(photo.blob!);
+        reader.readAsDataURL(blob);
       });
     }
     
     try {
       const photoRecord = await this.indexedDbService.getPhoto(photo.id);
-      if (photoRecord?.blob) {
+      if (photoRecord?.data) {
+        return new Promise((resolve) => {
+          const blob = this.indexedDbService.arrayBufferToBlob(photoRecord.data);
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(blob);
+        });
+      }
+      // Fallback for old blob data during migration
+      else if (photoRecord?.blob) {
         return new Promise((resolve) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result as string);
           reader.onerror = () => resolve(null);
-          reader.readAsDataURL(photoRecord.blob);
+          reader.readAsDataURL(photoRecord.blob!);
         });
       }
     } catch (error) {
@@ -171,8 +190,9 @@ export class CameraService {
 
     for (const photo of photos) {
       try {
-        if (photo.blob) {
-          const fileId = await this.googleDriveService.syncPhoto(photo.blob, photo.id, photo.timestamp);
+        if (photo.data) {
+          const blob = this.indexedDbService.arrayBufferToBlob(photo.data);
+          const fileId = await this.googleDriveService.syncPhoto(blob, photo.id, photo.timestamp);
           if (fileId) {
             success++;
           } else {

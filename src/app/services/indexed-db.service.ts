@@ -2,11 +2,13 @@ import { Injectable } from '@angular/core';
 
 export interface PhotoRecord {
   id: string;
-  blob: Blob;
+  data: ArrayBuffer;
   timestamp: Date;
   thumbnail?: string;
   googleDriveFileId?: string;
   syncedToGoogleDrive?: boolean;
+  // For backward compatibility during migration
+  blob?: Blob;
 }
 
 @Injectable({
@@ -14,7 +16,7 @@ export interface PhotoRecord {
 })
 export class IndexedDbService {
   private dbName = 'MyDailyFaceDB';
-  private dbVersion = 1;
+  private dbVersion = 2;
   private storeName = 'photos';
   private db: IDBDatabase | null = null;
 
@@ -34,10 +36,16 @@ export class IndexedDbService {
 
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
+        const oldVersion = (event as IDBVersionChangeEvent).oldVersion;
         
         if (!db.objectStoreNames.contains(this.storeName)) {
           const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
           store.createIndex('timestamp', 'timestamp', { unique: false });
+        }
+        
+        // Migration from version 1 to 2: Convert blobs to ArrayBuffers
+        if (oldVersion < 2) {
+          this.migrateToArrayBuffer(event);
         }
       };
     });
@@ -46,13 +54,16 @@ export class IndexedDbService {
   async savePhoto(photoBlob: Blob, id: string, timestamp: Date): Promise<void> {
     await this.ensureDBReady();
     
+    // Convert Blob to ArrayBuffer for iOS Safari compatibility
+    const arrayBuffer = await this.blobToArrayBuffer(photoBlob);
+    
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction([this.storeName], 'readwrite');
       const store = transaction.objectStore(this.storeName);
       
       const photoRecord: PhotoRecord = {
         id,
-        blob: photoBlob,
+        data: arrayBuffer,
         timestamp
       };
       
@@ -181,5 +192,55 @@ export class IndexedDbService {
     if (!this.db) {
       await this.initDB();
     }
+  }
+
+  private async blobToArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as ArrayBuffer);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsArrayBuffer(blob);
+    });
+  }
+
+  arrayBufferToBlob(arrayBuffer: ArrayBuffer, type: string = 'image/jpeg'): Blob {
+    return new Blob([arrayBuffer], { type });
+  }
+
+  private async migrateToArrayBuffer(event: IDBVersionChangeEvent): Promise<void> {
+    const transaction = (event.target as IDBOpenDBRequest).transaction;
+    if (!transaction) return;
+
+    const store = transaction.objectStore(this.storeName);
+    const request = store.getAll();
+
+    request.onsuccess = async () => {
+      const records = request.result as PhotoRecord[];
+      
+      for (const record of records) {
+        // If record has blob but no data, migrate it
+        if (record.blob && !record.data) {
+          try {
+            const arrayBuffer = await this.blobToArrayBuffer(record.blob);
+            const updatedRecord: PhotoRecord = {
+              ...record,
+              data: arrayBuffer
+            };
+            delete updatedRecord.blob; // Remove old blob property
+            
+            const putRequest = store.put(updatedRecord);
+            putRequest.onerror = () => {
+              console.warn(`Failed to migrate photo ${record.id} to ArrayBuffer`);
+            };
+          } catch (error) {
+            console.warn(`Failed to convert blob to ArrayBuffer for photo ${record.id}:`, error);
+          }
+        }
+      }
+    };
+
+    request.onerror = () => {
+      console.warn('Failed to retrieve photos for migration');
+    };
   }
 }

@@ -11,6 +11,7 @@ import { PwaInstallService } from '../services/pwa-install.service';
 import { ThemeService, ThemePreference } from '../services/theme.service';
 import { LocaleService, SupportedLanguage } from '../services/locale.service';
 import { TranslatePipe } from '../pipes/translate.pipe';
+import { ErrorTrackerService, ErrorEntry } from '../services/error-tracker.service';
 
 @Component({
   selector: 'app-settings',
@@ -42,6 +43,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
   // Overlay settings
   overlayOpacity = 0.5;
   
+  // Error tracking
+  showErrorOverlay = false;
+  errors: ErrorEntry[] = [];
+  
   // PWA installation
   canInstall = false;
   isInstalled = false;
@@ -65,7 +70,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     private pwaInstallService: PwaInstallService,
     private themeService: ThemeService,
     private localeService: LocaleService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private errorTracker: ErrorTrackerService
   ) {
     // Initialize language settings immediately
     this.supportedLanguages = this.localeService.supportedLanguages;
@@ -122,6 +128,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
       .subscribe(language => {
         this.currentLanguage = language;
         this.cdr.detectChanges(); // Force change detection
+      });
+    
+    // Subscribe to error tracking
+    this.errorTracker.errors
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(errors => {
+        this.errors = errors;
       });
     
     // Update photo count when navigating to settings
@@ -246,6 +259,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
       this.versionTapCount = 0;
       // Save debug visibility state
       localStorage.setItem('showTestingFeatures', 'true');
+      // Start error tracking when debug mode is enabled
+      this.errorTracker.startTracking();
       alert(this.localeService.getTranslation('settings.alert_testing_features_unlocked'));
     }
     
@@ -309,7 +324,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   hideTestingFeatures() {
     this.showTestingFeatures = false;
+    this.showErrorOverlay = false;
     this.versionTapCount = 0;
+    // Stop error tracking when debug mode is disabled
+    this.errorTracker.stopTracking();
     // Save debug visibility state
     localStorage.setItem('showTestingFeatures', 'false');
   }
@@ -329,6 +347,35 @@ export class SettingsComponent implements OnInit, OnDestroy {
       return this.localeService.getTranslation('settings.animation_speed_normal');
     }
     return this.localeService.getTranslation('settings.animation_speed_slower').replace('{speed}', this.currentAnimationSpeed.toString());
+  }
+
+  // Error tracking methods
+  toggleErrorOverlay() {
+    this.showErrorOverlay = !this.showErrorOverlay;
+    if (this.showErrorOverlay) {
+      this.errorTracker.startTracking();
+    }
+  }
+
+  clearErrors() {
+    this.errorTracker.clearErrors();
+  }
+
+  formatErrorTime(timestamp: Date): string {
+    return timestamp.toLocaleTimeString();
+  }
+
+  getErrorTypeClass(type: string): string {
+    switch (type) {
+      case 'error': return 'error-type-error';
+      case 'warn': return 'error-type-warn';
+      case 'log': return 'error-type-log';
+      default: return '';
+    }
+  }
+
+  trackByErrorIndex(index: number): number {
+    return index;
   }
 
   getLastSyncText(): string {

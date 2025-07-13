@@ -89,9 +89,15 @@ export class BrowsePicturesComponent implements OnInit {
     for (let i = 0; i < this.photos.length; i += batchSize) {
       const batch = this.photos.slice(i, i + batchSize);
       const promises = batch.map(async (photo) => {
-        const dataUrl = await this.cameraService.getPhotoDataUrl(photo);
-        if (dataUrl) {
-          this.photoDataUrls.set(photo.id, dataUrl);
+        try {
+          const dataUrl = await this.cameraService.getPhotoDataUrl(photo);
+          if (dataUrl) {
+            this.photoDataUrls.set(photo.id, dataUrl);
+          } else {
+            console.warn(`Failed to load photo data for ${photo.id} - corrupted or missing blob`);
+          }
+        } catch (error) {
+          console.error(`Error loading photo ${photo.id}:`, error);
         }
       });
       await Promise.all(promises);

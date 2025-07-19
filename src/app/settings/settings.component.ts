@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { Router, NavigationEnd, RouterLink } from '@angular/router';
 import { filter, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
@@ -19,7 +19,7 @@ import { ErrorTrackerService, ErrorEntry } from '../services/error-tracker.servi
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.css'
 })
-export class SettingsComponent implements OnInit, OnDestroy {
+export class SettingsComponent implements OnInit, OnDestroy, AfterViewInit {
   photoCount = 0;
   syncStatus: SyncStatus = {
     isAuthenticated: false,
@@ -160,6 +160,15 @@ export class SettingsComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  ngAfterViewInit() {
+    // Set initial slider progress
+    const sliderElement = document.querySelector('.opacity-slider') as HTMLInputElement;
+    if (sliderElement) {
+      const progressPercent = ((this.overlayOpacity - 0.1) / (1 - 0.1)) * 100;
+      sliderElement.style.setProperty('--slider-progress', `${progressPercent}%`);
+    }
   }
 
   async updatePhotoCount() {
@@ -418,6 +427,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const target = event.target as HTMLInputElement;
     this.overlayOpacity = parseFloat(target.value);
     localStorage.setItem('overlayOpacity', this.overlayOpacity.toString());
+    
+    // Update the visual progress indicator
+    const progressPercent = ((this.overlayOpacity - 0.1) / (1 - 0.1)) * 100;
+    target.style.setProperty('--slider-progress', `${progressPercent}%`);
   }
 
   // PWA Installation Methods

@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { CameraService, CameraPhoto } from '../services/camera.service';
+import { CameraStreamService } from '../services/camera-stream.service';
 import { TestDataGeneratorService } from '../services/test-data-generator.service';
 import { CommonModule } from '@angular/common';
 import { TranslatePipe } from '../pipes/translate.pipe';
@@ -47,10 +48,9 @@ export class TakePictureComponent implements OnInit, OnDestroy {
   animatingToBrowse = false;
   freezeFrameUrl: string | null = null;
 
-  private stream: MediaStream | null = null;
-
   constructor(
     private cameraService: CameraService,
+    private cameraStreamService: CameraStreamService,
     private router: Router,
     private testDataGenerator: TestDataGeneratorService,
     private localeService: LocaleService
@@ -63,18 +63,15 @@ export class TakePictureComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.stopCamera();
+    this.cameraStreamService.pauseStream();
   }
 
   async initializeCamera() {
     try {
-      this.stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user' },
-        audio: false
-      });
+      const stream = await this.cameraStreamService.getStream();
 
       if (this.videoElement) {
-        this.videoElement.nativeElement.srcObject = this.stream;
+        this.videoElement.nativeElement.srcObject = stream;
         this.isStreaming = true;
         this.error = null;
       }
@@ -85,7 +82,7 @@ export class TakePictureComponent implements OnInit, OnDestroy {
   }
 
   async takePicture() {
-    if (!this.stream || this.isTakingPicture) return;
+    if (!this.cameraStreamService.hasStream() || this.isTakingPicture) return;
 
     this.isTakingPicture = true;
 
@@ -159,13 +156,6 @@ export class TakePictureComponent implements OnInit, OnDestroy {
     this.freezeFrameUrl = null;
   }
 
-  private stopCamera() {
-    if (this.stream) {
-      this.stream.getTracks().forEach(track => track.stop());
-      this.stream = null;
-      this.isStreaming = false;
-    }
-  }
 
   private generateId(): string {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);

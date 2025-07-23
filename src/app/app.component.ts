@@ -6,6 +6,7 @@ import { SwUpdate } from '@angular/service-worker';
 import { CommonModule } from '@angular/common';
 import { TranslatePipe } from './pipes/translate.pipe';
 import { ErrorTrackerService, ErrorEntry } from './services/error-tracker.service';
+import { CameraStreamService } from './services/camera-stream.service';
 
 @Component({
   selector: 'app-root',
@@ -25,7 +26,8 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router, 
     private swUpdate: SwUpdate,
-    private errorTracker: ErrorTrackerService
+    private errorTracker: ErrorTrackerService,
+    private cameraStreamService: CameraStreamService
   ) {}
 
   ngOnInit() {
@@ -52,11 +54,18 @@ export class AppComponent implements OnInit, OnDestroy {
 
     // Service worker update handling
     this.checkForUpdates();
+
+    // Clean up camera when page is about to unload
+    window.addEventListener('beforeunload', () => {
+      this.cameraStreamService.stopStream();
+    });
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+    // Clean up camera stream when app is destroyed
+    this.cameraStreamService.stopStream();
   }
 
   private checkForUpdates() {

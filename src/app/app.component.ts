@@ -7,10 +7,13 @@ import { CommonModule } from '@angular/common';
 import { TranslatePipe } from './pipes/translate.pipe';
 import { ErrorTrackerService, ErrorEntry } from './services/error-tracker.service';
 import { CameraStreamService } from './services/camera-stream.service';
+import { OfflineIndicatorComponent } from './components/offline-indicator/offline-indicator.component';
+import { AppUpdateService } from './services/app-update.service';
+import { OfflineQueueService } from './services/offline-queue.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe, CommonModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe, CommonModule, OfflineIndicatorComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -27,7 +30,9 @@ export class AppComponent implements OnInit, OnDestroy {
     private router: Router, 
     private swUpdate: SwUpdate,
     private errorTracker: ErrorTrackerService,
-    private cameraStreamService: CameraStreamService
+    private cameraStreamService: CameraStreamService,
+    private appUpdateService: AppUpdateService,
+    private offlineQueueService: OfflineQueueService
   ) {}
 
   ngOnInit() {
@@ -52,8 +57,8 @@ export class AppComponent implements OnInit, OnDestroy {
         this.showErrorOverlay = visible;
       });
 
-    // Service worker update handling
-    this.checkForUpdates();
+    // Service worker update handling (using new AppUpdateService)
+    // The AppUpdateService handles all update logic now
 
     // Clean up camera when page is about to unload
     window.addEventListener('beforeunload', () => {
@@ -68,55 +73,6 @@ export class AppComponent implements OnInit, OnDestroy {
     this.cameraStreamService.stopStream();
   }
 
-  private checkForUpdates() {
-    if (this.swUpdate.isEnabled) {
-      // Check for updates immediately
-      this.swUpdate.checkForUpdate().then(() => {
-        console.log('Checked for app updates');
-      }).catch(err => {
-        console.error('Error checking for updates:', err);
-      });
-
-      // Check for updates every 30 seconds
-      setInterval(() => {
-        this.swUpdate.checkForUpdate().then(() => {
-          console.log('Periodic update check completed');
-        }).catch(err => {
-          console.error('Error during periodic update check:', err);
-        });
-      }, 30000);
-
-      // Handle available updates
-      this.swUpdate.versionUpdates.subscribe(event => {
-        switch (event.type) {
-          case 'VERSION_DETECTED':
-            console.log('New version detected, downloading...');
-            break;
-          case 'VERSION_READY':
-            console.log('New version ready, activating...');
-            // Activate the new version immediately
-            this.swUpdate.activateUpdate().then(() => {
-              console.log('App updated successfully, reloading page');
-              // Reload the page to use the new version
-              window.location.reload();
-            }).catch(err => {
-              console.error('Error activating update:', err);
-            });
-            break;
-          case 'VERSION_INSTALLATION_FAILED':
-            console.error('Failed to install new version');
-            break;
-        }
-      });
-
-      // Handle unrecoverable state
-      this.swUpdate.unrecoverable.subscribe(event => {
-        console.error('Service worker is in unrecoverable state:', event.reason);
-        // Force reload to recover
-        window.location.reload();
-      });
-    }
-  }
 
   onNavClick(route: string) {
     console.log('Nav clicked:', route);

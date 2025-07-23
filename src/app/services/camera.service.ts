@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { IndexedDbService, PhotoRecord } from './indexed-db.service';
 import { GoogleDriveService } from './google-drive.service';
+import { OfflineQueueService } from './offline-queue.service';
 
 export interface CameraPhoto {
   id: string;
@@ -15,7 +16,8 @@ export interface CameraPhoto {
 export class CameraService {
   constructor(
     private indexedDbService: IndexedDbService,
-    private googleDriveService: GoogleDriveService
+    private googleDriveService: GoogleDriveService,
+    private offlineQueueService: OfflineQueueService
   ) { }
 
   async takePictureFromVideo(videoElement: HTMLVideoElement): Promise<CameraPhoto | null> {
@@ -62,7 +64,10 @@ export class CameraService {
               data: arrayBuffer
             };
             
-            // Background sync will handle syncing automatically
+            // Queue for Google Drive sync if auto-sync is enabled
+            if (this.googleDriveService.isAutoSyncEnabled()) {
+              await this.offlineQueueService.queuePhotoUpload(blob, id, timestamp);
+            }
             
             resolve(photo);
           } catch (error) {
@@ -141,17 +146,9 @@ export class CameraService {
       // Delete from local storage
       await this.indexedDbService.deletePhoto(photoId);
       
-      // Delete from Google Drive if authenticated and photo exists
-      if (photoRecord) {
-        const syncStatus = this.googleDriveService.getCurrentStatus();
-        if (syncStatus.isAuthenticated) {
-          try {
-            await this.googleDriveService.deletePhoto(photoId, photoRecord.timestamp);
-          } catch (error) {
-            console.warn('Failed to delete photo from Google Drive:', error);
-            // Don't throw error since local deletion succeeded
-          }
-        }
+      // Queue deletion for Google Drive if photo exists
+      if (photoRecord && this.googleDriveService.isAutoSyncEnabled()) {
+        await this.offlineQueueService.queuePhotoDelete(photoId, photoRecord.timestamp);
       }
     } catch (error) {
       console.error('Error deleting photo:', error);

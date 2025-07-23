@@ -262,6 +262,18 @@ export class LocaleService {
         'settings.hide_testing_description': 'Hide these testing features',
         'settings.hide': 'Hide',
         
+        // Offline functionality
+        'offline.no_connection': 'No internet connection',
+        'offline.queued_actions': 'queued actions',
+        'offline.syncing': 'Syncing photos...',
+        'offline.connection_restored': 'Connection restored',
+        
+        // App updates
+        'app_update.available': 'New version available',
+        'app_update.update_now': 'Update Now',
+        'app_update.later': 'Later',
+        'app_update.updating': 'Updating app...',
+        
         // Legal pages
         'legal.back_to_settings': 'Back to Settings',
         'legal.last_updated': 'Last updated: {date}',
@@ -571,6 +583,18 @@ export class LocaleService {
         'settings.hide_testing': 'Masquer les tests',
         'settings.hide_testing_description': 'Masquer ces fonctionnalités de test',
         'settings.hide': 'Masquer',
+        
+        // Offline functionality
+        'offline.no_connection': 'Pas de connexion internet',
+        'offline.queued_actions': 'actions en attente',
+        'offline.syncing': 'Synchronisation des photos...',
+        'offline.connection_restored': 'Connexion rétablie',
+        
+        // App updates
+        'app_update.available': 'Nouvelle version disponible',
+        'app_update.update_now': 'Mettre à jour',
+        'app_update.later': 'Plus tard',
+        'app_update.updating': 'Mise à jour de l\'app...',
         
         // Legal pages
         'legal.back_to_settings': 'Retour aux paramètres',
@@ -882,6 +906,18 @@ export class LocaleService {
         'settings.hide_testing_description': 'Diese Testfunktionen ausblenden',
         'settings.hide': 'Ausblenden',
         
+        // Offline functionality
+        'offline.no_connection': 'Keine Internetverbindung',
+        'offline.queued_actions': 'wartende Aktionen',
+        'offline.syncing': 'Fotos synchronisieren...',
+        'offline.connection_restored': 'Verbindung wiederhergestellt',
+        
+        // App updates
+        'app_update.available': 'Neue Version verfügbar',
+        'app_update.update_now': 'Jetzt aktualisieren',
+        'app_update.later': 'Später',
+        'app_update.updating': 'App wird aktualisiert...',
+        
         // Legal pages
         'legal.back_to_settings': 'Zurück zu Einstellungen',
         'legal.last_updated': 'Zuletzt aktualisiert: {date}',
@@ -1192,6 +1228,18 @@ export class LocaleService {
         'settings.hide_testing_description': 'Nascondi queste funzionalità di test',
         'settings.hide': 'Nascondi',
         
+        // Offline functionality
+        'offline.no_connection': 'Nessuna connessione internet',
+        'offline.queued_actions': 'azioni in coda',
+        'offline.syncing': 'Sincronizzazione foto...',
+        'offline.connection_restored': 'Connessione ripristinata',
+        
+        // App updates
+        'app_update.available': 'Nuova versione disponibile',
+        'app_update.update_now': 'Aggiorna ora',
+        'app_update.later': 'Più tardi',
+        'app_update.updating': 'Aggiornamento app...',
+        
         // Legal pages
         'legal.back_to_settings': 'Torna alle impostazioni',
         'legal.last_updated': 'Ultimo aggiornamento: {date}',
@@ -1501,6 +1549,18 @@ export class LocaleService {
         'settings.hide_testing': 'Ocultar testes',
         'settings.hide_testing_description': 'Ocultar estes recursos de teste',
         'settings.hide': 'Ocultar',
+        
+        // Offline functionality
+        'offline.no_connection': 'Sem conexão com a internet',
+        'offline.queued_actions': 'ações na fila',
+        'offline.syncing': 'Sincronizando fotos...',
+        'offline.connection_restored': 'Conexão restaurada',
+        
+        // App updates
+        'app_update.available': 'Nova versão disponível',
+        'app_update.update_now': 'Atualizar agora',
+        'app_update.later': 'Mais tarde',
+        'app_update.updating': 'Atualizando app...',
         
         // Legal pages
         'legal.back_to_settings': 'Voltar às configurações',

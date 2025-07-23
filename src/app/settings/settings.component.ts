@@ -43,6 +43,16 @@ export class SettingsComponent implements OnInit, OnDestroy, AfterViewInit {
   // Overlay settings
   overlayOpacity = 0.5;
   
+  // Alignment overlay settings
+  eyeLinePosition = 40; // Percentage from top
+  mouthLinePosition = 70; // Percentage from top
+  
+  // Alignment configuration modal
+  showAlignmentConfig = false;
+  latestPhotoUrl: string | null = null;
+  isDragging = false;
+  dragType: 'eye' | 'mouth' | null = null;
+  
   // Error tracking
   showErrorOverlay = false;
   errors: ErrorEntry[] = [];
@@ -89,6 +99,10 @@ export class SettingsComponent implements OnInit, OnDestroy, AfterViewInit {
     
     // Load overlay settings
     this.loadOverlaySettings();
+    this.loadAlignmentOverlaySettings();
+    
+    // Load latest photo for alignment configuration
+    this.loadLatestPhotoForAlignment();
     
     // Load debug menu visibility state
     const savedDebugVisibility = localStorage.getItem('showTestingFeatures');
@@ -423,6 +437,18 @@ export class SettingsComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+  private loadAlignmentOverlaySettings() {
+    const savedEyePosition = localStorage.getItem('alignmentEyeLinePosition');
+    if (savedEyePosition) {
+      this.eyeLinePosition = parseFloat(savedEyePosition);
+    }
+    
+    const savedMouthPosition = localStorage.getItem('alignmentMouthLinePosition');
+    if (savedMouthPosition) {
+      this.mouthLinePosition = parseFloat(savedMouthPosition);
+    }
+  }
+
   onOverlayOpacityChange(event: Event) {
     const target = event.target as HTMLInputElement;
     this.overlayOpacity = parseFloat(target.value);
@@ -431,6 +457,100 @@ export class SettingsComponent implements OnInit, OnDestroy, AfterViewInit {
     // Update the visual progress indicator
     const progressPercent = ((this.overlayOpacity - 0.1) / (1 - 0.1)) * 100;
     target.style.setProperty('--slider-progress', `${progressPercent}%`);
+  }
+
+
+  // Alignment configuration methods
+  async showAlignmentConfiguration() {
+    // Reload the latest photo in case it changed
+    await this.loadLatestPhotoForAlignment();
+    this.showAlignmentConfig = true;
+  }
+
+  closeAlignmentConfiguration() {
+    this.showAlignmentConfig = false;
+    this.isDragging = false;
+    this.dragType = null;
+  }
+
+  async loadLatestPhotoForAlignment() {
+    try {
+      const photos = await this.cameraService.getStoredPhotos();
+      if (photos.length > 0) {
+        const latestPhoto = photos[0];
+        this.latestPhotoUrl = await this.cameraService.getPhotoDataUrl(latestPhoto);
+      }
+    } catch (error) {
+      console.error('Error loading latest photo for alignment configuration:', error);
+    }
+  }
+
+  startDragLine(event: MouseEvent | TouchEvent, lineType: 'eye' | 'mouth') {
+    event.preventDefault();
+    this.isDragging = true;
+    this.dragType = lineType;
+
+    const handleMove = (moveEvent: MouseEvent | TouchEvent) => {
+      if (!this.isDragging || !this.dragType) return;
+
+      const previewContainer = document.querySelector('.alignment-preview') as HTMLElement;
+      if (!previewContainer) return;
+
+      const rect = previewContainer.getBoundingClientRect();
+      let clientY: number;
+
+      if (moveEvent instanceof MouseEvent) {
+        clientY = moveEvent.clientY;
+      } else {
+        clientY = moveEvent.touches[0].clientY;
+      }
+
+      const y = clientY - rect.top;
+      const percentage = Math.max(0, Math.min(100, (y / rect.height) * 100));
+
+      // Apply constraints based on line type
+      if (this.dragType === 'eye') {
+        this.eyeLinePosition = Math.max(10, Math.min(70, percentage));
+      } else if (this.dragType === 'mouth') {
+        this.mouthLinePosition = Math.max(30, Math.min(90, percentage));
+      }
+    };
+
+    const handleEnd = () => {
+      this.isDragging = false;
+      this.dragType = null;
+      document.removeEventListener('mousemove', handleMove);
+      document.removeEventListener('mouseup', handleEnd);
+      document.removeEventListener('touchmove', handleMove);
+      document.removeEventListener('touchend', handleEnd);
+    };
+
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('mouseup', handleEnd);
+    document.addEventListener('touchmove', handleMove, { passive: false });
+    document.addEventListener('touchend', handleEnd);
+  }
+
+  resetToDefaultPositions() {
+    this.eyeLinePosition = 40;
+    this.mouthLinePosition = 70;
+  }
+
+  saveAlignmentConfiguration() {
+    localStorage.setItem('alignmentEyeLinePosition', this.eyeLinePosition.toString());
+    localStorage.setItem('alignmentMouthLinePosition', this.mouthLinePosition.toString());
+    
+    // Dispatch storage event to notify the take-picture component
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'alignmentEyeLinePosition',
+      newValue: this.eyeLinePosition.toString()
+    }));
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'alignmentMouthLinePosition',
+      newValue: this.mouthLinePosition.toString()
+    }));
+    
+    this.closeAlignmentConfiguration();
   }
 
   // PWA Installation Methods

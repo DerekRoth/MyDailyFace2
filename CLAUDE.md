@@ -79,9 +79,9 @@ npm run start
 npm run build -- --base-href /MyDailyFace/
 
 # Internationalization builds
-npm run build:i18n          # Build all languages
+npm run build:i18n          # Build all languages (generates separate locale builds)
 npm run build:prod          # Production build with all languages
-npm run extract-i18n        # Extract translatable text
+npm run extract-i18n        # Extract i18n keys (NOTE: not used - translations are hardcoded)
 
 # Deploy to GitHub Pages
 # Automated via GitHub Actions on push to main branch
@@ -116,8 +116,48 @@ Access by tapping version 7 times in Settings:
 - **Supported languages**: English, French, German, Italian, Portuguese
 - **Browser language detection**: Automatically detects user's preferred language
 - **Manual language switching**: Dropdown in Settings > Appearance > Language
-- **Translation files**: Located in `src/locale/messages.{lang}.xlf`
-- **Angular i18n**: Built-in Angular internationalization with XLF format
+
+#### Translation System Architecture
+The project uses a **custom translation system** rather than Angular's built-in i18n:
+
+**Key Components:**
+- **LocaleService** (`src/app/services/locale.service.ts`): Core translation service with hardcoded translations
+- **TranslatePipe** (`src/app/pipes/translate.pipe.ts`): Custom pipe for `{{ 'key' | translate }}` syntax
+- **XLF Files** (`src/locale/messages.{lang}.xlf`): Documentation only - NOT used at runtime
+
+**How it works:**
+1. **Translation Keys**: Use format like `'settings.configure_alignment_lines'` in templates
+2. **Template Usage**: `{{ 'settings.title' | translate }}` calls `TranslatePipe`
+3. **Runtime Resolution**: `TranslatePipe` → `LocaleService.getTranslation()` → hardcoded lookup
+4. **Fallback**: Returns the key itself if translation not found
+
+**Adding New Translations:**
+1. ⚠️ **IMPORTANT**: Add to `LocaleService.getTranslations()` method, NOT just XLF files
+2. **All Languages**: Must add to all language sections in LocaleService (en, fr, de, it, pt)
+3. **XLF Files**: Update for documentation consistency but not required for functionality
+4. **Testing**: Use `npm run build` to verify - missing translations show as raw keys
+
+**Translation Object Structure** (`src/app/services/locale.service.ts:107-1655`):
+```typescript
+private getTranslations(languageCode: string): Record<string, string> {
+  const translations: Record<string, Record<string, string>> = {
+    'en': {
+      'nav.take_picture': 'Take Picture',
+      'settings.title': 'Settings',
+      // ... hardcoded English translations
+    },
+    'fr': {
+      'nav.take_picture': 'Prendre photo',
+      'settings.title': 'Paramètres', 
+      // ... hardcoded French translations
+    }
+    // ... other languages
+  };
+  return translations[languageCode] || translations['en'];
+}
+```
+
+**Browser Language Detection**: `LocaleService` automatically detects browser language and saves preference to localStorage
 
 ## Security Considerations
 

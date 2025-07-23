@@ -30,8 +30,19 @@
       <img [src]="overlayImageUrl" [alt]="getOverlayAltText()">
     </div>
 
-    <!-- Overlay toggle button -->
-    <div class="overlay-toggle" *ngIf="isStreaming">
+    <!-- Alignment guide lines overlay -->
+    <div class="alignment-guides-overlay" *ngIf="showAlignmentGuides && isStreaming">
+      <!-- Vertical center line -->
+      <div class="alignment-guide-line vertical"></div>
+      <!-- Eye line -->
+      <div class="alignment-guide-line horizontal" [style.top.%]="eyeLinePosition"></div>
+      <!-- Mouth line -->
+      <div class="alignment-guide-line horizontal" [style.top.%]="mouthLinePosition"></div>
+    </div>
+
+    <!-- Overlay toggle buttons -->
+    <div class="overlay-toggles" *ngIf="isStreaming">
+      <!-- Face overlay toggle -->
       <button class="overlay-toggle-btn" 
               [class.active]="showOverlay"
               [disabled]="!overlayImageUrl"
@@ -40,6 +51,20 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M9 2L7.17 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4H16.83L15 2H9ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17Z" fill="currentColor"/>
           <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="2 2"/>
+        </svg>
+      </button>
+      
+      <!-- Alignment guides toggle -->
+      <button class="overlay-toggle-btn alignment-guides-btn" 
+              [class.active]="showAlignmentGuides"
+              (click)="toggleAlignmentGuides()"
+              [title]="getAlignmentGuidesTooltip()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Vertical line -->
+          <line x1="12" y1="2" x2="12" y2="22" stroke="currentColor" stroke-width="1"/>
+          <!-- Horizontal lines -->
+          <line x1="2" y1="8" x2="22" y2="8" stroke="currentColor" stroke-width="1"/>
+          <line x1="2" y1="16" x2="22" y2="16" stroke="currentColor" stroke-width="1"/>
         </svg>
       </button>
     </div>

@@ -62,6 +62,58 @@
         <source>Settings</source>
         <target>Einstellungen</target>
       </trans-unit>
+      <trans-unit id="take_picture.overlay_alt" datatype="html">
+        <source>Face alignment guide</source>
+        <target>Gesichtsausrichtungshilfe</target>
+      </trans-unit>
+      <trans-unit id="take_picture.toggle_tooltip" datatype="html">
+        <source>Toggle face alignment guide</source>
+        <target>Gesichtsausrichtungshilfe umschalten</target>
+      </trans-unit>
+      <trans-unit id="take_picture.alignment_guides_tooltip" datatype="html">
+        <source>Toggle alignment guide lines</source>
+        <target>Ausrichtungslinien umschalten</target>
+      </trans-unit>
+      <trans-unit id="settings.configure_alignment_lines" datatype="html">
+        <source>Configure Alignment Lines</source>
+        <target>Ausrichtungslinien konfigurieren</target>
+      </trans-unit>
+      <trans-unit id="settings.configure_alignment_lines_description" datatype="html">
+        <source>Visually adjust the position of eye and mouth guide lines</source>
+        <target>Position der Augen- und Mundführungslinien visuell anpassen</target>
+      </trans-unit>
+      <trans-unit id="settings.configure" datatype="html">
+        <source>Configure</source>
+        <target>Konfigurieren</target>
+      </trans-unit>
+      <trans-unit id="settings.eye_line" datatype="html">
+        <source>Eye Line</source>
+        <target>Augenlinie</target>
+      </trans-unit>
+      <trans-unit id="settings.mouth_line" datatype="html">
+        <source>Mouth Line</source>
+        <target>Mundlinie</target>
+      </trans-unit>
+      <trans-unit id="settings.no_photo_for_alignment" datatype="html">
+        <source>Take a picture first to configure alignment lines</source>
+        <target>Machen Sie zuerst ein Foto, um die Ausrichtungslinien zu konfigurieren</target>
+      </trans-unit>
+      <trans-unit id="settings.reset_to_defaults" datatype="html">
+        <source>Reset to Defaults</source>
+        <target>Auf Standardwerte zurücksetzen</target>
+      </trans-unit>
+      <trans-unit id="settings.save" datatype="html">
+        <source>Save</source>
+        <target>Speichern</target>
+      </trans-unit>
+      <trans-unit id="settings.drag_lines_instruction" datatype="html">
+        <source>Drag the colored lines to adjust their position for alignment guidance</source>
+        <target>Ziehen Sie die farbigen Linien, um ihre Position für die Ausrichtungshilfe anzupassen</target>
+      </trans-unit>
+      <trans-unit id="settings.close" datatype="html">
+        <source>Close</source>
+        <target>Schließen</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

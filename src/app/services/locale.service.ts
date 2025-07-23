@@ -397,7 +397,19 @@ export class LocaleService {
         'install.generic_1': 'Look for an install icon in the address bar',
         'install.generic_2': 'Check your browser\'s menu for "Install" or "Add to Home Screen"',
         'install.generic_3': 'The app can be installed for offline use',
-        'install.generic_4': 'Contact support if you need help with installation'
+        'install.generic_4': 'Contact support if you need help with installation',
+        
+        // Alignment Overlay
+        'take_picture.alignment_guides_tooltip': 'Toggle alignment guide lines',
+        'settings.configure_alignment_lines': 'Configure Alignment Lines',
+        'settings.configure_alignment_lines_description': 'Visually adjust the position of eye and mouth guide lines',
+        'settings.configure': 'Configure',
+        'settings.eye_line': 'Eye Line',
+        'settings.mouth_line': 'Mouth Line',
+        'settings.no_photo_for_alignment': 'Take a picture first to configure alignment lines',
+        'settings.reset_to_defaults': 'Reset to Defaults',
+        'settings.save': 'Save',
+        'settings.drag_lines_instruction': 'Drag the colored lines to adjust their position for alignment guidance'
       },
       'fr': {
         // Navigation
@@ -695,7 +707,19 @@ export class LocaleService {
         'install.generic_1': 'Cherchez une icône d\'installation dans la barre d\'adresse',
         'install.generic_2': 'Vérifiez le menu de votre navigateur pour "Installer" ou "Ajouter à l\'écran d\'accueil"',
         'install.generic_3': 'L\'application peut être installée pour une utilisation hors ligne',
-        'install.generic_4': 'Contactez le support si vous avez besoin d\'aide pour l\'installation'
+        'install.generic_4': 'Contactez le support si vous avez besoin d\'aide pour l\'installation',
+        
+        // Alignment Overlay
+        'take_picture.alignment_guides_tooltip': 'Basculer les lignes de guidage d\'alignement',
+        'settings.configure_alignment_lines': 'Configurer les lignes d\'alignement',
+        'settings.configure_alignment_lines_description': 'Ajustez visuellement la position des lignes de guidage des yeux et de la bouche',
+        'settings.configure': 'Configurer',
+        'settings.eye_line': 'Ligne des yeux',
+        'settings.mouth_line': 'Ligne de la bouche',
+        'settings.no_photo_for_alignment': 'Prenez d\'abord une photo pour configurer les lignes d\'alignement',
+        'settings.reset_to_defaults': 'Rétablir les valeurs par défaut',
+        'settings.save': 'Enregistrer',
+        'settings.drag_lines_instruction': 'Faites glisser les lignes colorées pour ajuster leur position pour le guidage d\'alignement'
       },
       'de': {
         // Navigation
@@ -993,7 +1017,19 @@ export class LocaleService {
         'install.generic_1': 'Suchen Sie nach einem Installations-Symbol in der Adressleiste',
         'install.generic_2': 'Prüfen Sie das Menü Ihres Browsers nach "Installieren" oder "Zum Startbildschirm hinzufügen"',
         'install.generic_3': 'Die App kann für Offline-Nutzung installiert werden',
-        'install.generic_4': 'Kontaktieren Sie den Support wenn Sie Hilfe bei der Installation benötigen'
+        'install.generic_4': 'Kontaktieren Sie den Support wenn Sie Hilfe bei der Installation benötigen',
+        
+        // Alignment Overlay
+        'take_picture.alignment_guides_tooltip': 'Ausrichtungslinien umschalten',
+        'settings.configure_alignment_lines': 'Ausrichtungslinien konfigurieren',
+        'settings.configure_alignment_lines_description': 'Position der Augen- und Mundführungslinien visuell anpassen',
+        'settings.configure': 'Konfigurieren',
+        'settings.eye_line': 'Augenlinie',
+        'settings.mouth_line': 'Mundlinie',
+        'settings.no_photo_for_alignment': 'Machen Sie zuerst ein Foto, um die Ausrichtungslinien zu konfigurieren',
+        'settings.reset_to_defaults': 'Auf Standardwerte zurücksetzen',
+        'settings.save': 'Speichern',
+        'settings.drag_lines_instruction': 'Ziehen Sie die farbigen Linien, um ihre Position für die Ausrichtungshilfe anzupassen'
       },
       'it': {
         // Navigation
@@ -1291,7 +1327,19 @@ export class LocaleService {
         'install.generic_1': 'Cerca un\'icona di installazione nella barra degli indirizzi',
         'install.generic_2': 'Controlla il menu del tuo browser per "Installa" o "Aggiungi alla schermata Home"',
         'install.generic_3': 'L\'app può essere installata per l\'uso offline',
-        'install.generic_4': 'Contatta il supporto se hai bisogno di aiuto con l\'installazione'
+        'install.generic_4': 'Contatta il supporto se hai bisogno di aiuto con l\'installazione',
+        
+        // Alignment Overlay
+        'take_picture.alignment_guides_tooltip': 'Attiva/disattiva linee guida allineamento',
+        'settings.configure_alignment_lines': 'Configura linee di allineamento',
+        'settings.configure_alignment_lines_description': 'Regola visivamente la posizione delle linee guida per occhi e bocca',
+        'settings.configure': 'Configura',
+        'settings.eye_line': 'Linea occhi',
+        'settings.mouth_line': 'Linea bocca',
+        'settings.no_photo_for_alignment': 'Scatta prima una foto per configurare le linee di allineamento',
+        'settings.reset_to_defaults': 'Ripristina predefiniti',
+        'settings.save': 'Salva',
+        'settings.drag_lines_instruction': 'Trascina le linee colorate per regolarne la posizione per la guida all\'allineamento'
       },
       'pt': {
         // Navigation
@@ -1589,7 +1637,19 @@ export class LocaleService {
         'install.generic_1': 'Procure por um ícone de instalação na barra de endereços',
         'install.generic_2': 'Verifique o menu do seu navegador por "Instalar" ou "Adicionar à Tela Inicial"',
         'install.generic_3': 'O aplicativo pode ser instalado para uso offline',
-        'install.generic_4': 'Entre em contato com o suporte se precisar de ajuda com a instalação'
+        'install.generic_4': 'Entre em contato com o suporte se precisar de ajuda com a instalação',
+        
+        // Alignment Overlay
+        'take_picture.alignment_guides_tooltip': 'Alternar linhas-guia de alinhamento',
+        'settings.configure_alignment_lines': 'Configurar linhas de alinhamento',
+        'settings.configure_alignment_lines_description': 'Ajustar visualmente a posição das linhas-guia dos olhos e boca',
+        'settings.configure': 'Configurar',
+        'settings.eye_line': 'Linha dos olhos',
+        'settings.mouth_line': 'Linha da boca',
+        'settings.no_photo_for_alignment': 'Tire uma foto primeiro para configurar as linhas de alinhamento',
+        'settings.reset_to_defaults': 'Redefinir para padrões',
+        'settings.save': 'Salvar',
+        'settings.drag_lines_instruction': 'Arraste as linhas coloridas para ajustar a posição para orientação de alinhamento'
       }
     };
 

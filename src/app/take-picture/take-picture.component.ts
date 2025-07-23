@@ -27,6 +27,11 @@ export class TakePictureComponent implements OnInit, OnDestroy {
   overlayImageUrl: string | null = null;
   overlayOpacity = 0.5; // Default opacity
 
+  // Alignment guides overlay
+  showAlignmentGuides = false;
+  eyeLinePosition = 40; // Default percentage from top
+  mouthLinePosition = 70; // Default percentage from top
+
   // Animation timing configuration (all times in milliseconds)
   private readonly ANIMATION_TIMINGS = {
     FLASH_DURATION: 500,              // How long the white flash shows
@@ -60,6 +65,7 @@ export class TakePictureComponent implements OnInit, OnDestroy {
     this.initializeCamera();
     this.loadLatestPhoto();
     this.loadOverlaySettings();
+    this.loadAlignmentGuidesSettings();
   }
 
   ngOnDestroy() {
@@ -239,6 +245,12 @@ export class TakePictureComponent implements OnInit, OnDestroy {
     localStorage.setItem('overlayEnabled', this.showOverlay.toString());
   }
 
+  toggleAlignmentGuides() {
+    this.showAlignmentGuides = !this.showAlignmentGuides;
+    // Save the user's choice
+    localStorage.setItem('alignmentOverlayEnabled', this.showAlignmentGuides.toString());
+  }
+
   private async loadLatestPhoto() {
     try {
       const photos = await this.cameraService.getStoredPhotos();
@@ -269,6 +281,36 @@ export class TakePictureComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadAlignmentGuidesSettings() {
+    const savedEnabled = localStorage.getItem('alignmentOverlayEnabled');
+    if (savedEnabled !== null) {
+      this.showAlignmentGuides = savedEnabled === 'true';
+    }
+    
+    const savedEyePosition = localStorage.getItem('alignmentEyeLinePosition');
+    if (savedEyePosition) {
+      this.eyeLinePosition = parseFloat(savedEyePosition);
+    }
+    
+    const savedMouthPosition = localStorage.getItem('alignmentMouthLinePosition');
+    if (savedMouthPosition) {
+      this.mouthLinePosition = parseFloat(savedMouthPosition);
+    }
+    
+    // Listen for storage changes from settings component
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'alignmentOverlayEnabled' && event.newValue !== null) {
+        this.showAlignmentGuides = event.newValue === 'true';
+      }
+      if (event.key === 'alignmentEyeLinePosition' && event.newValue) {
+        this.eyeLinePosition = parseFloat(event.newValue);
+      }
+      if (event.key === 'alignmentMouthLinePosition' && event.newValue) {
+        this.mouthLinePosition = parseFloat(event.newValue);
+      }
+    });
+  }
+
   private initializeOverlayVisibility() {
     const savedOverlayEnabled = localStorage.getItem('overlayEnabled');
     
@@ -288,6 +330,10 @@ export class TakePictureComponent implements OnInit, OnDestroy {
 
   getToggleTooltip(): string {
     return this.localeService.getTranslation('take_picture.toggle_tooltip');
+  }
+
+  getAlignmentGuidesTooltip(): string {
+    return this.localeService.getTranslation('take_picture.alignment_guides_tooltip');
   }
 
   getCapturedPhotoAltText(): string {

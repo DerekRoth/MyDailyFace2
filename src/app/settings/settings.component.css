@@ -838,3 +838,271 @@ input:checked + .toggle-slider:before {
   }
 }
 
+/* Alignment Configuration Modal */
+.alignment-config-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.alignment-config-modal {
+  background: var(--bg-primary);
+  border-radius: 16px;
+  max-width: 90vw;
+  max-height: 90vh;
+  width: 600px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.config-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.config-header h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.config-content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow: hidden;
+}
+
+.alignment-preview-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  gap: 16px;
+}
+
+.drag-instruction {
+  font: 14px/1.4 system-ui;
+  color: var(--text-secondary);
+  text-align: center;
+  margin: 0;
+  max-width: 400px;
+}
+
+.alignment-preview {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 4/3;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: var(--bg-secondary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.preview-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* Mirror to match camera */
+}
+
+.config-guide-line {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+.config-guide-line.vertical-line {
+  width: 2px;
+  height: 100%;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+}
+
+/* Line containers for better hit areas */
+.line-container {
+  position: absolute;
+  width: 100%;
+  height: 44px; /* 44px total height for touch area */
+  transform: translateY(-50%); /* Center the container on the line position */
+  z-index: 10;
+}
+
+.line-hit-area {
+  position: absolute;
+  width: 100%;
+  height: 44px; /* 44px touch tolerance */
+  cursor: ns-resize;
+  z-index: 11;
+  /* Subtle visual hint on hover */
+  border-radius: 2px;
+  transition: background-color 0.2s ease;
+}
+
+.line-hit-area:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.line-hit-area:hover + .config-guide-line.horizontal-line {
+  background: var(--button-primary);
+  height: 3px;
+}
+
+.config-guide-line.horizontal-line {
+  position: absolute;
+  height: 2px;
+  width: 100%;
+  top: 50%; /* Center within the container */
+  transform: translateY(-50%);
+  transition: all 0.2s ease;
+  pointer-events: none; /* Let hit area handle events */
+}
+
+.config-guide-line.eye-line {
+  background: rgba(0, 122, 255, 0.8);
+}
+
+.config-guide-line.mouth-line {
+  background: rgba(255, 149, 0, 0.8);
+}
+
+.line-label {
+  position: absolute;
+  left: 8px;
+  top: -12px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font: 500 12px/1 system-ui;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.no-photo-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.config-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.position-info {
+  display: flex;
+  justify-content: space-around;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.position-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.position-item span:first-child {
+  font: 500 14px/1 system-ui;
+  color: var(--text-secondary);
+}
+
+.position-item span:last-child {
+  font: 600 18px/1 system-ui;
+  color: var(--text-primary);
+}
+
+.config-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.configure-button,
+.reset-button,
+.save-button {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font: 600 16px/1 system-ui;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.configure-button {
+  background: var(--button-primary);
+  color: white;
+}
+
+.configure-button:hover {
+  background: var(--button-primary-hover);
+  transform: translateY(-1px);
+}
+
+.reset-button {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.reset-button:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.save-button {
+  background: var(--success-color, #28a745);
+  color: white;
+}
+
+.save-button:hover {
+  background: var(--success-hover, #218838);
+  transform: translateY(-1px);
+}
+
+/* Mobile responsive for alignment config */
+@media (max-width: 768px) {
+  .alignment-config-modal {
+    width: 95vw;
+    height: 95vh;
+    max-width: none;
+    max-height: none;
+  }
+  
+  .config-content { padding: 20px; }
+  .alignment-preview { max-width: none; }
+  .config-actions { flex-direction: column; }
+  .position-info { flex-direction: column; gap: 12px; }
+  
+  /* Better touch feedback on mobile */
+  .line-hit-area {
+    height: 48px; /* Slightly larger on mobile */
+  }
+  
+  .line-container {
+    height: 48px;
+  }
+}
+

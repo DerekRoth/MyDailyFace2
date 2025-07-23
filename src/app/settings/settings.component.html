@@ -176,6 +176,17 @@
           </div>
         </div>
       </div>
+      
+      <!-- Alignment Configuration -->
+      <div class="setting-item">
+        <div class="setting-info">
+          <h3>{{ 'settings.configure_alignment_lines' | translate }}</h3>
+          <p>{{ 'settings.configure_alignment_lines_description' | translate }}</p>
+        </div>
+        <button class="configure-button" (click)="showAlignmentConfiguration()">
+          {{ 'settings.configure' | translate }}
+        </button>
+      </div>
     </div>
 
     <!-- Storage Section -->
@@ -372,6 +383,75 @@
         <button class="cancel-button" (click)="hideTestingFeatures()">
           <span>{{ 'settings.hide' | translate }}</span>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alignment Configuration Modal -->
+  <div class="alignment-config-overlay" *ngIf="showAlignmentConfig" (click)="closeAlignmentConfiguration()">
+    <div class="alignment-config-modal" (click)="$event.stopPropagation()">
+      <div class="config-header">
+        <h3>{{ 'settings.configure_alignment_lines' | translate }}</h3>
+        <button class="close-button" (click)="closeAlignmentConfiguration()">{{ 'settings.close' | translate }}</button>
+      </div>
+      <div class="config-content">
+        <div class="alignment-preview-container">
+          <p class="drag-instruction">{{ 'settings.drag_lines_instruction' | translate }}</p>
+          <div class="alignment-preview" *ngIf="latestPhotoUrl">
+            <img [src]="latestPhotoUrl" alt="Latest photo for alignment configuration" class="preview-photo">
+            
+            <!-- Vertical center line -->
+            <div class="config-guide-line vertical-line"></div>
+            
+            <!-- Eye line (draggable) -->
+            <div class="line-container eye-container" [style.top.%]="eyeLinePosition">
+              <div class="line-hit-area"
+                   (mousedown)="startDragLine($event, 'eye')"
+                   (touchstart)="startDragLine($event, 'eye')">
+              </div>
+              <div class="config-guide-line horizontal-line eye-line">
+                <span class="line-label">{{ 'settings.eye_line' | translate }}</span>
+              </div>
+            </div>
+            
+            <!-- Mouth line (draggable) -->
+            <div class="line-container mouth-container" [style.top.%]="mouthLinePosition">
+              <div class="line-hit-area"
+                   (mousedown)="startDragLine($event, 'mouth')"
+                   (touchstart)="startDragLine($event, 'mouth')">
+              </div>
+              <div class="config-guide-line horizontal-line mouth-line">
+                <span class="line-label">{{ 'settings.mouth_line' | translate }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="no-photo-message" *ngIf="!latestPhotoUrl">
+            <p>{{ 'settings.no_photo_for_alignment' | translate }}</p>
+          </div>
+        </div>
+        
+        <div class="config-controls">
+          <div class="position-info">
+            <div class="position-item">
+              <span>{{ 'settings.eye_line' | translate }}:</span>
+              <span>{{ eyeLinePosition.toFixed(0) }}%</span>
+            </div>
+            <div class="position-item">
+              <span>{{ 'settings.mouth_line' | translate }}:</span>
+              <span>{{ mouthLinePosition.toFixed(0) }}%</span>
+            </div>
+          </div>
+          
+          <div class="config-actions">
+            <button class="reset-button" (click)="resetToDefaultPositions()">
+              {{ 'settings.reset_to_defaults' | translate }}
+            </button>
+            <button class="save-button" (click)="saveAlignmentConfiguration()">
+              {{ 'settings.save' | translate }}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

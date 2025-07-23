@@ -122,12 +122,46 @@
   transform: scaleX(-1); /* Mirror to match video */
 }
 
-/* Overlay toggle button */
-.overlay-toggle {
+/* Alignment guide lines overlay */
+.alignment-guides-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.alignment-guide-line {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.7);
+  z-index: 3;
+}
+
+.alignment-guide-line.vertical {
+  width: 1px;
+  height: 100%;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+}
+
+.alignment-guide-line.horizontal {
+  height: 1px;
+  width: 100%;
+  left: 0;
+}
+
+/* Overlay toggle buttons */
+.overlay-toggles {
   position: absolute;
   top: 20px;
   right: 20px;
   z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .overlay-toggle-btn {

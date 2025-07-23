@@ -2,10 +2,11 @@
   <!-- Full-screen camera view -->
   <div class="camera-view">
     <!-- Container that crops both video and alignment lines together -->
-    <div class="video-cropping-container" *ngIf="isStreaming">
+    <div class="video-cropping-container">
       <!-- Container that matches the actual video size -->
       <div class="video-with-guides-container">
         <video #video 
+               [style.display]="isStreaming ? 'block' : 'none'"
                autoplay 
                playsinline 
                muted>
@@ -13,13 +14,13 @@
         
         <!-- Face alignment overlay -->
         <div class="alignment-overlay" 
-             *ngIf="showOverlay && overlayImageUrl"
+             *ngIf="showOverlay && overlayImageUrl && isStreaming"
              [style.opacity]="overlayOpacity">
           <img [src]="overlayImageUrl" [alt]="getOverlayAltText()">
         </div>
 
         <!-- Alignment guide lines overlay -->
-        <div class="alignment-guides-overlay" *ngIf="showAlignmentGuides">
+        <div class="alignment-guides-overlay" *ngIf="showAlignmentGuides && isStreaming">
           <!-- Vertical center line -->
           <div class="alignment-guide-line vertical"></div>
           <!-- Eye line -->

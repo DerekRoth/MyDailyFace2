@@ -35,14 +35,14 @@
   position: relative;
   /* This container will be sized to match the video's natural dimensions */
   width: auto;
-  height: auto;
+  height: 100%;
 }
 
 .camera-view video {
-  /* Video at natural size - intermediate container will size itself to match */
   display: block;
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   transform: scaleX(-1); /* Mirror the video horizontally */
 }
 
@@ -139,11 +139,10 @@
 }
 
 .alignment-overlay img {
-  /* Image matches the video size exactly */
+  /* Image matches the video size and behavior exactly */
   width: 100%;
   height: 100%;
-  max-width: 100%;
-  max-height: 100%;
+  object-fit: cover;
   transform: scaleX(-1); /* Mirror to match video */
 }
 
@@ -405,17 +404,3 @@
   }
 }
 
-/* Portrait orientation optimization */
-@media (orientation: portrait) {
-  .camera-view video {
-    object-fit: cover;
-    object-position: center;
-  }
-}
-
-/* Landscape orientation optimization */
-@media (orientation: landscape) {
-  .capture-overlay {
-    padding: 20px 40px;
-  }
-}

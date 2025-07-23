@@ -398,30 +398,39 @@
         <div class="alignment-preview-container">
           <p class="drag-instruction">{{ 'settings.drag_lines_instruction' | translate }}</p>
           <div class="alignment-preview" *ngIf="latestPhotoUrl">
-            <img [src]="latestPhotoUrl" alt="Latest photo for alignment configuration" class="preview-photo">
-            
-            <!-- Vertical center line -->
-            <div class="config-guide-line vertical-line"></div>
-            
-            <!-- Eye line (draggable) -->
-            <div class="line-container eye-container" [style.top.%]="eyeLinePosition">
-              <div class="line-hit-area"
-                   (mousedown)="startDragLine($event, 'eye')"
-                   (touchstart)="startDragLine($event, 'eye')">
-              </div>
-              <div class="config-guide-line horizontal-line eye-line">
-                <span class="line-label">{{ 'settings.eye_line' | translate }}</span>
-              </div>
-            </div>
-            
-            <!-- Mouth line (draggable) -->
-            <div class="line-container mouth-container" [style.top.%]="mouthLinePosition">
-              <div class="line-hit-area"
-                   (mousedown)="startDragLine($event, 'mouth')"
-                   (touchstart)="startDragLine($event, 'mouth')">
-              </div>
-              <div class="config-guide-line horizontal-line mouth-line">
-                <span class="line-label">{{ 'settings.mouth_line' | translate }}</span>
+            <!-- Container that crops both image and alignment lines together -->
+            <div class="image-cropping-container">
+              <!-- Container that matches the actual image size -->
+              <div class="image-with-guides-container">
+                <img [src]="latestPhotoUrl" alt="Latest photo for alignment configuration" class="preview-photo">
+                
+                <!-- Alignment guides overlay -->
+                <div class="alignment-guides-area">
+                  <!-- Vertical center line -->
+                  <div class="config-guide-line vertical-line"></div>
+                  
+                  <!-- Eye line (draggable) -->
+                  <div class="line-container eye-container" [style.top.%]="eyeLinePosition">
+                    <div class="line-hit-area"
+                         (mousedown)="startDragLine($event, 'eye')"
+                         (touchstart)="startDragLine($event, 'eye')">
+                    </div>
+                    <div class="config-guide-line horizontal-line eye-line">
+                      <span class="line-label">{{ 'settings.eye_line' | translate }}</span>
+                    </div>
+                  </div>
+                  
+                  <!-- Mouth line (draggable) -->
+                  <div class="line-container mouth-container" [style.top.%]="mouthLinePosition">
+                    <div class="line-hit-area"
+                         (mousedown)="startDragLine($event, 'mouth')"
+                         (touchstart)="startDragLine($event, 'mouth')">
+                    </div>
+                    <div class="config-guide-line horizontal-line mouth-line">
+                      <span class="line-label">{{ 'settings.mouth_line' | translate }}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

@@ -1,12 +1,34 @@
 <div class="take-picture-container">
   <!-- Full-screen camera view -->
   <div class="camera-view">
-    <video #video 
-           [style.display]="isStreaming ? 'block' : 'none'"
-           autoplay 
-           playsinline 
-           muted>
-    </video>
+    <!-- Container that crops both video and alignment lines together -->
+    <div class="video-cropping-container" *ngIf="isStreaming">
+      <!-- Container that matches the actual video size -->
+      <div class="video-with-guides-container">
+        <video #video 
+               autoplay 
+               playsinline 
+               muted>
+        </video>
+        
+        <!-- Face alignment overlay -->
+        <div class="alignment-overlay" 
+             *ngIf="showOverlay && overlayImageUrl"
+             [style.opacity]="overlayOpacity">
+          <img [src]="overlayImageUrl" [alt]="getOverlayAltText()">
+        </div>
+
+        <!-- Alignment guide lines overlay -->
+        <div class="alignment-guides-overlay" *ngIf="showAlignmentGuides">
+          <!-- Vertical center line -->
+          <div class="alignment-guide-line vertical"></div>
+          <!-- Eye line -->
+          <div class="alignment-guide-line horizontal" [style.top.%]="eyeLinePosition"></div>
+          <!-- Mouth line -->
+          <div class="alignment-guide-line horizontal" [style.top.%]="mouthLinePosition"></div>
+        </div>
+      </div>
+    </div>
     
     <!-- Loading overlay -->
     <div class="camera-overlay" *ngIf="!isStreaming && !error">
@@ -21,23 +43,6 @@
       </svg>
       <p>{{ error }}</p>
       <button class="retry-button" (click)="initializeCamera()">{{ 'take_picture.retry' | translate }}</button>
-    </div>
-
-    <!-- Face alignment overlay -->
-    <div class="alignment-overlay" 
-         *ngIf="showOverlay && overlayImageUrl && isStreaming"
-         [style.opacity]="overlayOpacity">
-      <img [src]="overlayImageUrl" [alt]="getOverlayAltText()">
-    </div>
-
-    <!-- Alignment guide lines overlay -->
-    <div class="alignment-guides-overlay" *ngIf="showAlignmentGuides && isStreaming">
-      <!-- Vertical center line -->
-      <div class="alignment-guide-line vertical"></div>
-      <!-- Eye line -->
-      <div class="alignment-guide-line horizontal" [style.top.%]="eyeLinePosition"></div>
-      <!-- Mouth line -->
-      <div class="alignment-guide-line horizontal" [style.top.%]="mouthLinePosition"></div>
     </div>
 
     <!-- Overlay toggle buttons -->

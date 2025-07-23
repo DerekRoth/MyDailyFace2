@@ -16,10 +16,33 @@
   justify-content: center;
 }
 
+/* Container that crops both video and alignment lines together */
+.video-cropping-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  /* This container will crop everything inside it */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Container that matches the actual video size */
+.video-with-guides-container {
+  position: relative;
+  /* This container will be sized to match the video's natural dimensions */
+  width: auto;
+  height: auto;
+}
+
 .camera-view video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  /* Video at natural size - intermediate container will size itself to match */
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
   transform: scaleX(-1); /* Mirror the video horizontally */
 }
 
@@ -116,9 +139,11 @@
 }
 
 .alignment-overlay img {
+  /* Image matches the video size exactly */
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  max-width: 100%;
+  max-height: 100%;
   transform: scaleX(-1); /* Mirror to match video */
 }
 

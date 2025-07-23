@@ -502,19 +502,19 @@ input:checked + .toggle-slider:before {
     height: 6px;
     padding: 12px 0;
   }
-  
+
   .opacity-slider::-webkit-slider-thumb {
     width: 32px;
     height: 32px;
     border-width: 4px;
   }
-  
+
   .opacity-slider::-moz-range-thumb {
     width: 32px;
     height: 32px;
     border-width: 4px;
   }
-  
+
   .opacity-slider::-ms-thumb {
     width: 32px;
     height: 32px;
@@ -623,30 +623,30 @@ input:checked + .toggle-slider:before {
   .settings-container {
     padding: 15px;
   }
-  
+
   .header h1 {
     font-size: 28px;
   }
-  
+
   .setting-item {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .setting-item button {
     margin-top: 12px;
     align-self: flex-end;
   }
-  
+
   .toggle-switch {
     margin-top: 12px;
     align-self: flex-end;
   }
-  
+
   .form-actions {
     flex-direction: column;
   }
-  
+
   .form-actions button {
     width: 100%;
   }
@@ -818,20 +818,20 @@ input:checked + .toggle-slider:before {
   .install-instructions-overlay {
     padding: 10px;
   }
-  
+
   .install-instructions-modal {
     max-height: 90vh;
   }
-  
+
   .modal-header {
     padding: 15px;
   }
-  
+
   .modal-content {
     padding: 15px;
   }
-  
-  
+
+
   .language-dropdown {
     min-width: 120px;
     font-size: 13px;
@@ -913,10 +913,33 @@ input:checked + .toggle-slider:before {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+/* Container that crops both image and alignment lines together */
+.image-cropping-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  /* This container will crop everything inside it */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Container that matches the actual image size */
+.image-with-guides-container {
+  position: relative;
+  /* This container will be sized to match the image's natural dimensions */
+  width: auto;
+  height: auto;
+}
+
 .preview-photo {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  /* Image at natural size - intermediate container will size itself to match */
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
   transform: scaleX(-1); /* Mirror to match camera */
 }
 
@@ -924,6 +947,20 @@ input:checked + .toggle-slider:before {
   position: absolute;
   background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Alignment guides overlay */
+.alignment-guides-area {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.alignment-guides-area > * {
+  pointer-events: auto;
 }
 
 .config-guide-line.vertical-line {
@@ -1090,17 +1127,17 @@ input:checked + .toggle-slider:before {
     max-width: none;
     max-height: none;
   }
-  
+
   .config-content { padding: 20px; }
   .alignment-preview { max-width: none; }
   .config-actions { flex-direction: column; }
   .position-info { flex-direction: column; gap: 12px; }
-  
+
   /* Better touch feedback on mobile */
   .line-hit-area {
     height: 48px; /* Slightly larger on mobile */
   }
-  
+
   .line-container {
     height: 48px;
   }

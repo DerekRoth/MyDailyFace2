@@ -37,7 +37,7 @@ jobs:
         sed -i 's/YOUR_RESTRICTED_API_KEY_HERE/${{ secrets.GOOGLE_API_KEY }}/g' src/environments/environment.ts
 
     - name: Build
-      run: npm run build -- --base-href /MyDailyFace2/
+      run: npm run build -- --base-href /
 
     - name: Setup Pages
       uses: actions/configure-pages@v4

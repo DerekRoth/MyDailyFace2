@@ -51,7 +51,7 @@ Since you have a production build running, you can test at:
 3. **OfflineIndicatorComponent**: Shows status to user
 
 ## HTTPS Requirement
-For production deployment, service workers require HTTPS. Your GitHub Pages deployment at `https://derekroth.github.io/MyDailyFace2/` will work perfectly with service workers.
+For production deployment, service workers require HTTPS. Your GitHub Pages deployment at `https://dailyface.me` will work perfectly with service workers.
 
 ## Troubleshooting
 - If service worker doesn't register, check browser console for errors

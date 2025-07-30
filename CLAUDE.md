@@ -176,7 +176,7 @@ private getTranslations(languageCode: string): Record<string, string> {
 ## Deployment
 
 ### GitHub Pages
-- **URL**: https://derekroth.github.io/MyDailyFace2/
+- **URL**: Custom domain https://dailyface.me, pure Github pages URL was https://derekroth.github.io/MyDailyFace2/
 - **Automated deployment**: GitHub Actions workflow builds and deploys on push to main
 - **Build output**: `dist/my-daily-face/browser/` → GitHub Pages root
 - **PWA support**: Service worker for offline functionality
@@ -198,7 +198,7 @@ Set these in your repository Settings → Secrets and variables → Actions:
 - **GOOGLE_API_KEY**: Your restricted Google Drive API key (keep private)
 
 ### Build Considerations
-- **Base href**: Set to `/MyDailyFace2/` for GitHub Pages
+- **Base href**: Used to be set to `/MyDailyFace2/` for GitHub Pages before custom domain was configured
 - **Browser subfolder**: Angular 19 outputs to `browser/` subdirectory
 - **Bundle warnings**: Settings and browse-pictures components exceed 4KB budget
 

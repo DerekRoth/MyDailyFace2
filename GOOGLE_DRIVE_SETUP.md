@@ -8,7 +8,7 @@ The Google Drive integration is now properly configured to use app-level credent
 ### 1. Create Google Cloud Project
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project or select existing one
-3. Name it something like "MyDailyFace App"
+3. Name it something like "DailyFace.me App"
 
 ### 2. Enable Google Drive API
 1. In your project, go to "APIs & Services" > "Library"
@@ -75,7 +75,7 @@ export const environment = {
 ## Security Notes
 - API credentials are built into the app (not exposed to users)
 - Users only grant access to their Google Drive files
-- App creates a dedicated "MyDailyFace" folder
+- App creates a dedicated "DailyFace.me" folder
 - No access to other Google Drive files
 - Users can revoke access anytime in their Google Account settings
 

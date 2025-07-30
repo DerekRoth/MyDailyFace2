@@ -51,10 +51,10 @@ export class OfflineQueueService {
   private initializeService(): void {
     // Load queued actions from localStorage
     this.loadQueue();
-    
+
     // Monitor online/offline status
     this.setupConnectivityMonitoring();
-    
+
     // Start background sync when online
     this.startBackgroundSync();
   }
@@ -68,7 +68,7 @@ export class OfflineQueueService {
       startWith(navigator.onLine)
     ).subscribe((isOnline: boolean) => {
       this.updateOfflineStatus({ isOnline });
-      
+
       if (isOnline && this.queue.length > 0) {
         // Trigger immediate sync when coming back online
         setTimeout(() => this.processQueue(), 1000);
@@ -88,8 +88,8 @@ export class OfflineQueueService {
   async queuePhotoUpload(photoBlob: Blob, photoId: string, timestamp: Date): Promise<void> {
     // Convert blob to ArrayBuffer for storage
     const arrayBuffer = await this.blobToArrayBuffer(photoBlob);
-    const fileName = `mydailyface_${photoId}_${timestamp.toISOString().split('T')[0]}.jpg`;
-    
+    const fileName = `dailyface_${photoId}_${timestamp.toISOString().split('T')[0]}.jpg`;
+
     const queuedAction: QueuedAction = {
       id: this.generateActionId(),
       type: 'upload',
@@ -141,9 +141,9 @@ export class OfflineQueueService {
       return; // Already processing
     }
 
-    this.updateOfflineStatus({ 
-      syncInProgress: true, 
-      lastSyncAttempt: new Date() 
+    this.updateOfflineStatus({
+      syncInProgress: true,
+      lastSyncAttempt: new Date()
     });
 
     const actionsToProcess = [...this.queue];
@@ -182,7 +182,7 @@ export class OfflineQueueService {
     }
 
     this.saveQueue();
-    this.updateOfflineStatus({ 
+    this.updateOfflineStatus({
       syncInProgress: false,
       hasQueuedActions: this.queue.length
     });
@@ -205,13 +205,13 @@ export class OfflineQueueService {
 
       const blob = this.arrayBufferToBlob(action.data);
       const fileId = await this.googleDriveService.uploadPhoto(blob, action.fileName);
-      
+
       if (fileId) {
         // Update local photo record with sync status
         await this.indexedDbService.updatePhotoSyncStatus(action.photoId, fileId, true);
         return true;
       }
-      
+
       return false;
     } catch (error) {
       console.error('Upload action failed:', error);
@@ -246,7 +246,7 @@ export class OfflineQueueService {
   getQueueStatus(): { total: number; uploads: number; deletes: number } {
     const uploads = this.queue.filter(a => a.type === 'upload').length;
     const deletes = this.queue.filter(a => a.type === 'delete').length;
-    
+
     return {
       total: this.queue.length,
       uploads,

@@ -12,7 +12,7 @@ import { LocaleService } from '../services/locale.service';
 })
 export class PrivacyComponent {
   lastUpdated = 'January 2025';
-  contactEmail = 'roth.derek+mydailyface@gmail.com';
+  contactEmail = 'roth.derek+DailyFace.me@gmail.com';
 
   constructor(private localeService: LocaleService) {}
 

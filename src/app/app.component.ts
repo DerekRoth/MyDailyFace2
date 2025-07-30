@@ -18,16 +18,16 @@ import { OfflineQueueService } from './services/offline-queue.service';
   styleUrl: './app.component.css'
 })
 export class AppComponent implements OnInit, OnDestroy {
-  title = 'MyDailyFace';
-  
+  title = 'DailyFace.me';
+
   // Error overlay state
   showErrorOverlay = false;
   errors: ErrorEntry[] = [];
-  
+
   private destroy$ = new Subject<void>();
 
   constructor(
-    private router: Router, 
+    private router: Router,
     private swUpdate: SwUpdate,
     private errorTracker: ErrorTrackerService,
     private cameraStreamService: CameraStreamService,

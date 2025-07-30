@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "MyDailyFace": {
+    "DailyFace.me": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -95,10 +95,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "MyDailyFace:build:production"
+              "buildTarget": "DailyFace.me:build:production"
             },
             "development": {
-              "buildTarget": "MyDailyFace:build:development"
+              "buildTarget": "DailyFace.me:build:development"
             }
           },
           "defaultConfiguration": "development"

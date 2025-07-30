@@ -1,8 +1,8 @@
 {
-  "name": "MyDailyFace",
-  "short_name": "MyDailyFace",
+  "name": "DailyFace.me",
+  "short_name": "DailyFace.me",
   "description": "Take daily selfies and track your face changes over time with sophisticated camera animations and Google Drive sync",
-  "id": "mydailyface",
+  "id": "dailyface.me",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",

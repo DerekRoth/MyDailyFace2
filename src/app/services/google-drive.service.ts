@@ -33,8 +33,8 @@ export interface SyncStatus {
 export class GoogleDriveService {
   private readonly DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
   private readonly SCOPES = 'https://www.googleapis.com/auth/drive.file';
-  private readonly FOLDER_NAME = 'MyDailyFace';
-  
+  private readonly FOLDER_NAME = 'DailyFace.me';
+
   private readonly config: GoogleDriveConfig = {
     clientId: environment.googleDrive.clientId,
     apiKey: environment.googleDrive.apiKey,
@@ -64,7 +64,7 @@ export class GoogleDriveService {
     // Load auto-sync preference from localStorage
     const autoSyncEnabled = localStorage.getItem('googleDriveAutoSync') === 'true';
     this.updateSyncStatus({ isEnabled: autoSyncEnabled });
-    
+
     // Start monitoring connection and sync when available
     this.startAutoSync();
   }
@@ -100,15 +100,15 @@ export class GoogleDriveService {
                   return;
                 }
                 this.accessToken = response.access_token;
-                this.updateSyncStatus({ 
-                  isAuthenticated: true, 
-                  error: null 
+                this.updateSyncStatus({
+                  isAuthenticated: true,
+                  error: null
                 });
                 // Trigger automatic sync when authenticated
                 this.triggerBackgroundSync();
               }
             });
-            
+
             this.isInitialized = true;
             resolve();
           } catch (error) {
@@ -145,14 +145,14 @@ export class GoogleDriveService {
   async signIn(): Promise<boolean> {
     try {
       await this.initializeGapi();
-      
+
       if (!this.tokenClient) {
         throw new Error('Token client not initialized');
       }
 
       // Request access token
       this.tokenClient.requestAccessToken({ prompt: 'consent' });
-      
+
       // Wait for the callback to set the access token
       return new Promise((resolve) => {
         const checkAuth = async () => {
@@ -168,10 +168,10 @@ export class GoogleDriveService {
             setTimeout(checkAuth, 100);
           }
         };
-        
+
         // Start checking after a short delay
         setTimeout(checkAuth, 100);
-        
+
         // Timeout after 30 seconds
         setTimeout(() => {
           if (!this.accessToken) {
@@ -193,9 +193,9 @@ export class GoogleDriveService {
         window.google.accounts.oauth2.revoke(this.accessToken);
       }
       this.accessToken = null;
-      this.updateSyncStatus({ 
-        isAuthenticated: false, 
-        error: null 
+      this.updateSyncStatus({
+        isAuthenticated: false,
+        error: null
       });
     } catch (error) {
       console.error('Sign-out failed:', error);
@@ -242,14 +242,14 @@ export class GoogleDriveService {
 
   async syncPhoto(photoBlob: Blob, photoId: string, timestamp: Date): Promise<string | null> {
     try {
-      const fileName = `mydailyface_${photoId}_${timestamp.toISOString().split('T')[0]}.jpg`;
+      const fileName = `dailyface_${photoId}_${timestamp.toISOString().split('T')[0]}.jpg`;
       const fileId = await this.uploadPhoto(photoBlob, fileName);
-      
+
       // Mark as synced in local storage
       if (fileId) {
         await this.indexedDbService.updatePhotoSyncStatus(photoId, fileId, true);
       }
-      
+
       return fileId;
     } catch (error) {
       console.error('Photo sync failed:', error);
@@ -265,8 +265,8 @@ export class GoogleDriveService {
       }
 
       // Find the file by searching for the specific filename pattern
-      const fileName = `mydailyface_${photoId}_${timestamp.toISOString().split('T')[0]}.jpg`;
-      
+      const fileName = `dailyface_${photoId}_${timestamp.toISOString().split('T')[0]}.jpg`;
+
       const response = await window.gapi.client.drive.files.list({
         q: `name='${fileName}' and trashed=false`,
         spaces: 'drive'
@@ -274,12 +274,12 @@ export class GoogleDriveService {
 
       if (response.result.files && response.result.files.length > 0) {
         const fileId = response.result.files[0].id;
-        
+
         // Delete the file
         await window.gapi.client.drive.files.delete({
           fileId: fileId
         });
-        
+
         console.log('Photo deleted from Google Drive:', fileName);
         return true;
       } else {
@@ -334,8 +334,8 @@ export class GoogleDriveService {
   }
 
   isConfigured(): boolean {
-    return !!(this.config.clientId && this.config.apiKey && 
-             this.config.clientId !== 'YOUR_GOOGLE_CLIENT_ID_HERE' && 
+    return !!(this.config.clientId && this.config.apiKey &&
+             this.config.clientId !== 'YOUR_GOOGLE_CLIENT_ID_HERE' &&
              this.config.apiKey !== 'YOUR_GOOGLE_API_KEY_HERE');
   }
 
@@ -363,9 +363,9 @@ export class GoogleDriveService {
   private async triggerBackgroundSync(): Promise<void> {
     // Prevent multiple simultaneous syncs
     if (this.isSyncing) return;
-    
+
     const syncStatus = this.getCurrentStatus();
-    
+
     // Only sync if enabled, authenticated, and online
     if (!syncStatus.isEnabled || !syncStatus.isAuthenticated || !navigator.onLine) {
       return;
@@ -376,9 +376,9 @@ export class GoogleDriveService {
 
     try {
       const unsyncedPhotos = await this.indexedDbService.getUnsyncedPhotos();
-      
+
       if (unsyncedPhotos.length === 0) {
-        this.updateSyncStatus({ 
+        this.updateSyncStatus({
           isSyncing: false,
           lastSync: new Date()
         });
@@ -409,8 +409,8 @@ export class GoogleDriveService {
       }
 
       console.log(`Background sync completed: ${syncedCount} synced, ${failedCount} failed`);
-      
-      this.updateSyncStatus({ 
+
+      this.updateSyncStatus({
         isSyncing: false,
         lastSync: new Date(),
         syncedPhotos: this.syncStatusSubject.value.syncedPhotos + syncedCount,
@@ -419,7 +419,7 @@ export class GoogleDriveService {
 
     } catch (error) {
       console.error('Background sync error:', error);
-      this.updateSyncStatus({ 
+      this.updateSyncStatus({
         isSyncing: false,
         error: 'Background sync failed'
       });

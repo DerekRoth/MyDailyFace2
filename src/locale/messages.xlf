@@ -293,8 +293,8 @@
         <target>About Google Drive Sync</target>
       </trans-unit>
       <trans-unit id="settings.google_drive_folder_info" datatype="html">
-        <source>Photos are synced to a "MyDailyFace" folder in your Google Drive</source>
-        <target>Photos are synced to a "MyDailyFace" folder in your Google Drive</target>
+        <source>Photos are synced to a "DailyFace.me" folder in your Google Drive</source>
+        <target>Photos are synced to a "DailyFace.me" folder in your Google Drive</target>
       </trans-unit>
       <trans-unit id="settings.overlay_opacity" datatype="html">
         <source>Face Alignment Overlay Opacity</source>
@@ -393,8 +393,8 @@
         <target>Install App</target>
       </trans-unit>
       <trans-unit id="settings.install_app_description" datatype="html">
-        <source>Add MyDailyFace to your home screen for easy access</source>
-        <target>Add MyDailyFace to your home screen for easy access</target>
+        <source>Add DailyFace.me to your home screen for easy access</source>
+        <target>Add DailyFace.me to your home screen for easy access</target>
       </trans-unit>
       <trans-unit id="settings.install_app_button" datatype="html">
         <source>Install App</source>
@@ -405,8 +405,8 @@
         <target>Show Instructions</target>
       </trans-unit>
       <trans-unit id="settings.install_modal_title" datatype="html">
-        <source>Install MyDailyFace</source>
-        <target>Install MyDailyFace</target>
+        <source>Install DailyFace.me</source>
+        <target>Install DailyFace.me</target>
       </trans-unit>
       <trans-unit id="settings.close" datatype="html">
         <source>Close</source>
@@ -441,8 +441,8 @@
         <target>Version</target>
       </trans-unit>
       <trans-unit id="settings.version_number" datatype="html">
-        <source>MyDailyFace v1.0.0</source>
-        <target>MyDailyFace v1.0.0</target>
+        <source>DailyFace.me v1.0.0</source>
+        <target>DailyFace.me v1.0.0</target>
       </trans-unit>
       <trans-unit id="settings.privacy" datatype="html">
         <source>Privacy</source>

@@ -46,7 +46,7 @@ export class AppUpdateService {
             lastCheck: new Date()
           });
           break;
-          
+
         case 'VERSION_READY':
           console.log('New version ready');
           this.updateStatus({
@@ -55,7 +55,7 @@ export class AppUpdateService {
           });
           // Optionally auto-prompt user here
           break;
-          
+
         case 'VERSION_INSTALLATION_FAILED':
           console.error('Version installation failed');
           this.updateStatus({
@@ -76,7 +76,7 @@ export class AppUpdateService {
 
     // Start periodic update checks
     this.startPeriodicUpdateChecks();
-    
+
     // Check for updates immediately
     this.checkForUpdates();
   }
@@ -95,7 +95,7 @@ export class AppUpdateService {
     try {
       console.log('Checking for app updates...');
       const updateAvailable = await this.swUpdate.checkForUpdate();
-      
+
       this.updateStatus({
         lastCheck: new Date(),
         updateError: null
@@ -136,7 +136,7 @@ export class AppUpdateService {
 
       console.log('Applying app update...');
       await this.swUpdate.activateUpdate();
-      
+
       this.updateStatus({
         isUpdating: false,
         updateAvailable: false,
@@ -160,7 +160,7 @@ export class AppUpdateService {
   promptUserForUpdate(): Observable<boolean> {
     return new Observable(observer => {
       const currentStatus = this.updateStatusSubject.value;
-      
+
       if (!currentStatus.updateAvailable) {
         observer.next(false);
         observer.complete();
@@ -169,9 +169,9 @@ export class AppUpdateService {
 
       // Create a simple confirmation dialog
       const userWantsUpdate = confirm(
-        'A new version of MyDailyFace is available. Would you like to update now? The app will reload automatically.'
+        'A new version of DailyFace.me is available. Would you like to update now? The app will reload automatically.'
       );
-      
+
       observer.next(userWantsUpdate);
       observer.complete();
 
@@ -185,7 +185,7 @@ export class AppUpdateService {
   showUpdateBanner(): Observable<'update' | 'dismiss' | 'later'> {
     return new Observable(observer => {
       const currentStatus = this.updateStatusSubject.value;
-      
+
       if (!currentStatus.updateAvailable) {
         observer.next('dismiss');
         observer.complete();
@@ -195,7 +195,7 @@ export class AppUpdateService {
       // For now, use a simple confirm dialog
       // In a real app, you'd show a proper UI banner
       const result = confirm('New version available! Update now?');
-      
+
       observer.next(result ? 'update' : 'later');
       observer.complete();
 

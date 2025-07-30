@@ -1,7 +1,7 @@
-# MyDailyFace - Claude Reference
+# DailyFace.me - Claude Reference
 
 ## Project Overview
-MyDailyFace is a Progressive Web App (PWA) built with Angular 19 that allows users to take daily selfies with sophisticated camera animations and optional Google Drive sync.
+DailyFace.me is a Progressive Web App (PWA) built with Angular 19 that allows users to take daily selfies with sophisticated camera animations and optional Google Drive sync.
 
 ## Key Features
 - **Full-screen camera interface** with immersive capture experience
@@ -76,7 +76,7 @@ MyDailyFace is a Progressive Web App (PWA) built with Angular 19 that allows use
 npm run start
 
 # Production build
-npm run build -- --base-href /MyDailyFace/
+npm run build -- --base-href /
 
 # Internationalization builds
 npm run build:i18n          # Build all languages (generates separate locale builds)

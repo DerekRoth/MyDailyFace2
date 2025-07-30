@@ -47,7 +47,7 @@ export class LocaleService {
     if (this.isLanguageSupported(languageCode)) {
       this.currentLanguageSubject.next(languageCode);
       this.saveLanguage(languageCode);
-      
+
       // Update the current language immediately without reload
       // This will trigger reactive updates in components
     }
@@ -68,17 +68,17 @@ export class LocaleService {
     if (typeof navigator !== 'undefined') {
       // Get user's preferred languages
       const browserLanguages = navigator.languages || [navigator.language];
-      
+
       for (const browserLang of browserLanguages) {
         // Extract language code (e.g., 'fr-FR' -> 'fr')
         const langCode = browserLang.split('-')[0].toLowerCase();
-        
+
         if (this.isLanguageSupported(langCode)) {
           return langCode;
         }
       }
     }
-    
+
     // Default to English if no supported language found
     return 'en';
   }
@@ -107,7 +107,7 @@ export class LocaleService {
         'nav.browse': 'Browse',
         'nav.play': 'Play',
         'nav.settings': 'Settings',
-        
+
         // Browse Pictures
         'browse.title': 'Your Photos',
         'browse.photo_count_single': '1 photo',
@@ -123,7 +123,7 @@ export class LocaleService {
         'browse.delete_confirm': 'Delete',
         'browse.photo_alt': 'Photo from {date}',
         'browse.generic_photo_alt': 'Photo',
-        
+
         // Take Picture
         'take_picture.initializing_camera': 'Initializing camera...',
         'take_picture.retry': 'Retry',
@@ -133,17 +133,17 @@ export class LocaleService {
         'take_picture.camera_access_error': 'Unable to access camera. Please ensure camera permissions are granted.',
         'take_picture.save_error': 'Failed to save picture. Please try again.',
         'take_picture.capture_error': 'Failed to take picture. Please try again.',
-        
+
         // Play
         'play.no_photos_title': 'No Photos Yet',
         'play.no_photos_description': 'Take some photos first to see your timeline',
         'play.photo_alt': 'Photo {index}',
-        
+
         // Date formatting
         'date.today': 'Today',
         'date.yesterday': 'Yesterday',
         'date.days_ago': '{days} days ago',
-        
+
         // Month names
         'month.january': 'January',
         'month.february': 'February',
@@ -157,7 +157,7 @@ export class LocaleService {
         'month.october': 'October',
         'month.november': 'November',
         'month.december': 'December',
-        
+
         // Settings
         'settings.title': 'Settings',
         'settings.subtitle': 'Manage your app preferences',
@@ -188,7 +188,7 @@ export class LocaleService {
         'settings.syncing': 'Syncing...',
         'settings.sync_all': 'Sync All',
         'settings.about_google_drive_sync': 'About Google Drive Sync',
-        'settings.google_drive_folder_info': 'Photos are synced to a "MyDailyFace" folder in your Google Drive',
+        'settings.google_drive_folder_info': 'Photos are synced to a "DailyFace.me" folder in your Google Drive',
         'settings.overlay_opacity': 'Face Alignment Overlay Opacity',
         'settings.overlay_opacity_description': 'Adjust transparency of face alignment guide ({opacity}%)',
         'settings.storage': 'Storage',
@@ -201,11 +201,11 @@ export class LocaleService {
         'settings.installation_status': 'Installation Status',
         'settings.app_installed': '✅ App is installed on your device',
         'settings.install_app': 'Install App',
-        'settings.install_app_description': 'Add MyDailyFace to your home screen for easy access',
+        'settings.install_app_description': 'Add DailyFace.me to your home screen for easy access',
         'settings.show_instructions': 'Show Instructions',
         'settings.about': 'About',
         'settings.version': 'Version',
-        'settings.version_number': 'MyDailyFace v1.0.0',
+        'settings.version_number': 'DailyFace.me v1.0.0',
         'settings.privacy': 'Privacy',
         'settings.privacy_description': 'Photos stored locally and optionally synced to your Google Drive',
         'settings.legal': 'Legal',
@@ -213,23 +213,23 @@ export class LocaleService {
         'settings.terms_of_service': 'Terms of Service',
         'settings.animation_speed_normal': 'Normal',
         'settings.animation_speed_slower': '{speed}x slower',
-        
+
         // Installation modal
-        'settings.install_modal_title': 'Install MyDailyFace',
+        'settings.install_modal_title': 'Install DailyFace.me',
         'settings.close': 'Close',
         'settings.benefits_of_installing': 'Benefits of installing:',
         'settings.benefit_performance': 'Faster loading and better performance',
         'settings.benefit_offline': 'Works offline for taking photos',
         'settings.benefit_access': 'Quick access from your home screen',
         'settings.benefit_fullscreen': 'Full-screen experience without browser bars',
-        
+
         // Confirmation dialogs
         'settings.confirm_delete_all_photos': 'Are you sure you want to delete all photos? This action cannot be undone.',
         'settings.confirm_disconnect_google_drive': 'Are you sure you want to disconnect from Google Drive?',
         'settings.confirm_sync_all_photos': 'This will upload all your photos to Google Drive. Continue?',
         'settings.confirm_generate_test_data': '⚠️ This will generate ~730 test photos (2 years of daily photos). This may take a few minutes and use significant storage space. Continue?',
         'settings.confirm_clear_test_data': '⚠️ This will delete all test-generated photos (keeping real photos). Continue?',
-        
+
         // Alert messages
         'settings.alert_google_drive_not_configured': 'Google Drive integration not configured. Please contact the app developer.',
         'settings.alert_google_drive_connected': 'Successfully connected to Google Drive!',
@@ -244,7 +244,7 @@ export class LocaleService {
         'settings.alert_test_data_generation_complete': '✅ Test data generation complete!\\n\\n📸 {success} photos generated\\n❌ {failed} failed\\n⏱️ Duration: {duration} seconds\\n\\nGo to the Play tab to see your 2-year timeline!',
         'settings.alert_test_data_cleared': '✅ Test data cleared successfully!',
         'settings.alert_test_data_clear_failed': '❌ Failed to clear test data. Check console for details.',
-        
+
         // Testing features
         'settings.testing_features': 'Testing Features',
         'settings.generate_test_data': 'Generate Test Data',
@@ -261,36 +261,36 @@ export class LocaleService {
         'settings.hide_testing': 'Hide Testing',
         'settings.hide_testing_description': 'Hide these testing features',
         'settings.hide': 'Hide',
-        
+
         // Offline functionality
         'offline.no_connection': 'No internet connection',
         'offline.queued_actions': 'queued actions',
         'offline.syncing': 'Syncing photos...',
         'offline.connection_restored': 'Connection restored',
-        
+
         // App updates
         'app_update.available': 'New version available',
         'app_update.update_now': 'Update Now',
         'app_update.later': 'Later',
         'app_update.updating': 'Updating app...',
-        
+
         // Legal pages
         'legal.back_to_settings': 'Back to Settings',
         'legal.last_updated': 'Last updated: {date}',
-        'legal.contact_email': 'roth.derek+mydailyface@gmail.com',
-        
+        'legal.contact_email': 'roth.derek+DailyFace.me@gmail.com',
+
         // Terms of Service
         'terms.title': 'Terms of Service',
-        'terms.welcome_title': 'Welcome to MyDailyFace',
-        'terms.welcome_text': 'These Terms of Service govern your use of the MyDailyFace web application ("the App"). By using the App, you agree to these terms.',
+        'terms.welcome_title': 'Welcome to DailyFace.me',
+        'terms.welcome_text': 'These Terms of Service govern your use of the DailyFace.me web application ("the App"). By using the App, you agree to these terms.',
         'terms.service_title': 'Description of Service',
-        'terms.service_text': 'MyDailyFace is a personal photo diary application that allows you to:',
+        'terms.service_text': 'DailyFace.me is a personal photo diary application that allows you to:',
         'terms.service_item1': 'Capture daily selfies using your device\'s camera',
         'terms.service_item2': 'Store photos locally in your browser',
         'terms.service_item3': 'Optionally backup photos to your personal Google Drive',
         'terms.service_item4': 'View and play back your photo collection',
         'terms.responsibilities_title': 'Your Responsibilities',
-        'terms.responsibilities_text': 'When using MyDailyFace, you agree to:',
+        'terms.responsibilities_text': 'When using DailyFace.me, you agree to:',
         'terms.responsibilities_item1': 'Use the App only for personal, non-commercial purposes',
         'terms.responsibilities_item2': 'Not use the App for any illegal or harmful activities',
         'terms.responsibilities_item3': 'Be responsible for the content of photos you capture',
@@ -309,7 +309,7 @@ export class LocaleService {
         'terms.camera_item3': 'Use the App only when you choose to take photos',
         'terms.drive_title': 'Google Drive Integration',
         'terms.drive_text': 'If you enable Google Drive backup:',
-        'terms.drive_item1': 'You authorize the App to create a "MyDailyFace" folder in your Drive',
+        'terms.drive_item1': 'You authorize the App to create a "DailyFace.me" folder in your Drive',
         'terms.drive_item2': 'You can revoke this access through your Google Account settings',
         'terms.drive_item3': 'The App only accesses the folder it creates',
         'terms.drive_item4': 'You remain in full control of your Google Drive data',
@@ -334,20 +334,20 @@ export class LocaleService {
         'terms.contact_text': 'For questions about these terms, contact us at: {email}',
         'terms.law_title': 'Governing Law',
         'terms.law_text': 'These terms are governed by the laws of the jurisdiction where the App is operated, without regard to conflict of law principles.',
-        
+
         // Privacy Policy
         'privacy.title': 'Privacy Policy',
         'privacy.overview_title': 'Overview',
-        'privacy.overview_text': 'MyDailyFace is a personal photo diary app that helps you capture and organize daily selfies. This privacy policy explains how we handle your data when you use our app.',
+        'privacy.overview_text': 'DailyFace.me is a personal photo diary app that helps you capture and organize daily selfies. This privacy policy explains how we handle your data when you use our app.',
         'privacy.collection_title': 'Data Collection',
-        'privacy.collection_text': 'MyDailyFace does not collect, store, or transmit any personal data to external servers. All data processing happens locally on your device.',
+        'privacy.collection_text': 'DailyFace.me does not collect, store, or transmit any personal data to external servers. All data processing happens locally on your device.',
         'privacy.local_title': 'Local Storage',
         'privacy.local_item1': 'Photos are stored locally in your browser\'s IndexedDB',
         'privacy.local_item2': 'App settings are stored in your browser\'s local storage',
         'privacy.local_item3': 'No personal information is collected or stored by us',
         'privacy.drive_title': 'Google Drive Integration (Optional)',
         'privacy.drive_text': 'If you choose to enable Google Drive backup:',
-        'privacy.drive_item1': 'We access your Google account only to create a dedicated "MyDailyFace" folder',
+        'privacy.drive_item1': 'We access your Google account only to create a dedicated "DailyFace.me" folder',
         'privacy.drive_item2': 'Photos are uploaded directly from your device to your Google Drive',
         'privacy.drive_item3': 'We do not access, read, or store any other files in your Google Drive',
         'privacy.drive_item4': 'We do not store your Google credentials or tokens',
@@ -367,19 +367,19 @@ export class LocaleService {
         'privacy.retention_text': 'You control all data retention:',
         'privacy.retention_item1': 'Delete photos anytime from the app',
         'privacy.retention_item2': 'Clear all app data through browser settings',
-        'privacy.retention_item3': 'Remove Google Drive backup by deleting the MyDailyFace folder',
+        'privacy.retention_item3': 'Remove Google Drive backup by deleting the DailyFace.me folder',
         'privacy.children_title': 'Children\'s Privacy',
         'privacy.children_text': 'This app is not intended for children under 13. We do not knowingly collect information from children under 13.',
         'privacy.changes_title': 'Changes to This Policy',
         'privacy.changes_text': 'Any changes to this privacy policy will be updated on this page. Continued use of the app after changes constitutes acceptance of the updated policy.',
         'privacy.contact_title': 'Contact Us',
         'privacy.contact_text': 'For questions about this privacy policy, contact us at: {email}',
-        
+
         // Installation Instructions
         'install.chrome_desktop': 'Chrome Desktop',
         'install.chrome_desktop_1': 'Look for the install icon (⬇️ or ⊕) in the address bar',
-        'install.chrome_desktop_2': 'Click the icon and select "Install MyDailyFace"',
-        'install.chrome_desktop_3': 'Or click the three dots menu (⋮) → "Install MyDailyFace"',
+        'install.chrome_desktop_2': 'Click the icon and select "Install DailyFace.me"',
+        'install.chrome_desktop_3': 'Or click the three dots menu (⋮) → "Install DailyFace.me"',
         'install.chrome_desktop_4': 'The app will be added to your desktop and Start menu',
         'install.chrome_mobile': 'Chrome Mobile',
         'install.chrome_mobile_1': 'Tap the three dots menu (⋮) in the top right',
@@ -397,20 +397,20 @@ export class LocaleService {
         'install.safari_desktop_3': 'The app will open in its own window',
         'install.firefox': 'Firefox',
         'install.firefox_1': 'Click the three lines menu (☰) in the top right',
-        'install.firefox_2': 'Select "Install MyDailyFace"',
+        'install.firefox_2': 'Select "Install DailyFace.me"',
         'install.firefox_3': 'Or look for the install icon in the address bar',
         'install.firefox_4': 'Click "Install" to add to your system',
         'install.edge': 'Microsoft Edge',
         'install.edge_1': 'Look for the install icon (⊕) in the address bar',
-        'install.edge_2': 'Click the icon and select "Install MyDailyFace"',
-        'install.edge_3': 'Or click the three dots menu (⋯) → "Apps" → "Install MyDailyFace"',
+        'install.edge_2': 'Click the icon and select "Install DailyFace.me"',
+        'install.edge_3': 'Or click the three dots menu (⋯) → "Apps" → "Install DailyFace.me"',
         'install.edge_4': 'The app will be added to your desktop and Start menu',
         'install.generic': 'Your Browser',
         'install.generic_1': 'Look for an install icon in the address bar',
         'install.generic_2': 'Check your browser\'s menu for "Install" or "Add to Home Screen"',
         'install.generic_3': 'The app can be installed for offline use',
         'install.generic_4': 'Contact support if you need help with installation',
-        
+
         // Alignment Overlay
         'take_picture.alignment_guides_tooltip': 'Toggle alignment guide lines',
         'settings.configure_alignment_lines': 'Configure Alignment Lines',
@@ -429,7 +429,7 @@ export class LocaleService {
         'nav.browse': 'Parcourir',
         'nav.play': 'Lire',
         'nav.settings': 'Paramètres',
-        
+
         // Browse Pictures
         'browse.title': 'Vos Photos',
         'browse.photo_count_single': '1 photo',
@@ -445,7 +445,7 @@ export class LocaleService {
         'browse.delete_confirm': 'Supprimer',
         'browse.photo_alt': 'Photo du {date}',
         'browse.generic_photo_alt': 'Photo',
-        
+
         // Take Picture
         'take_picture.initializing_camera': 'Initialisation de la caméra...',
         'take_picture.retry': 'Réessayer',
@@ -455,17 +455,17 @@ export class LocaleService {
         'take_picture.camera_access_error': 'Impossible d\'accéder à la caméra. Veuillez autoriser l\'accès à la caméra.',
         'take_picture.save_error': 'Échec de l\'enregistrement de la photo. Veuillez réessayer.',
         'take_picture.capture_error': 'Échec de la prise de photo. Veuillez réessayer.',
-        
+
         // Play
         'play.no_photos_title': 'Aucune Photo',
         'play.no_photos_description': 'Prenez d\'abord quelques photos pour voir votre chronologie',
         'play.photo_alt': 'Photo {index}',
-        
+
         // Date formatting
         'date.today': 'Aujourd\'hui',
         'date.yesterday': 'Hier',
         'date.days_ago': 'Il y a {days} jours',
-        
+
         // Month names
         'month.january': 'Janvier',
         'month.february': 'Février',
@@ -479,7 +479,7 @@ export class LocaleService {
         'month.october': 'Octobre',
         'month.november': 'Novembre',
         'month.december': 'Décembre',
-        
+
         // Settings
         'settings.title': 'Paramètres',
         'settings.subtitle': 'Gérez vos préférences d\'application',
@@ -510,7 +510,7 @@ export class LocaleService {
         'settings.syncing': 'Synchronisation...',
         'settings.sync_all': 'Tout synchroniser',
         'settings.about_google_drive_sync': 'À propos de la synchronisation Google Drive',
-        'settings.google_drive_folder_info': 'Les photos sont synchronisées dans un dossier "MyDailyFace" de votre Google Drive',
+        'settings.google_drive_folder_info': 'Les photos sont synchronisées dans un dossier "DailyFace.me" de votre Google Drive',
         'settings.overlay_opacity': 'Opacité du guide d\'alignement',
         'settings.overlay_opacity_description': 'Ajuster la transparence du guide d\'alignement du visage ({opacity}%)',
         'settings.storage': 'Stockage',
@@ -523,11 +523,11 @@ export class LocaleService {
         'settings.installation_status': 'État de l\'installation',
         'settings.app_installed': '✅ L\'application est installée sur votre appareil',
         'settings.install_app': 'Installer l\'application',
-        'settings.install_app_description': 'Ajouter MyDailyFace à votre écran d\'accueil pour un accès facile',
+        'settings.install_app_description': 'Ajouter DailyFace.me à votre écran d\'accueil pour un accès facile',
         'settings.show_instructions': 'Afficher les instructions',
         'settings.about': 'À propos',
         'settings.version': 'Version',
-        'settings.version_number': 'MyDailyFace v1.0.0',
+        'settings.version_number': 'DailyFace.me v1.0.0',
         'settings.privacy': 'Confidentialité',
         'settings.privacy_description': 'Photos stockées localement et optionnellement synchronisées avec votre Google Drive',
         'settings.legal': 'Mentions légales',
@@ -535,23 +535,23 @@ export class LocaleService {
         'settings.terms_of_service': 'Conditions d\'utilisation',
         'settings.animation_speed_normal': 'Normal',
         'settings.animation_speed_slower': '{speed}x plus lent',
-        
+
         // Installation modal
-        'settings.install_modal_title': 'Installer MyDailyFace',
+        'settings.install_modal_title': 'Installer DailyFace.me',
         'settings.close': 'Fermer',
         'settings.benefits_of_installing': 'Avantages de l\'installation :',
         'settings.benefit_performance': 'Chargement plus rapide et meilleures performances',
         'settings.benefit_offline': 'Fonctionne hors ligne pour prendre des photos',
         'settings.benefit_access': 'Accès rapide depuis votre écran d\'accueil',
         'settings.benefit_fullscreen': 'Expérience plein écran sans barres de navigateur',
-        
+
         // Confirmation dialogs
         'settings.confirm_delete_all_photos': 'Êtes-vous sûr de vouloir supprimer toutes les photos ? Cette action ne peut pas être annulée.',
         'settings.confirm_disconnect_google_drive': 'Êtes-vous sûr de vouloir vous déconnecter de Google Drive ?',
         'settings.confirm_sync_all_photos': 'Cela téléchargera toutes vos photos sur Google Drive. Continuer ?',
         'settings.confirm_generate_test_data': '⚠️ Cela générera ~730 photos de test (2 ans de photos quotidiennes). Cela peut prendre quelques minutes et utiliser un espace de stockage important. Continuer ?',
         'settings.confirm_clear_test_data': '⚠️ Cela supprimera toutes les photos générées par les tests (en conservant les vraies photos). Continuer ?',
-        
+
         // Alert messages
         'settings.alert_google_drive_not_configured': 'Intégration Google Drive non configurée. Veuillez contacter le développeur de l\'application.',
         'settings.alert_google_drive_connected': 'Connexion à Google Drive réussie !',
@@ -566,7 +566,7 @@ export class LocaleService {
         'settings.alert_test_data_generation_complete': '✅ Génération de données de test terminée !\\n\\n📸 {success} photos générées\\n❌ {failed} échecs\\n⏱️ Durée : {duration} secondes\\n\\nAllez dans l\'onglet Lecture pour voir votre chronologie de 2 ans !',
         'settings.alert_test_data_cleared': '✅ Données de test supprimées avec succès !',
         'settings.alert_test_data_clear_failed': '❌ Échec de la suppression des données de test. Vérifiez la console pour plus de détails.',
-        
+
         // Testing features
         'settings.testing_features': 'Fonctionnalités de test',
         'settings.generate_test_data': 'Générer des données de test',
@@ -583,36 +583,36 @@ export class LocaleService {
         'settings.hide_testing': 'Masquer les tests',
         'settings.hide_testing_description': 'Masquer ces fonctionnalités de test',
         'settings.hide': 'Masquer',
-        
+
         // Offline functionality
         'offline.no_connection': 'Pas de connexion internet',
         'offline.queued_actions': 'actions en attente',
         'offline.syncing': 'Synchronisation des photos...',
         'offline.connection_restored': 'Connexion rétablie',
-        
+
         // App updates
         'app_update.available': 'Nouvelle version disponible',
         'app_update.update_now': 'Mettre à jour',
         'app_update.later': 'Plus tard',
         'app_update.updating': 'Mise à jour de l\'app...',
-        
+
         // Legal pages
         'legal.back_to_settings': 'Retour aux paramètres',
         'legal.last_updated': 'Dernière mise à jour : {date}',
-        'legal.contact_email': 'roth.derek+mydailyface@gmail.com',
-        
+        'legal.contact_email': 'roth.derek+DailyFace.me@gmail.com',
+
         // Terms of Service
         'terms.title': 'Conditions d\'utilisation',
-        'terms.welcome_title': 'Bienvenue sur MyDailyFace',
-        'terms.welcome_text': 'Ces Conditions d\'utilisation régissent votre utilisation de l\'application web MyDailyFace (« l\'Application »). En utilisant l\'Application, vous acceptez ces conditions.',
+        'terms.welcome_title': 'Bienvenue sur DailyFace.me',
+        'terms.welcome_text': 'Ces Conditions d\'utilisation régissent votre utilisation de l\'application web DailyFace.me (« l\'Application »). En utilisant l\'Application, vous acceptez ces conditions.',
         'terms.service_title': 'Description du service',
-        'terms.service_text': 'MyDailyFace est une application de journal photo personnel qui vous permet de :',
+        'terms.service_text': 'DailyFace.me est une application de journal photo personnel qui vous permet de :',
         'terms.service_item1': 'Prendre des selfies quotidiens en utilisant la caméra de votre appareil',
         'terms.service_item2': 'Stocker les photos localement dans votre navigateur',
         'terms.service_item3': 'Optionnellement sauvegarder les photos sur votre Google Drive personnel',
         'terms.service_item4': 'Voir et relire votre collection de photos',
         'terms.responsibilities_title': 'Vos responsabilités',
-        'terms.responsibilities_text': 'En utilisant MyDailyFace, vous acceptez de :',
+        'terms.responsibilities_text': 'En utilisant DailyFace.me, vous acceptez de :',
         'terms.responsibilities_item1': 'Utiliser l\'Application uniquement à des fins personnelles et non commerciales',
         'terms.responsibilities_item2': 'Ne pas utiliser l\'Application pour des activités illégales ou nuisibles',
         'terms.responsibilities_item3': 'Être responsable du contenu des photos que vous capturez',
@@ -631,7 +631,7 @@ export class LocaleService {
         'terms.camera_item3': 'Utiliser l\'Application seulement quand vous choisissez de prendre des photos',
         'terms.drive_title': 'Intégration Google Drive',
         'terms.drive_text': 'Si vous activez la sauvegarde Google Drive :',
-        'terms.drive_item1': 'Vous autorisez l\'Application à créer un dossier « MyDailyFace » dans votre Drive',
+        'terms.drive_item1': 'Vous autorisez l\'Application à créer un dossier « DailyFace.me » dans votre Drive',
         'terms.drive_item2': 'Vous pouvez révoquer cet accès via les paramètres de votre compte Google',
         'terms.drive_item3': 'L\'Application n\'accède qu\'au dossier qu\'elle crée',
         'terms.drive_item4': 'Vous gardez le contrôle complet de vos données Google Drive',
@@ -656,20 +656,20 @@ export class LocaleService {
         'terms.contact_text': 'Pour des questions sur ces conditions, contactez-nous à : {email}',
         'terms.law_title': 'Droit applicable',
         'terms.law_text': 'Ces conditions sont régies par les lois de la juridiction où l\'Application est exploitée, sans égard aux principes de conflit de lois.',
-        
+
         // Privacy Policy
         'privacy.title': 'Politique de confidentialité',
         'privacy.overview_title': 'Vue d\'ensemble',
-        'privacy.overview_text': 'MyDailyFace est une application de journal photo personnel qui vous aide à capturer et organiser des selfies quotidiens. Cette politique de confidentialité explique comment nous gérons vos données quand vous utilisez notre application.',
+        'privacy.overview_text': 'DailyFace.me est une application de journal photo personnel qui vous aide à capturer et organiser des selfies quotidiens. Cette politique de confidentialité explique comment nous gérons vos données quand vous utilisez notre application.',
         'privacy.collection_title': 'Collecte de données',
-        'privacy.collection_text': 'MyDailyFace ne collecte, ne stocke ni ne transmet aucune donnée personnelle vers des serveurs externes. Tout le traitement des données se fait localement sur votre appareil.',
+        'privacy.collection_text': 'DailyFace.me ne collecte, ne stocke ni ne transmet aucune donnée personnelle vers des serveurs externes. Tout le traitement des données se fait localement sur votre appareil.',
         'privacy.local_title': 'Stockage local',
         'privacy.local_item1': 'Les photos sont stockées localement dans l\'IndexedDB de votre navigateur',
         'privacy.local_item2': 'Les paramètres de l\'application sont stockés dans le stockage local de votre navigateur',
         'privacy.local_item3': 'Aucune information personnelle n\'est collectée ou stockée par nous',
         'privacy.drive_title': 'Intégration Google Drive (Optionnelle)',
         'privacy.drive_text': 'Si vous choisissez d\'activer la sauvegarde Google Drive :',
-        'privacy.drive_item1': 'Nous accédons à votre compte Google uniquement pour créer un dossier dédié « MyDailyFace »',
+        'privacy.drive_item1': 'Nous accédons à votre compte Google uniquement pour créer un dossier dédié « DailyFace.me »',
         'privacy.drive_item2': 'Les photos sont téléchargées directement de votre appareil vers votre Google Drive',
         'privacy.drive_item3': 'Nous n\'accédons, ne lisons ni ne stockons aucun autre fichier dans votre Google Drive',
         'privacy.drive_item4': 'Nous ne stockons pas vos identifiants ou jetons Google',
@@ -689,19 +689,19 @@ export class LocaleService {
         'privacy.retention_text': 'Vous contrôlez toute la conservation des données :',
         'privacy.retention_item1': 'Supprimez les photos à tout moment depuis l\'application',
         'privacy.retention_item2': 'Effacez toutes les données de l\'application via les paramètres du navigateur',
-        'privacy.retention_item3': 'Supprimez la sauvegarde Google Drive en supprimant le dossier MyDailyFace',
+        'privacy.retention_item3': 'Supprimez la sauvegarde Google Drive en supprimant le dossier DailyFace.me',
         'privacy.children_title': 'Confidentialité des enfants',
         'privacy.children_text': 'Cette application n\'est pas destinée aux enfants de moins de 13 ans. Nous ne collectons pas sciemment d\'informations d\'enfants de moins de 13 ans.',
         'privacy.changes_title': 'Modifications de cette politique',
         'privacy.changes_text': 'Toute modification de cette politique de confidentialité sera mise à jour sur cette page. L\'utilisation continue de l\'application après les modifications constitue l\'acceptation de la politique mise à jour.',
         'privacy.contact_title': 'Nous contacter',
         'privacy.contact_text': 'Pour des questions sur cette politique de confidentialité, contactez-nous à : {email}',
-        
+
         // Installation Instructions
         'install.chrome_desktop': 'Chrome Bureau',
         'install.chrome_desktop_1': 'Cherchez l\'icône d\'installation (⬇️ ou ⊕) dans la barre d\'adresse',
-        'install.chrome_desktop_2': 'Cliquez sur l\'icône et sélectionnez "Installer MyDailyFace"',
-        'install.chrome_desktop_3': 'Ou cliquez sur le menu trois points (⋮) → "Installer MyDailyFace"',
+        'install.chrome_desktop_2': 'Cliquez sur l\'icône et sélectionnez "Installer DailyFace.me"',
+        'install.chrome_desktop_3': 'Ou cliquez sur le menu trois points (⋮) → "Installer DailyFace.me"',
         'install.chrome_desktop_4': 'L\'application sera ajoutée à votre bureau et au menu Démarrer',
         'install.chrome_mobile': 'Chrome Mobile',
         'install.chrome_mobile_1': 'Appuyez sur le menu trois points (⋮) en haut à droite',
@@ -719,20 +719,20 @@ export class LocaleService {
         'install.safari_desktop_3': 'L\'application s\'ouvrira dans sa propre fenêtre',
         'install.firefox': 'Firefox',
         'install.firefox_1': 'Cliquez sur le menu trois lignes (☰) en haut à droite',
-        'install.firefox_2': 'Sélectionnez "Installer MyDailyFace"',
+        'install.firefox_2': 'Sélectionnez "Installer DailyFace.me"',
         'install.firefox_3': 'Ou cherchez l\'icône d\'installation dans la barre d\'adresse',
         'install.firefox_4': 'Cliquez sur "Installer" pour ajouter à votre système',
         'install.edge': 'Microsoft Edge',
         'install.edge_1': 'Cherchez l\'icône d\'installation (⊕) dans la barre d\'adresse',
-        'install.edge_2': 'Cliquez sur l\'icône et sélectionnez "Installer MyDailyFace"',
-        'install.edge_3': 'Ou cliquez sur le menu trois points (⋯) → "Applications" → "Installer MyDailyFace"',
+        'install.edge_2': 'Cliquez sur l\'icône et sélectionnez "Installer DailyFace.me"',
+        'install.edge_3': 'Ou cliquez sur le menu trois points (⋯) → "Applications" → "Installer DailyFace.me"',
         'install.edge_4': 'L\'application sera ajoutée à votre bureau et au menu Démarrer',
         'install.generic': 'Votre navigateur',
         'install.generic_1': 'Cherchez une icône d\'installation dans la barre d\'adresse',
         'install.generic_2': 'Vérifiez le menu de votre navigateur pour "Installer" ou "Ajouter à l\'écran d\'accueil"',
         'install.generic_3': 'L\'application peut être installée pour une utilisation hors ligne',
         'install.generic_4': 'Contactez le support si vous avez besoin d\'aide pour l\'installation',
-        
+
         // Alignment Overlay
         'take_picture.alignment_guides_tooltip': 'Basculer les lignes de guidage d\'alignement',
         'settings.configure_alignment_lines': 'Configurer les lignes d\'alignement',
@@ -751,7 +751,7 @@ export class LocaleService {
         'nav.browse': 'Durchsuchen',
         'nav.play': 'Abspielen',
         'nav.settings': 'Einstellungen',
-        
+
         // Browse Pictures
         'browse.title': 'Ihre Fotos',
         'browse.photo_count_single': '1 Foto',
@@ -767,7 +767,7 @@ export class LocaleService {
         'browse.delete_confirm': 'Löschen',
         'browse.photo_alt': 'Foto vom {date}',
         'browse.generic_photo_alt': 'Foto',
-        
+
         // Take Picture
         'take_picture.initializing_camera': 'Kamera wird initialisiert...',
         'take_picture.retry': 'Erneut versuchen',
@@ -777,17 +777,17 @@ export class LocaleService {
         'take_picture.camera_access_error': 'Kamera kann nicht zugegriffen werden. Bitte erlauben Sie den Kamera-Zugriff.',
         'take_picture.save_error': 'Foto konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.',
         'take_picture.capture_error': 'Foto konnte nicht aufgenommen werden. Bitte versuchen Sie es erneut.',
-        
+
         // Play
         'play.no_photos_title': 'Keine Fotos',
         'play.no_photos_description': 'Machen Sie zuerst einige Fotos, um Ihre Zeitleiste zu sehen',
         'play.photo_alt': 'Foto {index}',
-        
+
         // Date formatting
         'date.today': 'Heute',
         'date.yesterday': 'Gestern',
         'date.days_ago': 'vor {days} Tagen',
-        
+
         // Month names
         'month.january': 'Januar',
         'month.february': 'Februar',
@@ -801,7 +801,7 @@ export class LocaleService {
         'month.october': 'Oktober',
         'month.november': 'November',
         'month.december': 'Dezember',
-        
+
         // Settings
         'settings.title': 'Einstellungen',
         'settings.subtitle': 'Verwalten Sie Ihre App-Einstellungen',
@@ -832,7 +832,7 @@ export class LocaleService {
         'settings.syncing': 'Synchronisiert...',
         'settings.sync_all': 'Alles synchronisieren',
         'settings.about_google_drive_sync': 'Über Google Drive Synchronisation',
-        'settings.google_drive_folder_info': 'Fotos werden in einen "MyDailyFace" Ordner in Ihrem Google Drive synchronisiert',
+        'settings.google_drive_folder_info': 'Fotos werden in einen "DailyFace.me" Ordner in Ihrem Google Drive synchronisiert',
         'settings.overlay_opacity': 'Ausrichtungshilfe-Transparenz',
         'settings.overlay_opacity_description': 'Transparenz der Gesichts-Ausrichtungshilfe anpassen ({opacity}%)',
         'settings.storage': 'Speicher',
@@ -845,11 +845,11 @@ export class LocaleService {
         'settings.installation_status': 'Installationsstatus',
         'settings.app_installed': '✅ App ist auf Ihrem Gerät installiert',
         'settings.install_app': 'App installieren',
-        'settings.install_app_description': 'MyDailyFace zu Ihrem Startbildschirm hinzufügen für einfachen Zugriff',
+        'settings.install_app_description': 'DailyFace.me zu Ihrem Startbildschirm hinzufügen für einfachen Zugriff',
         'settings.show_instructions': 'Anweisungen anzeigen',
         'settings.about': 'Über',
         'settings.version': 'Version',
-        'settings.version_number': 'MyDailyFace v1.0.0',
+        'settings.version_number': 'DailyFace.me v1.0.0',
         'settings.privacy': 'Datenschutz',
         'settings.privacy_description': 'Fotos werden lokal gespeichert und optional mit Ihrem Google Drive synchronisiert',
         'settings.legal': 'Rechtliches',
@@ -857,23 +857,23 @@ export class LocaleService {
         'settings.terms_of_service': 'Nutzungsbedingungen',
         'settings.animation_speed_normal': 'Normal',
         'settings.animation_speed_slower': '{speed}x langsamer',
-        
+
         // Installation modal
-        'settings.install_modal_title': 'MyDailyFace installieren',
+        'settings.install_modal_title': 'DailyFace.me installieren',
         'settings.close': 'Schließen',
         'settings.benefits_of_installing': 'Vorteile der Installation:',
         'settings.benefit_performance': 'Schnelleres Laden und bessere Leistung',
         'settings.benefit_offline': 'Funktioniert offline zum Fotografieren',
         'settings.benefit_access': 'Schneller Zugriff von Ihrem Startbildschirm',
         'settings.benefit_fullscreen': 'Vollbild-Erlebnis ohne Browser-Leisten',
-        
+
         // Confirmation dialogs
         'settings.confirm_delete_all_photos': 'Sind Sie sicher, dass Sie alle Fotos löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
         'settings.confirm_disconnect_google_drive': 'Sind Sie sicher, dass Sie sich von Google Drive trennen möchten?',
         'settings.confirm_sync_all_photos': 'Dies lädt alle Ihre Fotos zu Google Drive hoch. Fortfahren?',
         'settings.confirm_generate_test_data': '⚠️ Dies generiert ~730 Testfotos (2 Jahre tägliche Fotos). Dies kann einige Minuten dauern und erheblichen Speicherplatz verbrauchen. Fortfahren?',
         'settings.confirm_clear_test_data': '⚠️ Dies löscht alle testgenerierten Fotos (echte Fotos bleiben erhalten). Fortfahren?',
-        
+
         // Alert messages
         'settings.alert_google_drive_not_configured': 'Google Drive Integration nicht konfiguriert. Bitte kontaktieren Sie den App-Entwickler.',
         'settings.alert_google_drive_connected': 'Erfolgreich mit Google Drive verbunden!',
@@ -888,7 +888,7 @@ export class LocaleService {
         'settings.alert_test_data_generation_complete': '✅ Testdatengenerierung abgeschlossen!\\n\\n📸 {success} Fotos generiert\\n❌ {failed} fehlgeschlagen\\n⏱️ Dauer: {duration} Sekunden\\n\\nGehen Sie zum Wiedergabe-Tab, um Ihre 2-Jahres-Timeline zu sehen!',
         'settings.alert_test_data_cleared': '✅ Testdaten erfolgreich gelöscht!',
         'settings.alert_test_data_clear_failed': '❌ Löschen der Testdaten fehlgeschlagen. Überprüfen Sie die Konsole für Details.',
-        
+
         // Testing features
         'settings.testing_features': 'Testfunktionen',
         'settings.generate_test_data': 'Testdaten generieren',
@@ -905,36 +905,36 @@ export class LocaleService {
         'settings.hide_testing': 'Tests ausblenden',
         'settings.hide_testing_description': 'Diese Testfunktionen ausblenden',
         'settings.hide': 'Ausblenden',
-        
+
         // Offline functionality
         'offline.no_connection': 'Keine Internetverbindung',
         'offline.queued_actions': 'wartende Aktionen',
         'offline.syncing': 'Fotos synchronisieren...',
         'offline.connection_restored': 'Verbindung wiederhergestellt',
-        
+
         // App updates
         'app_update.available': 'Neue Version verfügbar',
         'app_update.update_now': 'Jetzt aktualisieren',
         'app_update.later': 'Später',
         'app_update.updating': 'App wird aktualisiert...',
-        
+
         // Legal pages
         'legal.back_to_settings': 'Zurück zu Einstellungen',
         'legal.last_updated': 'Zuletzt aktualisiert: {date}',
-        'legal.contact_email': 'roth.derek+mydailyface@gmail.com',
-        
+        'legal.contact_email': 'roth.derek+DailyFace.me@gmail.com',
+
         // Terms of Service
         'terms.title': 'Nutzungsbedingungen',
-        'terms.welcome_title': 'Willkommen bei MyDailyFace',
-        'terms.welcome_text': 'Diese Nutzungsbedingungen regeln Ihre Nutzung der MyDailyFace Webanwendung (die „App"). Durch die Nutzung der App stimmen Sie diesen Bedingungen zu.',
+        'terms.welcome_title': 'Willkommen bei DailyFace.me',
+        'terms.welcome_text': 'Diese Nutzungsbedingungen regeln Ihre Nutzung der DailyFace.me Webanwendung (die „App"). Durch die Nutzung der App stimmen Sie diesen Bedingungen zu.',
         'terms.service_title': 'Beschreibung des Dienstes',
-        'terms.service_text': 'MyDailyFace ist eine persönliche Foto-Tagebuch-Anwendung, die es Ihnen ermöglicht:',
+        'terms.service_text': 'DailyFace.me ist eine persönliche Foto-Tagebuch-Anwendung, die es Ihnen ermöglicht:',
         'terms.service_item1': 'Tägliche Selfies mit der Kamera Ihres Geräts aufzunehmen',
         'terms.service_item2': 'Fotos lokal in Ihrem Browser zu speichern',
         'terms.service_item3': 'Optional Fotos in Ihrem persönlichen Google Drive zu sichern',
         'terms.service_item4': 'Ihre Fotosammlung anzusehen und abzuspielen',
         'terms.responsibilities_title': 'Ihre Verantwortlichkeiten',
-        'terms.responsibilities_text': 'Bei der Nutzung von MyDailyFace stimmen Sie zu:',
+        'terms.responsibilities_text': 'Bei der Nutzung von DailyFace.me stimmen Sie zu:',
         'terms.responsibilities_item1': 'Die App nur für persönliche, nicht-kommerzielle Zwecke zu nutzen',
         'terms.responsibilities_item2': 'Die App nicht für illegale oder schädliche Aktivitäten zu verwenden',
         'terms.responsibilities_item3': 'Für den Inhalt der Fotos, die Sie aufnehmen, verantwortlich zu sein',
@@ -953,7 +953,7 @@ export class LocaleService {
         'terms.camera_item3': 'Die App nur nutzen, wenn Sie Fotos aufnehmen möchten',
         'terms.drive_title': 'Google Drive Integration',
         'terms.drive_text': 'Wenn Sie Google Drive Sicherung aktivieren:',
-        'terms.drive_item1': 'Autorisieren Sie die App, einen „MyDailyFace" Ordner in Ihrem Drive zu erstellen',
+        'terms.drive_item1': 'Autorisieren Sie die App, einen „DailyFace.me" Ordner in Ihrem Drive zu erstellen',
         'terms.drive_item2': 'Sie können diesen Zugriff über Ihre Google-Kontoeinstellungen widerrufen',
         'terms.drive_item3': 'Die App greift nur auf den Ordner zu, den sie erstellt',
         'terms.drive_item4': 'Sie behalten die volle Kontrolle über Ihre Google Drive Daten',
@@ -978,20 +978,20 @@ export class LocaleService {
         'terms.contact_text': 'Für Fragen zu diesen Bedingungen kontaktieren Sie uns unter: {email}',
         'terms.law_title': 'Geltendes Recht',
         'terms.law_text': 'Diese Bedingungen unterliegen den Gesetzen der Rechtsordnung, in der die App betrieben wird, ohne Berücksichtigung von Kollisionsrechtsgrundsätzen.',
-        
+
         // Privacy Policy
         'privacy.title': 'Datenschutzrichtlinie',
         'privacy.overview_title': 'Überblick',
-        'privacy.overview_text': 'MyDailyFace ist eine persönliche Foto-Tagebuch-App, die Ihnen hilft, tägliche Selfies aufzunehmen und zu organisieren. Diese Datenschutzrichtlinie erklärt, wie wir mit Ihren Daten umgehen, wenn Sie unsere App nutzen.',
+        'privacy.overview_text': 'DailyFace.me ist eine persönliche Foto-Tagebuch-App, die Ihnen hilft, tägliche Selfies aufzunehmen und zu organisieren. Diese Datenschutzrichtlinie erklärt, wie wir mit Ihren Daten umgehen, wenn Sie unsere App nutzen.',
         'privacy.collection_title': 'Datensammlung',
-        'privacy.collection_text': 'MyDailyFace sammelt, speichert oder überträgt keine persönlichen Daten an externe Server. Alle Datenverarbeitung erfolgt lokal auf Ihrem Gerät.',
+        'privacy.collection_text': 'DailyFace.me sammelt, speichert oder überträgt keine persönlichen Daten an externe Server. Alle Datenverarbeitung erfolgt lokal auf Ihrem Gerät.',
         'privacy.local_title': 'Lokale Speicherung',
         'privacy.local_item1': 'Fotos werden lokal in der IndexedDB Ihres Browsers gespeichert',
         'privacy.local_item2': 'App-Einstellungen werden im lokalen Speicher Ihres Browsers gespeichert',
         'privacy.local_item3': 'Keine persönlichen Informationen werden von uns gesammelt oder gespeichert',
         'privacy.drive_title': 'Google Drive Integration (Optional)',
         'privacy.drive_text': 'Wenn Sie Google Drive Sicherung aktivieren:',
-        'privacy.drive_item1': 'Wir greifen auf Ihr Google-Konto nur zu, um einen dedizierten „MyDailyFace" Ordner zu erstellen',
+        'privacy.drive_item1': 'Wir greifen auf Ihr Google-Konto nur zu, um einen dedizierten „DailyFace.me" Ordner zu erstellen',
         'privacy.drive_item2': 'Fotos werden direkt von Ihrem Gerät zu Ihrem Google Drive hochgeladen',
         'privacy.drive_item3': 'Wir greifen nicht auf andere Dateien in Ihrem Google Drive zu, lesen oder speichern sie',
         'privacy.drive_item4': 'Wir speichern Ihre Google-Anmeldedaten oder Token nicht',
@@ -1011,19 +1011,19 @@ export class LocaleService {
         'privacy.retention_text': 'Sie kontrollieren alle Datenspeicherung:',
         'privacy.retention_item1': 'Löschen Sie Fotos jederzeit aus der App',
         'privacy.retention_item2': 'Löschen Sie alle App-Daten über die Browser-Einstellungen',
-        'privacy.retention_item3': 'Entfernen Sie Google Drive Sicherung durch Löschen des MyDailyFace Ordners',
+        'privacy.retention_item3': 'Entfernen Sie Google Drive Sicherung durch Löschen des DailyFace.me Ordners',
         'privacy.children_title': 'Datenschutz für Kinder',
         'privacy.children_text': 'Diese App ist nicht für Kinder unter 13 Jahren bestimmt. Wir sammeln wissentlich keine Informationen von Kindern unter 13 Jahren.',
         'privacy.changes_title': 'Änderungen dieser Richtlinie',
         'privacy.changes_text': 'Änderungen an dieser Datenschutzrichtlinie werden auf dieser Seite aktualisiert. Die weitere Nutzung der App nach Änderungen stellt die Annahme der aktualisierten Richtlinie dar.',
         'privacy.contact_title': 'Kontaktieren Sie uns',
         'privacy.contact_text': 'Für Fragen zu dieser Datenschutzrichtlinie kontaktieren Sie uns unter: {email}',
-        
+
         // Installation Instructions
         'install.chrome_desktop': 'Chrome Desktop',
         'install.chrome_desktop_1': 'Suchen Sie nach dem Installations-Symbol (⬇️ oder ⊕) in der Adressleiste',
-        'install.chrome_desktop_2': 'Klicken Sie auf das Symbol und wählen Sie "MyDailyFace installieren"',
-        'install.chrome_desktop_3': 'Oder klicken Sie auf das Drei-Punkte-Menü (⋮) → "MyDailyFace installieren"',
+        'install.chrome_desktop_2': 'Klicken Sie auf das Symbol und wählen Sie "DailyFace.me installieren"',
+        'install.chrome_desktop_3': 'Oder klicken Sie auf das Drei-Punkte-Menü (⋮) → "DailyFace.me installieren"',
         'install.chrome_desktop_4': 'Die App wird zu Ihrem Desktop und Startmenü hinzugefügt',
         'install.chrome_mobile': 'Chrome Mobile',
         'install.chrome_mobile_1': 'Tippen Sie auf das Drei-Punkte-Menü (⋮) oben rechts',
@@ -1041,20 +1041,20 @@ export class LocaleService {
         'install.safari_desktop_3': 'Die App öffnet sich in ihrem eigenen Fenster',
         'install.firefox': 'Firefox',
         'install.firefox_1': 'Klicken Sie auf das Drei-Linien-Menü (☰) oben rechts',
-        'install.firefox_2': 'Wählen Sie "MyDailyFace installieren"',
+        'install.firefox_2': 'Wählen Sie "DailyFace.me installieren"',
         'install.firefox_3': 'Oder suchen Sie nach dem Installations-Symbol in der Adressleiste',
         'install.firefox_4': 'Klicken Sie auf "Installieren" um zu Ihrem System hinzuzufügen',
         'install.edge': 'Microsoft Edge',
         'install.edge_1': 'Suchen Sie nach dem Installations-Symbol (⊕) in der Adressleiste',
-        'install.edge_2': 'Klicken Sie auf das Symbol und wählen Sie "MyDailyFace installieren"',
-        'install.edge_3': 'Oder klicken Sie auf das Drei-Punkte-Menü (⋯) → "Apps" → "MyDailyFace installieren"',
+        'install.edge_2': 'Klicken Sie auf das Symbol und wählen Sie "DailyFace.me installieren"',
+        'install.edge_3': 'Oder klicken Sie auf das Drei-Punkte-Menü (⋯) → "Apps" → "DailyFace.me installieren"',
         'install.edge_4': 'Die App wird zu Ihrem Desktop und Startmenü hinzugefügt',
         'install.generic': 'Ihr Browser',
         'install.generic_1': 'Suchen Sie nach einem Installations-Symbol in der Adressleiste',
         'install.generic_2': 'Prüfen Sie das Menü Ihres Browsers nach "Installieren" oder "Zum Startbildschirm hinzufügen"',
         'install.generic_3': 'Die App kann für Offline-Nutzung installiert werden',
         'install.generic_4': 'Kontaktieren Sie den Support wenn Sie Hilfe bei der Installation benötigen',
-        
+
         // Alignment Overlay
         'take_picture.alignment_guides_tooltip': 'Ausrichtungslinien umschalten',
         'settings.configure_alignment_lines': 'Ausrichtungslinien konfigurieren',
@@ -1073,7 +1073,7 @@ export class LocaleService {
         'nav.browse': 'Sfoglia',
         'nav.play': 'Riproduci',
         'nav.settings': 'Impostazioni',
-        
+
         // Browse Pictures
         'browse.title': 'Le tue foto',
         'browse.photo_count_single': '1 foto',
@@ -1089,7 +1089,7 @@ export class LocaleService {
         'browse.delete_confirm': 'Elimina',
         'browse.photo_alt': 'Foto del {date}',
         'browse.generic_photo_alt': 'Foto',
-        
+
         // Take Picture
         'take_picture.initializing_camera': 'Inizializzazione fotocamera...',
         'take_picture.retry': 'Riprova',
@@ -1099,17 +1099,17 @@ export class LocaleService {
         'take_picture.camera_access_error': 'Impossibile accedere alla fotocamera. Concedi i permessi per la fotocamera.',
         'take_picture.save_error': 'Impossibile salvare la foto. Riprova.',
         'take_picture.capture_error': 'Impossibile scattare la foto. Riprova.',
-        
+
         // Play
         'play.no_photos_title': 'Nessuna foto',
         'play.no_photos_description': 'Scatta prima alcune foto per vedere la tua timeline',
         'play.photo_alt': 'Foto {index}',
-        
+
         // Date formatting
         'date.today': 'Oggi',
         'date.yesterday': 'Ieri',
         'date.days_ago': '{days} giorni fa',
-        
+
         // Month names
         'month.january': 'Gennaio',
         'month.february': 'Febbraio',
@@ -1123,7 +1123,7 @@ export class LocaleService {
         'month.october': 'Ottobre',
         'month.november': 'Novembre',
         'month.december': 'Dicembre',
-        
+
         // Settings
         'settings.title': 'Impostazioni',
         'settings.subtitle': 'Gestisci le tue preferenze dell\'app',
@@ -1154,7 +1154,7 @@ export class LocaleService {
         'settings.syncing': 'Sincronizzazione...',
         'settings.sync_all': 'Sincronizza tutto',
         'settings.about_google_drive_sync': 'Informazioni sulla sincronizzazione Google Drive',
-        'settings.google_drive_folder_info': 'Le foto vengono sincronizzate in una cartella "MyDailyFace" nel tuo Google Drive',
+        'settings.google_drive_folder_info': 'Le foto vengono sincronizzate in una cartella "DailyFace.me" nel tuo Google Drive',
         'settings.overlay_opacity': 'Opacità guida allineamento',
         'settings.overlay_opacity_description': 'Regola la trasparenza della guida allineamento viso ({opacity}%)',
         'settings.storage': 'Archiviazione',
@@ -1167,11 +1167,11 @@ export class LocaleService {
         'settings.installation_status': 'Stato installazione',
         'settings.app_installed': '✅ L\'app è installata sul tuo dispositivo',
         'settings.install_app': 'Installa app',
-        'settings.install_app_description': 'Aggiungi MyDailyFace alla schermata principale per un accesso rapido',
+        'settings.install_app_description': 'Aggiungi DailyFace.me alla schermata principale per un accesso rapido',
         'settings.show_instructions': 'Mostra istruzioni',
         'settings.about': 'Informazioni',
         'settings.version': 'Versione',
-        'settings.version_number': 'MyDailyFace v1.0.0',
+        'settings.version_number': 'DailyFace.me v1.0.0',
         'settings.privacy': 'Privacy',
         'settings.privacy_description': 'Foto archiviate localmente e opzionalmente sincronizzate con il tuo Google Drive',
         'settings.legal': 'Note legali',
@@ -1179,23 +1179,23 @@ export class LocaleService {
         'settings.terms_of_service': 'Termini di servizio',
         'settings.animation_speed_normal': 'Normale',
         'settings.animation_speed_slower': '{speed}x più lento',
-        
+
         // Installation modal
-        'settings.install_modal_title': 'Installa MyDailyFace',
+        'settings.install_modal_title': 'Installa DailyFace.me',
         'settings.close': 'Chiudi',
         'settings.benefits_of_installing': 'Vantaggi dell\'installazione:',
         'settings.benefit_performance': 'Caricamento più veloce e migliori prestazioni',
         'settings.benefit_offline': 'Funziona offline per scattare foto',
         'settings.benefit_access': 'Accesso rapido dalla schermata principale',
         'settings.benefit_fullscreen': 'Esperienza a schermo intero senza barre del browser',
-        
+
         // Confirmation dialogs
         'settings.confirm_delete_all_photos': 'Sei sicuro di voler eliminare tutte le foto? Questa azione non può essere annullata.',
         'settings.confirm_disconnect_google_drive': 'Sei sicuro di voler disconnetterti da Google Drive?',
         'settings.confirm_sync_all_photos': 'Questo caricherà tutte le tue foto su Google Drive. Continuare?',
         'settings.confirm_generate_test_data': '⚠️ Questo genererà ~730 foto di test (2 anni di foto quotidiane). Potrebbe richiedere alcuni minuti e utilizzare spazio di archiviazione significativo. Continuare?',
         'settings.confirm_clear_test_data': '⚠️ Questo eliminerà tutte le foto generate dai test (mantenendo le foto reali). Continuare?',
-        
+
         // Alert messages
         'settings.alert_google_drive_not_configured': 'Integrazione Google Drive non configurata. Contatta lo sviluppatore dell\'app.',
         'settings.alert_google_drive_connected': 'Connesso con successo a Google Drive!',
@@ -1210,7 +1210,7 @@ export class LocaleService {
         'settings.alert_test_data_generation_complete': '✅ Generazione dati di test completata!\\n\\n📸 {success} foto generate\\n❌ {failed} fallite\\n⏱️ Durata: {duration} secondi\\n\\nVai alla scheda Riproduci per vedere la tua timeline di 2 anni!',
         'settings.alert_test_data_cleared': '✅ Dati di test cancellati con successo!',
         'settings.alert_test_data_clear_failed': '❌ Cancellazione dati di test fallita. Controlla la console per i dettagli.',
-        
+
         // Testing features
         'settings.testing_features': 'Funzionalità di test',
         'settings.generate_test_data': 'Genera dati di test',
@@ -1227,36 +1227,36 @@ export class LocaleService {
         'settings.hide_testing': 'Nascondi test',
         'settings.hide_testing_description': 'Nascondi queste funzionalità di test',
         'settings.hide': 'Nascondi',
-        
+
         // Offline functionality
         'offline.no_connection': 'Nessuna connessione internet',
         'offline.queued_actions': 'azioni in coda',
         'offline.syncing': 'Sincronizzazione foto...',
         'offline.connection_restored': 'Connessione ripristinata',
-        
+
         // App updates
         'app_update.available': 'Nuova versione disponibile',
         'app_update.update_now': 'Aggiorna ora',
         'app_update.later': 'Più tardi',
         'app_update.updating': 'Aggiornamento app...',
-        
+
         // Legal pages
         'legal.back_to_settings': 'Torna alle impostazioni',
         'legal.last_updated': 'Ultimo aggiornamento: {date}',
-        'legal.contact_email': 'roth.derek+mydailyface@gmail.com',
-        
+        'legal.contact_email': 'roth.derek+DailyFace.me@gmail.com',
+
         // Terms of Service
         'terms.title': 'Termini di servizio',
-        'terms.welcome_title': 'Benvenuto in MyDailyFace',
-        'terms.welcome_text': 'Questi Termini di servizio regolano l\'uso dell\'applicazione web MyDailyFace (l\'\"App\"). Utilizzando l\'App, accetti questi termini.',
+        'terms.welcome_title': 'Benvenuto in DailyFace.me',
+        'terms.welcome_text': 'Questi Termini di servizio regolano l\'uso dell\'applicazione web DailyFace.me (l\'\"App\"). Utilizzando l\'App, accetti questi termini.',
         'terms.service_title': 'Descrizione del servizio',
-        'terms.service_text': 'MyDailyFace è un\'applicazione diario fotografico personale che ti permette di:',
+        'terms.service_text': 'DailyFace.me è un\'applicazione diario fotografico personale che ti permette di:',
         'terms.service_item1': 'Scattare selfie quotidiani usando la fotocamera del tuo dispositivo',
         'terms.service_item2': 'Archiviare foto localmente nel tuo browser',
         'terms.service_item3': 'Opzionalmente fare il backup delle foto sul tuo Google Drive personale',
         'terms.service_item4': 'Visualizzare e riprodurre la tua collezione di foto',
         'terms.responsibilities_title': 'Le tue responsabilità',
-        'terms.responsibilities_text': 'Usando MyDailyFace, accetti di:',
+        'terms.responsibilities_text': 'Usando DailyFace.me, accetti di:',
         'terms.responsibilities_item1': 'Usare l\'App solo per scopi personali, non commerciali',
         'terms.responsibilities_item2': 'Non usare l\'App per attività illegali o dannose',
         'terms.responsibilities_item3': 'Essere responsabile del contenuto delle foto che scatti',
@@ -1275,7 +1275,7 @@ export class LocaleService {
         'terms.camera_item3': 'Usare l\'App solo quando scegli di scattare foto',
         'terms.drive_title': 'Integrazione Google Drive',
         'terms.drive_text': 'Se abiliti il backup su Google Drive:',
-        'terms.drive_item1': 'Autorizzi l\'App a creare una cartella \"MyDailyFace\" nel tuo Drive',
+        'terms.drive_item1': 'Autorizzi l\'App a creare una cartella \"DailyFace.me\" nel tuo Drive',
         'terms.drive_item2': 'Puoi revocare questo accesso tramite le impostazioni del tuo account Google',
         'terms.drive_item3': 'L\'App accede solo alla cartella che crea',
         'terms.drive_item4': 'Mantieni il controllo completo dei tuoi dati Google Drive',
@@ -1300,20 +1300,20 @@ export class LocaleService {
         'terms.contact_text': 'Per domande su questi termini, contattaci a: {email}',
         'terms.law_title': 'Legge applicabile',
         'terms.law_text': 'Questi termini sono regolati dalle leggi della giurisdizione dove l\'App è operata, senza riguardo ai principi di conflitto di leggi.',
-        
+
         // Privacy Policy
         'privacy.title': 'Informativa sulla privacy',
         'privacy.overview_title': 'Panoramica',
-        'privacy.overview_text': 'MyDailyFace è un\'app diario fotografico personale che ti aiuta a catturare e organizzare selfie quotidiani. Questa informativa sulla privacy spiega come gestiamo i tuoi dati quando usi la nostra app.',
+        'privacy.overview_text': 'DailyFace.me è un\'app diario fotografico personale che ti aiuta a catturare e organizzare selfie quotidiani. Questa informativa sulla privacy spiega come gestiamo i tuoi dati quando usi la nostra app.',
         'privacy.collection_title': 'Raccolta dati',
-        'privacy.collection_text': 'MyDailyFace non raccoglie, archivia o trasmette dati personali a server esterni. Tutto il trattamento dei dati avviene localmente sul tuo dispositivo.',
+        'privacy.collection_text': 'DailyFace.me non raccoglie, archivia o trasmette dati personali a server esterni. Tutto il trattamento dei dati avviene localmente sul tuo dispositivo.',
         'privacy.local_title': 'Archiviazione locale',
         'privacy.local_item1': 'Le foto sono archiviate localmente nell\'IndexedDB del tuo browser',
         'privacy.local_item2': 'Le impostazioni dell\'app sono archiviate nel local storage del tuo browser',
         'privacy.local_item3': 'Nessuna informazione personale è raccolta o archiviata da noi',
         'privacy.drive_title': 'Integrazione Google Drive (Opzionale)',
         'privacy.drive_text': 'Se scegli di abilitare il backup su Google Drive:',
-        'privacy.drive_item1': 'Accediamo al tuo account Google solo per creare una cartella dedicata \"MyDailyFace\"',
+        'privacy.drive_item1': 'Accediamo al tuo account Google solo per creare una cartella dedicata \"DailyFace.me\"',
         'privacy.drive_item2': 'Le foto sono caricate direttamente dal tuo dispositivo al tuo Google Drive',
         'privacy.drive_item3': 'Non accediamo, leggiamo o archiviamo altri file nel tuo Google Drive',
         'privacy.drive_item4': 'Non archiviamo le tue credenziali o token Google',
@@ -1333,19 +1333,19 @@ export class LocaleService {
         'privacy.retention_text': 'Controlli tutta la conservazione dei dati:',
         'privacy.retention_item1': 'Elimina le foto in qualsiasi momento dall\'app',
         'privacy.retention_item2': 'Cancella tutti i dati dell\'app tramite le impostazioni del browser',
-        'privacy.retention_item3': 'Rimuovi il backup Google Drive eliminando la cartella MyDailyFace',
+        'privacy.retention_item3': 'Rimuovi il backup Google Drive eliminando la cartella DailyFace.me',
         'privacy.children_title': 'Privacy dei bambini',
         'privacy.children_text': 'Questa app non è destinata a bambini sotto i 13 anni. Non raccogliamo consapevolmente informazioni da bambini sotto i 13 anni.',
         'privacy.changes_title': 'Modifiche a questa politica',
         'privacy.changes_text': 'Eventuali modifiche a questa informativa sulla privacy saranno aggiornate su questa pagina. L\'uso continuato dell\'app dopo le modifiche costituisce accettazione della politica aggiornata.',
         'privacy.contact_title': 'Contattaci',
         'privacy.contact_text': 'Per domande su questa informativa sulla privacy, contattaci a: {email}',
-        
+
         // Installation Instructions
         'install.chrome_desktop': 'Chrome Desktop',
         'install.chrome_desktop_1': 'Cerca l\'icona di installazione (⬇️ o ⊕) nella barra degli indirizzi',
-        'install.chrome_desktop_2': 'Clicca sull\'icona e seleziona "Installa MyDailyFace"',
-        'install.chrome_desktop_3': 'O clicca sul menu tre punti (⋮) → "Installa MyDailyFace"',
+        'install.chrome_desktop_2': 'Clicca sull\'icona e seleziona "Installa DailyFace.me"',
+        'install.chrome_desktop_3': 'O clicca sul menu tre punti (⋮) → "Installa DailyFace.me"',
         'install.chrome_desktop_4': 'L\'app sarà aggiunta al desktop e al menu Start',
         'install.chrome_mobile': 'Chrome Mobile',
         'install.chrome_mobile_1': 'Tocca il menu tre punti (⋮) in alto a destra',
@@ -1363,20 +1363,20 @@ export class LocaleService {
         'install.safari_desktop_3': 'L\'app si aprirà nella sua finestra',
         'install.firefox': 'Firefox',
         'install.firefox_1': 'Clicca sul menu tre linee (☰) in alto a destra',
-        'install.firefox_2': 'Seleziona "Installa MyDailyFace"',
+        'install.firefox_2': 'Seleziona "Installa DailyFace.me"',
         'install.firefox_3': 'O cerca l\'icona di installazione nella barra degli indirizzi',
         'install.firefox_4': 'Clicca "Installa" per aggiungere al tuo sistema',
         'install.edge': 'Microsoft Edge',
         'install.edge_1': 'Cerca l\'icona di installazione (⊕) nella barra degli indirizzi',
-        'install.edge_2': 'Clicca sull\'icona e seleziona "Installa MyDailyFace"',
-        'install.edge_3': 'O clicca sul menu tre punti (⋯) → "App" → "Installa MyDailyFace"',
+        'install.edge_2': 'Clicca sull\'icona e seleziona "Installa DailyFace.me"',
+        'install.edge_3': 'O clicca sul menu tre punti (⋯) → "App" → "Installa DailyFace.me"',
         'install.edge_4': 'L\'app sarà aggiunta al desktop e al menu Start',
         'install.generic': 'Il tuo browser',
         'install.generic_1': 'Cerca un\'icona di installazione nella barra degli indirizzi',
         'install.generic_2': 'Controlla il menu del tuo browser per "Installa" o "Aggiungi alla schermata Home"',
         'install.generic_3': 'L\'app può essere installata per l\'uso offline',
         'install.generic_4': 'Contatta il supporto se hai bisogno di aiuto con l\'installazione',
-        
+
         // Alignment Overlay
         'take_picture.alignment_guides_tooltip': 'Attiva/disattiva linee guida allineamento',
         'settings.configure_alignment_lines': 'Configura linee di allineamento',
@@ -1395,7 +1395,7 @@ export class LocaleService {
         'nav.browse': 'Navegar',
         'nav.play': 'Reproduzir',
         'nav.settings': 'Configurações',
-        
+
         // Browse Pictures
         'browse.title': 'Suas Fotos',
         'browse.photo_count_single': '1 foto',
@@ -1411,7 +1411,7 @@ export class LocaleService {
         'browse.delete_confirm': 'Excluir',
         'browse.photo_alt': 'Foto de {date}',
         'browse.generic_photo_alt': 'Foto',
-        
+
         // Take Picture
         'take_picture.initializing_camera': 'Inicializando câmera...',
         'take_picture.retry': 'Tentar novamente',
@@ -1421,17 +1421,17 @@ export class LocaleService {
         'take_picture.camera_access_error': 'Não é possível acessar a câmera. Permita o acesso à câmera.',
         'take_picture.save_error': 'Falha ao salvar a foto. Tente novamente.',
         'take_picture.capture_error': 'Falha ao tirar a foto. Tente novamente.',
-        
+
         // Play
         'play.no_photos_title': 'Nenhuma Foto',
         'play.no_photos_description': 'Tire algumas fotos primeiro para ver sua linha do tempo',
         'play.photo_alt': 'Foto {index}',
-        
+
         // Date formatting
         'date.today': 'Hoje',
         'date.yesterday': 'Ontem',
         'date.days_ago': '{days} dias atrás',
-        
+
         // Month names
         'month.january': 'Janeiro',
         'month.february': 'Fevereiro',
@@ -1445,7 +1445,7 @@ export class LocaleService {
         'month.october': 'Outubro',
         'month.november': 'Novembro',
         'month.december': 'Dezembro',
-        
+
         // Settings
         'settings.title': 'Configurações',
         'settings.subtitle': 'Gerencie suas preferências do aplicativo',
@@ -1476,7 +1476,7 @@ export class LocaleService {
         'settings.syncing': 'Sincronizando...',
         'settings.sync_all': 'Sincronizar tudo',
         'settings.about_google_drive_sync': 'Sobre a sincronização Google Drive',
-        'settings.google_drive_folder_info': 'As fotos são sincronizadas para uma pasta "MyDailyFace" no seu Google Drive',
+        'settings.google_drive_folder_info': 'As fotos são sincronizadas para uma pasta "DailyFace.me" no seu Google Drive',
         'settings.overlay_opacity': 'Opacidade do guia de alinhamento',
         'settings.overlay_opacity_description': 'Ajustar transparência do guia de alinhamento facial ({opacity}%)',
         'settings.storage': 'Armazenamento',
@@ -1489,11 +1489,11 @@ export class LocaleService {
         'settings.installation_status': 'Status da instalação',
         'settings.app_installed': '✅ O aplicativo está instalado em seu dispositivo',
         'settings.install_app': 'Instalar aplicativo',
-        'settings.install_app_description': 'Adicionar MyDailyFace à sua tela inicial para acesso rápido',
+        'settings.install_app_description': 'Adicionar DailyFace.me à sua tela inicial para acesso rápido',
         'settings.show_instructions': 'Mostrar instruções',
         'settings.about': 'Sobre',
         'settings.version': 'Versão',
-        'settings.version_number': 'MyDailyFace v1.0.0',
+        'settings.version_number': 'DailyFace.me v1.0.0',
         'settings.privacy': 'Privacidade',
         'settings.privacy_description': 'Fotos armazenadas localmente e opcionalmente sincronizadas com seu Google Drive',
         'settings.legal': 'Legal',
@@ -1501,23 +1501,23 @@ export class LocaleService {
         'settings.terms_of_service': 'Termos de serviço',
         'settings.animation_speed_normal': 'Normal',
         'settings.animation_speed_slower': '{speed}x mais lento',
-        
+
         // Installation modal
-        'settings.install_modal_title': 'Instalar MyDailyFace',
+        'settings.install_modal_title': 'Instalar DailyFace.me',
         'settings.close': 'Fechar',
         'settings.benefits_of_installing': 'Benefícios da instalação:',
         'settings.benefit_performance': 'Carregamento mais rápido e melhor desempenho',
         'settings.benefit_offline': 'Funciona offline para tirar fotos',
         'settings.benefit_access': 'Acesso rápido da sua tela inicial',
         'settings.benefit_fullscreen': 'Experiência em tela cheia sem barras do navegador',
-        
+
         // Confirmation dialogs
         'settings.confirm_delete_all_photos': 'Tem certeza de que deseja excluir todas as fotos? Esta ação não pode ser desfeita.',
         'settings.confirm_disconnect_google_drive': 'Tem certeza de que deseja desconectar do Google Drive?',
         'settings.confirm_sync_all_photos': 'Isso carregará todas as suas fotos para o Google Drive. Continuar?',
         'settings.confirm_generate_test_data': '⚠️ Isso gerará ~730 fotos de teste (2 anos de fotos diárias). Pode levar alguns minutos e usar espaço de armazenamento significativo. Continuar?',
         'settings.confirm_clear_test_data': '⚠️ Isso excluirá todas as fotos geradas pelos testes (mantendo fotos reais). Continuar?',
-        
+
         // Alert messages
         'settings.alert_google_drive_not_configured': 'Integração com Google Drive não configurada. Entre em contato com o desenvolvedor do aplicativo.',
         'settings.alert_google_drive_connected': 'Conectado com sucesso ao Google Drive!',
@@ -1532,7 +1532,7 @@ export class LocaleService {
         'settings.alert_test_data_generation_complete': '✅ Geração de dados de teste concluída!\\n\\n📸 {success} fotos geradas\\n❌ {failed} falharam\\n⏱️ Duração: {duration} segundos\\n\\nVá para a aba Reproduzir para ver sua linha do tempo de 2 anos!',
         'settings.alert_test_data_cleared': '✅ Dados de teste limpos com sucesso!',
         'settings.alert_test_data_clear_failed': '❌ Falha ao limpar dados de teste. Verifique o console para detalhes.',
-        
+
         // Testing features
         'settings.testing_features': 'Recursos de teste',
         'settings.generate_test_data': 'Gerar dados de teste',
@@ -1549,36 +1549,36 @@ export class LocaleService {
         'settings.hide_testing': 'Ocultar testes',
         'settings.hide_testing_description': 'Ocultar estes recursos de teste',
         'settings.hide': 'Ocultar',
-        
+
         // Offline functionality
         'offline.no_connection': 'Sem conexão com a internet',
         'offline.queued_actions': 'ações na fila',
         'offline.syncing': 'Sincronizando fotos...',
         'offline.connection_restored': 'Conexão restaurada',
-        
+
         // App updates
         'app_update.available': 'Nova versão disponível',
         'app_update.update_now': 'Atualizar agora',
         'app_update.later': 'Mais tarde',
         'app_update.updating': 'Atualizando app...',
-        
+
         // Legal pages
         'legal.back_to_settings': 'Voltar às configurações',
         'legal.last_updated': 'Última atualização: {date}',
-        'legal.contact_email': 'roth.derek+mydailyface@gmail.com',
-        
+        'legal.contact_email': 'roth.derek+DailyFace.me@gmail.com',
+
         // Terms of Service
         'terms.title': 'Termos de serviço',
-        'terms.welcome_title': 'Bem-vindo ao MyDailyFace',
-        'terms.welcome_text': 'Estes Termos de serviço regem o uso do aplicativo web MyDailyFace (o \"App\"). Ao usar o App, você concorda com estes termos.',
+        'terms.welcome_title': 'Bem-vindo ao DailyFace.me',
+        'terms.welcome_text': 'Estes Termos de serviço regem o uso do aplicativo web DailyFace.me (o \"App\"). Ao usar o App, você concorda com estes termos.',
         'terms.service_title': 'Descrição do serviço',
-        'terms.service_text': 'MyDailyFace é um aplicativo de diário fotográfico pessoal que permite:',
+        'terms.service_text': 'DailyFace.me é um aplicativo de diário fotográfico pessoal que permite:',
         'terms.service_item1': 'Capturar selfies diárias usando a câmera do seu dispositivo',
         'terms.service_item2': 'Armazenar fotos localmente em seu navegador',
         'terms.service_item3': 'Opcionalmente fazer backup das fotos para seu Google Drive pessoal',
         'terms.service_item4': 'Visualizar e reproduzir sua coleção de fotos',
         'terms.responsibilities_title': 'Suas responsabilidades',
-        'terms.responsibilities_text': 'Ao usar o MyDailyFace, você concorda em:',
+        'terms.responsibilities_text': 'Ao usar o DailyFace.me, você concorda em:',
         'terms.responsibilities_item1': 'Usar o App apenas para fins pessoais, não comerciais',
         'terms.responsibilities_item2': 'Não usar o App para atividades ilegais ou prejudiciais',
         'terms.responsibilities_item3': 'Ser responsável pelo conteúdo das fotos que captura',
@@ -1597,7 +1597,7 @@ export class LocaleService {
         'terms.camera_item3': 'Usar o App apenas quando escolher tirar fotos',
         'terms.drive_title': 'Integração Google Drive',
         'terms.drive_text': 'Se você habilitar o backup do Google Drive:',
-        'terms.drive_item1': 'Você autoriza o App a criar uma pasta \"MyDailyFace\" em seu Drive',
+        'terms.drive_item1': 'Você autoriza o App a criar uma pasta \"DailyFace.me\" em seu Drive',
         'terms.drive_item2': 'Você pode revogar este acesso através das configurações da sua conta Google',
         'terms.drive_item3': 'O App acessa apenas a pasta que cria',
         'terms.drive_item4': 'Você mantém controle total dos seus dados do Google Drive',
@@ -1622,20 +1622,20 @@ export class LocaleService {
         'terms.contact_text': 'Para perguntas sobre estes termos, entre em contato conosco em: {email}',
         'terms.law_title': 'Lei aplicável',
         'terms.law_text': 'Estes termos são regidos pelas leis da jurisdição onde o App é operado, sem consideração aos princípios de conflito de leis.',
-        
+
         // Privacy Policy
         'privacy.title': 'Política de privacidade',
         'privacy.overview_title': 'Visão geral',
-        'privacy.overview_text': 'MyDailyFace é um aplicativo de diário fotográfico pessoal que ajuda você a capturar e organizar selfies diárias. Esta política de privacidade explica como lidamos com seus dados quando você usa nosso aplicativo.',
+        'privacy.overview_text': 'DailyFace.me é um aplicativo de diário fotográfico pessoal que ajuda você a capturar e organizar selfies diárias. Esta política de privacidade explica como lidamos com seus dados quando você usa nosso aplicativo.',
         'privacy.collection_title': 'Coleta de dados',
-        'privacy.collection_text': 'MyDailyFace não coleta, armazena ou transmite dados pessoais para servidores externos. Todo processamento de dados acontece localmente em seu dispositivo.',
+        'privacy.collection_text': 'DailyFace.me não coleta, armazena ou transmite dados pessoais para servidores externos. Todo processamento de dados acontece localmente em seu dispositivo.',
         'privacy.local_title': 'Armazenamento local',
         'privacy.local_item1': 'Fotos são armazenadas localmente no IndexedDB do seu navegador',
         'privacy.local_item2': 'Configurações do aplicativo são armazenadas no armazenamento local do seu navegador',
         'privacy.local_item3': 'Nenhuma informação pessoal é coletada ou armazenada por nós',
         'privacy.drive_title': 'Integração Google Drive (Opcional)',
         'privacy.drive_text': 'Se você escolher habilitar o backup do Google Drive:',
-        'privacy.drive_item1': 'Acessamos sua conta Google apenas para criar uma pasta dedicada \"MyDailyFace\"',
+        'privacy.drive_item1': 'Acessamos sua conta Google apenas para criar uma pasta dedicada \"DailyFace.me\"',
         'privacy.drive_item2': 'Fotos são enviadas diretamente do seu dispositivo para seu Google Drive',
         'privacy.drive_item3': 'Não acessamos, lemos ou armazenamos outros arquivos em seu Google Drive',
         'privacy.drive_item4': 'Não armazenamos suas credenciais ou tokens do Google',
@@ -1655,19 +1655,19 @@ export class LocaleService {
         'privacy.retention_text': 'Você controla toda a retenção de dados:',
         'privacy.retention_item1': 'Exclua fotos a qualquer momento do aplicativo',
         'privacy.retention_item2': 'Limpe todos os dados do aplicativo através das configurações do navegador',
-        'privacy.retention_item3': 'Remova o backup do Google Drive excluindo a pasta MyDailyFace',
+        'privacy.retention_item3': 'Remova o backup do Google Drive excluindo a pasta DailyFace.me',
         'privacy.children_title': 'Privacidade de crianças',
         'privacy.children_text': 'Este aplicativo não é destinado a crianças menores de 13 anos. Não coletamos intencionalmente informações de crianças menores de 13 anos.',
         'privacy.changes_title': 'Alterações nesta política',
         'privacy.changes_text': 'Quaisquer alterações nesta política de privacidade serão atualizadas nesta página. O uso continuado do aplicativo após as alterações constitui aceitação da política atualizada.',
         'privacy.contact_title': 'Entre em contato',
         'privacy.contact_text': 'Para perguntas sobre esta política de privacidade, entre em contato conosco em: {email}',
-        
+
         // Installation Instructions
         'install.chrome_desktop': 'Chrome Desktop',
         'install.chrome_desktop_1': 'Procure pelo ícone de instalação (⬇️ ou ⊕) na barra de endereços',
-        'install.chrome_desktop_2': 'Clique no ícone e selecione "Instalar MyDailyFace"',
-        'install.chrome_desktop_3': 'Ou clique no menu três pontos (⋮) → "Instalar MyDailyFace"',
+        'install.chrome_desktop_2': 'Clique no ícone e selecione "Instalar DailyFace.me"',
+        'install.chrome_desktop_3': 'Ou clique no menu três pontos (⋮) → "Instalar DailyFace.me"',
         'install.chrome_desktop_4': 'O aplicativo será adicionado ao seu desktop e menu Iniciar',
         'install.chrome_mobile': 'Chrome Mobile',
         'install.chrome_mobile_1': 'Toque no menu três pontos (⋮) no canto superior direito',
@@ -1685,20 +1685,20 @@ export class LocaleService {
         'install.safari_desktop_3': 'O aplicativo abrirá em sua própria janela',
         'install.firefox': 'Firefox',
         'install.firefox_1': 'Clique no menu três linhas (☰) no canto superior direito',
-        'install.firefox_2': 'Selecione "Instalar MyDailyFace"',
+        'install.firefox_2': 'Selecione "Instalar DailyFace.me"',
         'install.firefox_3': 'Ou procure pelo ícone de instalação na barra de endereços',
         'install.firefox_4': 'Clique em "Instalar" para adicionar ao seu sistema',
         'install.edge': 'Microsoft Edge',
         'install.edge_1': 'Procure pelo ícone de instalação (⊕) na barra de endereços',
-        'install.edge_2': 'Clique no ícone e selecione "Instalar MyDailyFace"',
-        'install.edge_3': 'Ou clique no menu três pontos (⋯) → "Aplicativos" → "Instalar MyDailyFace"',
+        'install.edge_2': 'Clique no ícone e selecione "Instalar DailyFace.me"',
+        'install.edge_3': 'Ou clique no menu três pontos (⋯) → "Aplicativos" → "Instalar DailyFace.me"',
         'install.edge_4': 'O aplicativo será adicionado ao seu desktop e menu Iniciar',
         'install.generic': 'Seu navegador',
         'install.generic_1': 'Procure por um ícone de instalação na barra de endereços',
         'install.generic_2': 'Verifique o menu do seu navegador por "Instalar" ou "Adicionar à Tela Inicial"',
         'install.generic_3': 'O aplicativo pode ser instalado para uso offline',
         'install.generic_4': 'Entre em contato com o suporte se precisar de ajuda com a instalação',
-        
+
         // Alignment Overlay
         'take_picture.alignment_guides_tooltip': 'Alternar linhas-guia de alinhamento',
         'settings.configure_alignment_lines': 'Configurar linhas de alinhamento',

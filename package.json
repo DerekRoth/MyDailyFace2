@@ -4,9 +4,10 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
-    "build:i18n": "ng build --localize",
-    "build:prod": "ng build --configuration production --localize",
+    "build": "ng build && npm run copy-404",
+    "build:i18n": "ng build --localize && npm run copy-404",
+    "build:prod": "ng build --configuration production --localize && npm run copy-404",
+    "copy-404": "cp dist/my-daily-face/browser/index.html dist/my-daily-face/browser/404.html",
     "extract-i18n": "ng extract-i18n",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"

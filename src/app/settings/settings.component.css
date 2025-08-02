@@ -112,7 +112,8 @@
 .disconnect-button,
 .sync-button,
 .config-button,
-.test-button {
+.test-button,
+.info-button {
   color: white;
   border: none;
   border-radius: 6px;
@@ -164,6 +165,16 @@
 
 .test-button:hover {
   background-color: #e8860a;
+}
+
+.info-button {
+  background-color: #007AFF;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.info-button:hover {
+  background-color: #0056CC;
 }
 
 .connect-button:disabled,

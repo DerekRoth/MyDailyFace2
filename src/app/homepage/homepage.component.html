@@ -1,0 +1,126 @@
+<div class="homepage-container">
+  <header class="hero-section">
+    <div class="hero-content">
+      <div class="app-logo">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 15.2C13.77 15.2 15.2 13.77 15.2 12C15.2 10.23 13.77 8.8 12 8.8C10.23 8.8 8.8 10.23 8.8 12C8.8 13.77 10.23 15.2 12 15.2Z" fill="currentColor"/>
+          <path d="M9 2L7.17 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4H16.83L15 2H9ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17Z" fill="currentColor"/>
+        </svg>
+      </div>
+      <h1>{{ 'homepage.title' | translate }}</h1>
+      <p class="hero-subtitle">{{ 'homepage.subtitle' | translate }}</p>
+      <div class="cta-buttons">
+        <a routerLink="/take-picture" class="cta-primary">{{ 'homepage.get_started' | translate }}</a>
+        <a routerLink="/browse-pictures" class="cta-secondary">{{ 'homepage.view_demo' | translate }}</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <section class="features-section">
+      <h2>{{ 'homepage.features_title' | translate }}</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 15.2C13.77 15.2 15.2 13.77 15.2 12C15.2 10.23 13.77 8.8 12 8.8C10.23 8.8 8.8 10.23 8.8 12C8.8 13.77 10.23 15.2 12 15.2Z" fill="currentColor"/>
+              <path d="M9 2L7.17 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4H16.83L15 2H9ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17Z" fill="currentColor"/>
+            </svg>
+          </div>
+          <h3>{{ 'homepage.feature_camera_title' | translate }}</h3>
+          <p>{{ 'homepage.feature_camera_desc' | translate }}</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 19V5C21 3.9 20.1 3 19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19ZM8.5 13.5L11 16.51L14.5 12L19 18H5L8.5 13.5Z" fill="currentColor"/>
+            </svg>
+          </div>
+          <h3>{{ 'homepage.feature_gallery_title' | translate }}</h3>
+          <p>{{ 'homepage.feature_gallery_desc' | translate }}</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 5V19L19 12L8 5Z" fill="currentColor"/>
+            </svg>
+          </div>
+          <h3>{{ 'homepage.feature_slideshow_title' | translate }}</h3>
+          <p>{{ 'homepage.feature_slideshow_desc' | translate }}</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4C9.11 4 6.6 5.64 5.35 8.04C2.34 8.36 0 10.91 0 14C0 17.31 2.69 20 6 20H19C21.76 20 24 17.76 24 15C24 12.36 21.95 10.22 19.35 10.04ZM19 18H6C3.79 18 2 16.21 2 14C2 11.95 3.53 10.24 5.56 10.03L6.63 9.92L7.13 8.97C8.08 7.14 9.94 6 12 6C14.62 6 16.88 7.86 17.39 10.43L17.69 11.93L19.22 12.04C20.78 12.14 22 13.45 22 15C22 16.65 20.65 18 19 18Z" fill="currentColor"/>
+            </svg>
+          </div>
+          <h3>{{ 'homepage.feature_backup_title' | translate }}</h3>
+          <p>{{ 'homepage.feature_backup_desc' | translate }}</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="oauth-transparency">
+      <h2>{{ 'homepage.data_usage_title' | translate }}</h2>
+      <div class="transparency-content">
+        <div class="transparency-item">
+          <h3>{{ 'homepage.oauth_purpose_title' | translate }}</h3>
+          <p>{{ 'homepage.oauth_purpose_desc' | translate }}</p>
+        </div>
+        
+        <div class="transparency-item">
+          <h3>{{ 'homepage.data_access_title' | translate }}</h3>
+          <p>{{ 'homepage.data_access_desc' | translate }}</p>
+          <ul>
+            <li>{{ 'homepage.data_access_photos' | translate }}</li>
+            <li>{{ 'homepage.data_access_folders' | translate }}</li>
+            <li>{{ 'homepage.data_access_metadata' | translate }}</li>
+          </ul>
+        </div>
+        
+        <div class="transparency-item">
+          <h3>{{ 'homepage.data_security_title' | translate }}</h3>
+          <p>{{ 'homepage.data_security_desc' | translate }}</p>
+        </div>
+        
+        <div class="transparency-item">
+          <h3>{{ 'homepage.data_retention_title' | translate }}</h3>
+          <p>{{ 'homepage.data_retention_desc' | translate }}</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="technical-info">
+      <h2>{{ 'homepage.technical_title' | translate }}</h2>
+      <div class="technical-grid">
+        <div class="tech-item">
+          <h3>{{ 'homepage.tech_pwa_title' | translate }}</h3>
+          <p>{{ 'homepage.tech_pwa_desc' | translate }}</p>
+        </div>
+        
+        <div class="tech-item">
+          <h3>{{ 'homepage.tech_offline_title' | translate }}</h3>
+          <p>{{ 'homepage.tech_offline_desc' | translate }}</p>
+        </div>
+        
+        <div class="tech-item">
+          <h3>{{ 'homepage.tech_privacy_title' | translate }}</h3>
+          <p>{{ 'homepage.tech_privacy_desc' | translate }}</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="homepage-footer">
+    <div class="footer-content">
+      <div class="footer-links">
+        <a routerLink="/privacy">{{ 'homepage.privacy_policy' | translate }}</a>
+        <a routerLink="/terms">{{ 'homepage.terms_service' | translate }}</a>
+      </div>
+      <p class="footer-text">{{ 'homepage.footer_text' | translate }}</p>
+    </div>
+  </footer>
+</div>

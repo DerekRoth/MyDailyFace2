@@ -262,6 +262,17 @@
     <!-- About Section -->
     <div class="settings-section">
       <h2>{{ 'settings.about' | translate }}</h2>
+      
+      <div class="setting-item">
+        <div class="setting-info">
+          <h3>{{ 'settings.about_app' | translate }}</h3>
+          <p>{{ 'settings.about_app_description' | translate }}</p>
+        </div>
+        <a routerLink="/home" class="info-button">
+          {{ 'settings.learn_more' | translate }}
+        </a>
+      </div>
+      
       <div class="setting-item">
         <div class="setting-info">
           <h3>{{ 'settings.version' | translate }}</h3>

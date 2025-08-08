@@ -327,6 +327,32 @@ input:checked + .toggle-slider:before {
   border-color: var(--button-primary);
 }
 
+.sync-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sync-stats p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.queued-actions {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+}
+
+.queued-actions p {
+  color: var(--text-warning, #f59e0b);
+  font-weight: 500;
+}
+
 .form-actions {
   display: flex;
   gap: 12px;

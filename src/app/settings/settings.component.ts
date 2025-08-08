@@ -12,6 +12,7 @@ import { ThemeService, ThemePreference } from '../services/theme.service';
 import { LocaleService, SupportedLanguage } from '../services/locale.service';
 import { TranslatePipe } from '../pipes/translate.pipe';
 import { ErrorTrackerService, ErrorEntry } from '../services/error-tracker.service';
+import { OfflineQueueService } from '../services/offline-queue.service';
 
 @Component({
   selector: 'app-settings',
@@ -27,6 +28,7 @@ export class SettingsComponent implements OnInit, OnDestroy, AfterViewInit {
     lastSync: null,
     totalPhotos: 0,
     syncedPhotos: 0,
+    downloadedPhotos: 0,
     isSyncing: false,
     error: null
   };
@@ -81,7 +83,8 @@ export class SettingsComponent implements OnInit, OnDestroy, AfterViewInit {
     private themeService: ThemeService,
     private localeService: LocaleService,
     private cdr: ChangeDetectorRef,
-    private errorTracker: ErrorTrackerService
+    private errorTracker: ErrorTrackerService,
+    private offlineQueueService: OfflineQueueService
   ) {
     // Initialize language settings immediately
     this.supportedLanguages = this.localeService.supportedLanguages;
@@ -585,4 +588,7 @@ export class SettingsComponent implements OnInit, OnDestroy, AfterViewInit {
     // Don't update currentLanguage directly - let the subscription handle it
     this.localeService.setLanguage(languageCode);
   }
-}
+
+  getQueuedActionsCount(): number {
+    return this.offlineQueueService.getQueueStatus().total;
+  }

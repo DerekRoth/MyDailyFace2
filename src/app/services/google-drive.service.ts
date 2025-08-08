@@ -23,6 +23,7 @@ export interface SyncStatus {
   lastSync: Date | null;
   totalPhotos: number;
   syncedPhotos: number;
+  downloadedPhotos: number;
   isSyncing: boolean;
   error: string | null;
 }
@@ -48,6 +49,7 @@ export class GoogleDriveService {
     lastSync: null,
     totalPhotos: 0,
     syncedPhotos: 0,
+    downloadedPhotos: 0,
     isSyncing: false,
     error: null
   });
@@ -284,10 +286,19 @@ export class GoogleDriveService {
         return true;
       } else {
         console.warn('Photo not found in Google Drive:', fileName);
-        return false;
+        // Return true even if not found - it's effectively deleted
+        return true;
       }
     } catch (error) {
       console.error('Failed to delete photo from Google Drive:', error);
+      // Check if it's a specific error type we can handle
+      if (error instanceof Error) {
+        if (error.message.includes('404') || error.message.includes('not found')) {
+          // File already deleted or doesn't exist
+          console.log('Photo already deleted or not found in Google Drive:', fileName);
+          return true;
+        }
+      }
       return false;
     }
   }
@@ -334,23 +345,9 @@ export class GoogleDriveService {
   }
 
   isConfigured(): boolean {
-    const configured = !!(this.config.clientId && this.config.apiKey &&
+    return !!(this.config.clientId && this.config.apiKey &&
              this.config.clientId !== 'YOUR_GOOGLE_CLIENT_ID_HERE' &&
              this.config.apiKey !== 'YOUR_GOOGLE_API_KEY_HERE');
-    
-    // Debug logging for production troubleshooting
-    if (!configured) {
-      console.log('🔍 Google Drive not configured:', {
-        hasClientId: !!this.config.clientId,
-        hasApiKey: !!this.config.apiKey,
-        clientId: this.config.clientId?.substring(0, 20) + '...',
-        apiKey: this.config.apiKey?.substring(0, 20) + '...',
-        isPlaceholderClientId: this.config.clientId === 'YOUR_GOOGLE_CLIENT_ID_HERE',
-        isPlaceholderApiKey: this.config.apiKey === 'YOUR_GOOGLE_API_KEY_HERE'
-      });
-    }
-    
-    return configured;
   }
 
   enableAutoSync(enabled: boolean): void {
@@ -389,46 +386,26 @@ export class GoogleDriveService {
     this.updateSyncStatus({ isSyncing: true });
 
     try {
-      const unsyncedPhotos = await this.indexedDbService.getUnsyncedPhotos();
+      // Phase 1: Download missing photos from Google Drive
+      const downloadResult = await this.downloadMissingPhotos();
+      
+      // Phase 2: Upload new local photos to Google Drive
+      const uploadResult = await this.uploadUnsyncedPhotos();
 
-      if (unsyncedPhotos.length === 0) {
-        this.updateSyncStatus({
-          isSyncing: false,
-          lastSync: new Date()
-        });
-        this.isSyncing = false;
-        return;
-      }
+      console.log(`Bidirectional sync completed:`, {
+        downloaded: downloadResult.downloaded,
+        downloadFailed: downloadResult.failed,
+        uploaded: uploadResult.uploaded, 
+        uploadFailed: uploadResult.failed
+      });
 
-      let syncedCount = 0;
-      let failedCount = 0;
-
-      for (const photo of unsyncedPhotos) {
-        try {
-          const blob = photo.data ? this.indexedDbService.arrayBufferToBlob(photo.data) : null;
-          if (!blob) {
-            failedCount++;
-            continue;
-          }
-          const fileId = await this.syncPhoto(blob, photo.id, photo.timestamp);
-          if (fileId) {
-            syncedCount++;
-          } else {
-            failedCount++;
-          }
-        } catch (error) {
-          console.error('Failed to sync photo:', photo.id, error);
-          failedCount++;
-        }
-      }
-
-      console.log(`Background sync completed: ${syncedCount} synced, ${failedCount} failed`);
-
+      const totalFailed = downloadResult.failed + uploadResult.failed;
       this.updateSyncStatus({
         isSyncing: false,
         lastSync: new Date(),
-        syncedPhotos: this.syncStatusSubject.value.syncedPhotos + syncedCount,
-        error: failedCount > 0 ? `${failedCount} photos failed to sync` : null
+        syncedPhotos: this.syncStatusSubject.value.syncedPhotos + uploadResult.uploaded,
+        downloadedPhotos: this.syncStatusSubject.value.downloadedPhotos + downloadResult.downloaded,
+        error: totalFailed > 0 ? `${totalFailed} photos failed to sync` : null
       });
 
     } catch (error) {
@@ -442,8 +419,152 @@ export class GoogleDriveService {
     }
   }
 
+  private async uploadUnsyncedPhotos(): Promise<{uploaded: number, failed: number}> {
+    const unsyncedPhotos = await this.indexedDbService.getUnsyncedPhotos();
+    
+    if (unsyncedPhotos.length === 0) {
+      return { uploaded: 0, failed: 0 };
+    }
+
+    let uploaded = 0;
+    let failed = 0;
+
+    for (const photo of unsyncedPhotos) {
+      try {
+        const blob = photo.data ? this.indexedDbService.arrayBufferToBlob(photo.data) : null;
+        if (!blob) {
+          failed++;
+          continue;
+        }
+        const fileId = await this.syncPhoto(blob, photo.id, photo.timestamp);
+        if (fileId) {
+          uploaded++;
+        } else {
+          failed++;
+        }
+      } catch (error) {
+        console.error('Failed to sync photo:', photo.id, error);
+        failed++;
+      }
+    }
+
+    return { uploaded, failed };
+  }
+
   async forceSync(): Promise<void> {
     await this.triggerBackgroundSync();
+  }
+
+  private async downloadMissingPhotos(): Promise<{downloaded: number, failed: number}> {
+    try {
+      // Get all files from the DailyFace.me folder
+      await this.ensureFolderExists();
+      
+      const response = await window.gapi.client.drive.files.list({
+        q: `'${this.folderId}' in parents and name contains 'dailyface_' and trashed=false`,
+        spaces: 'drive',
+        pageSize: 1000,
+        fields: 'files(id,name,modifiedTime)'
+      });
+
+      const driveFiles = response.result.files || [];
+      console.log(`Found ${driveFiles.length} photos in Google Drive`);
+      
+      if (driveFiles.length === 0) {
+        return { downloaded: 0, failed: 0 };
+      }
+
+      // Get all local photos
+      const localPhotos = await this.indexedDbService.getAllPhotos();
+      const localFileIds = new Set(localPhotos.map(p => p.googleDriveFileId).filter(id => id));
+      const localDates = new Set(localPhotos.map(p => this.formatDateForFilename(p.timestamp)));
+
+      let downloaded = 0;
+      let failed = 0;
+
+      for (const file of driveFiles) {
+        try {
+          // Skip if we already have this file
+          if (localFileIds.has(file.id!)) {
+            continue;
+          }
+
+          // Parse date and photoId from filename
+          const parsedInfo = this.parseFilename(file.name!);
+          if (!parsedInfo) {
+            console.warn('Could not parse filename:', file.name);
+            failed++;
+            continue;
+          }
+
+          // Check for date conflicts (same date, different file)
+          const dateString = this.formatDateForFilename(parsedInfo.date);
+          const existingPhoto = localPhotos.find(p => this.formatDateForFilename(p.timestamp) === dateString);
+          
+          if (existingPhoto) {
+            // Conflict resolution: Google Drive version takes precedence
+            console.log(`Date conflict detected for ${dateString}, replacing local photo with Drive version`);
+            await this.indexedDbService.deletePhoto(existingPhoto.id);
+          }
+
+          // Download and save the photo
+          const photoData = await this.downloadPhoto(file.id!);
+          if (photoData) {
+            await this.indexedDbService.savePhoto(photoData, parsedInfo.photoId, parsedInfo.date);
+            await this.indexedDbService.updatePhotoSyncStatus(parsedInfo.photoId, file.id!, true);
+            downloaded++;
+            console.log(`Downloaded photo for date ${dateString}`);
+          } else {
+            failed++;
+          }
+
+        } catch (error) {
+          console.error('Failed to download photo:', file.name, error);
+          failed++;
+        }
+      }
+
+      return { downloaded, failed };
+    } catch (error) {
+      console.error('Failed to list or download photos from Google Drive:', error);
+      throw error;
+    }
+  }
+
+  private async downloadPhoto(fileId: string): Promise<Blob | null> {
+    try {
+      const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.statusText}`);
+      }
+
+      return await response.blob();
+    } catch (error) {
+      console.error('Photo download failed:', error);
+      return null;
+    }
+  }
+
+  private parseFilename(filename: string): {photoId: string, date: Date} | null {
+    // Expected format: dailyface_{photoId}_{YYYY-MM-DD}.jpg
+    const match = filename.match(/^dailyface_(.+)_(\d{4}-\d{2}-\d{2})\.jpg$/);
+    if (!match) return null;
+
+    const [, photoId, dateString] = match;
+    const date = new Date(dateString + 'T12:00:00'); // Set to noon to avoid timezone issues
+    
+    if (isNaN(date.getTime())) return null;
+
+    return { photoId, date };
+  }
+
+  private formatDateForFilename(date: Date): string {
+    return date.toISOString().split('T')[0];
   }
 
   stopAutoSync(): void {

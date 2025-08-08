@@ -89,6 +89,21 @@
           <p>{{ 'settings.google_drive_folder_info' | translate }}</p>
         </div>
       </div>
+      
+      <!-- Sync Statistics -->
+      <div class="setting-item" *ngIf="syncStatus.isAuthenticated">
+        <div class="setting-info">
+          <h3>{{ 'settings.sync_statistics' | translate }}</h3>
+          <div class="sync-stats">
+            <p>📤 {{ 'settings.uploaded_photos' | translate }}: {{ syncStatus.syncedPhotos }}</p>
+            <p>📥 {{ 'settings.downloaded_photos' | translate }}: {{ syncStatus.downloadedPhotos }}</p>
+            <p>📱 {{ getPhotosStoredText() }}</p>
+            <div *ngIf="getQueuedActionsCount() > 0" class="queued-actions">
+              <p>⏳ {{ 'settings.queued_actions' | translate }}: {{ getQueuedActionsCount() }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Appearance Settings Section -->

@@ -188,6 +188,23 @@ export class IndexedDbService {
     });
   }
 
+  async getSyncedPhotosCount(): Promise<number> {
+    await this.ensureDBReady();
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([this.storeName], 'readonly');
+      const store = transaction.objectStore(this.storeName);
+      const request = store.getAll();
+
+      request.onsuccess = () => {
+        const allPhotos = request.result;
+        const syncedCount = allPhotos.filter(photo => photo.syncedToGoogleDrive).length;
+        resolve(syncedCount);
+      };
+      request.onerror = () => reject(request.error);
+    });
+  }
+
   private async ensureDBReady(): Promise<void> {
     if (!this.db) {
       await this.initDB();

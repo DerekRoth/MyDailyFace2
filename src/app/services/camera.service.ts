@@ -146,9 +146,11 @@ export class CameraService {
       // Delete from local storage
       await this.indexedDbService.deletePhoto(photoId);
       
-      // Queue deletion for Google Drive if photo exists
-      if (photoRecord && this.googleDriveService.isAutoSyncEnabled()) {
+      // Queue deletion for Google Drive if photo exists and user is connected
+      // Note: We sync deletions regardless of auto-sync setting for data consistency
+      if (photoRecord && this.googleDriveService.isAuthenticated()) {
         await this.offlineQueueService.queuePhotoDelete(photoId, photoRecord.timestamp);
+        console.log(`Queued deletion of photo ${photoId} for Google Drive sync`);
       }
     } catch (error) {
       console.error('Error deleting photo:', error);
@@ -158,9 +160,25 @@ export class CameraService {
 
   async deleteAllPhotos(): Promise<void> {
     try {
+      // Get all photos before deleting to queue Drive deletions
+      let photosToDelete: PhotoRecord[] = [];
+      if (this.googleDriveService.isAuthenticated()) {
+        photosToDelete = await this.indexedDbService.getAllPhotos();
+      }
+      
+      // Delete from local storage
       await this.indexedDbService.deleteAllPhotos();
+      
+      // Queue all photos for deletion from Google Drive if user is connected
+      if (photosToDelete.length > 0 && this.googleDriveService.isAuthenticated()) {
+        for (const photo of photosToDelete) {
+          await this.offlineQueueService.queuePhotoDelete(photo.id, photo.timestamp);
+        }
+        console.log(`Queued ${photosToDelete.length} photos for Google Drive deletion`);
+      }
     } catch (error) {
       console.error('Error deleting all photos:', error);
+      throw error;
     }
   }
 

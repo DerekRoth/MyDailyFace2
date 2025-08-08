@@ -32,9 +32,15 @@ jobs:
 
     - name: Create environment file
       run: |
-        cp src/environments/environment.example.ts src/environments/environment.ts
-        sed -i 's/YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com/${{ vars.GOOGLE_CLIENT_ID }}/g' src/environments/environment.ts
-        sed -i 's/YOUR_RESTRICTED_API_KEY_HERE/${{ secrets.GOOGLE_API_KEY }}/g' src/environments/environment.ts
+        cat > src/environments/environment.ts << 'EOF'
+        export const environment = {
+          production: true,
+          googleDrive: {
+            clientId: '${{ vars.GOOGLE_CLIENT_ID }}',
+            apiKey: '${{ secrets.GOOGLE_API_KEY }}'
+          }
+        };
+        EOF
 
     - name: Build
       run: npm run build

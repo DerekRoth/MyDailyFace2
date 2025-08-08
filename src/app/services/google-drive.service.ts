@@ -334,9 +334,23 @@ export class GoogleDriveService {
   }
 
   isConfigured(): boolean {
-    return !!(this.config.clientId && this.config.apiKey &&
+    const configured = !!(this.config.clientId && this.config.apiKey &&
              this.config.clientId !== 'YOUR_GOOGLE_CLIENT_ID_HERE' &&
              this.config.apiKey !== 'YOUR_GOOGLE_API_KEY_HERE');
+    
+    // Debug logging for production troubleshooting
+    if (!configured) {
+      console.log('🔍 Google Drive not configured:', {
+        hasClientId: !!this.config.clientId,
+        hasApiKey: !!this.config.apiKey,
+        clientId: this.config.clientId?.substring(0, 20) + '...',
+        apiKey: this.config.apiKey?.substring(0, 20) + '...',
+        isPlaceholderClientId: this.config.clientId === 'YOUR_GOOGLE_CLIENT_ID_HERE',
+        isPlaceholderApiKey: this.config.apiKey === 'YOUR_GOOGLE_API_KEY_HERE'
+      });
+    }
+    
+    return configured;
   }
 
   enableAutoSync(enabled: boolean): void {

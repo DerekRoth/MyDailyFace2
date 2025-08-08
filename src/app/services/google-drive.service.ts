@@ -260,14 +260,14 @@ export class GoogleDriveService {
   }
 
   async deletePhoto(photoId: string, timestamp: Date): Promise<boolean> {
+    // Define fileName at function scope so it's available in catch block
+    const fileName = `dailyface_${photoId}_${timestamp.toISOString().split('T')[0]}.jpg`;
+    
     try {
       if (!this.isAuthenticated()) {
         console.warn('Not authenticated with Google Drive');
         return false;
       }
-
-      // Find the file by searching for the specific filename pattern
-      const fileName = `dailyface_${photoId}_${timestamp.toISOString().split('T')[0]}.jpg`;
 
       const response = await window.gapi.client.drive.files.list({
         q: `name='${fileName}' and trashed=false`,

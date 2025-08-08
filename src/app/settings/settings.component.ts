@@ -592,3 +592,4 @@ export class SettingsComponent implements OnInit, OnDestroy, AfterViewInit {
   getQueuedActionsCount(): number {
     return this.offlineQueueService.getQueueStatus().total;
   }
+}

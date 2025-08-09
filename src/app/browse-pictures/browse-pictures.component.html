@@ -12,33 +12,33 @@
     <p>{{ 'browse.loading_state' | translate }}</p>
   </div>
 
-  <!-- Photos List with Sections -->
+  <!-- Photos List with Unified Grid -->
   <div class="photos-list" *ngIf="!isLoading && photos.length > 0">
-    <div class="photo-section" *ngFor="let section of photoSections; trackBy: trackBySectionId">
-      <!-- Section Header -->
-      <div class="section-header">
-        <h2>{{ section.displayName }}</h2>
-        <span class="section-count">{{ section.photos.length }}</span>
-      </div>
-      
-      <!-- Photos in Section -->
-      <div class="section-photos">
+    <div class="unified-grid">
+      <ng-container *ngFor="let item of flattenedPhotoItems; trackBy: trackByFlattenedItem">
+        <!-- Section Header -->
+        <div class="section-header" *ngIf="item.type === 'header'">
+          <h2>{{ item.displayName }}</h2>
+          <span class="section-count">{{ item.count }}</span>
+        </div>
+        
+        <!-- Photo Item -->
         <div class="photo-item" 
-             *ngFor="let photo of section.photos; trackBy: trackByPhotoId" 
-             [attr.data-photo-id]="photo.id"
-             (click)="openPhoto(photo, $event)">
+             *ngIf="item.type === 'photo' && item.photo"
+             [attr.data-photo-id]="item.photo.id"
+             (click)="openPhoto(item.photo, $event)">
           <div class="photo-thumbnail">
             <img 
-              [src]="getPhotoDataUrl(photo)" 
-              [alt]="getPhotoAltText(photo)"
-              *ngIf="getPhotoDataUrl(photo)"
+              [src]="getPhotoDataUrl(item.photo)" 
+              [alt]="getPhotoAltText(item.photo)"
+              *ngIf="getPhotoDataUrl(item.photo)"
               loading="lazy">
-            <div class="photo-loading" *ngIf="!getPhotoDataUrl(photo)">
+            <div class="photo-loading" *ngIf="!getPhotoDataUrl(item.photo)">
               <div class="loading-spinner-small"></div>
             </div>
           </div>
         </div>
-      </div>
+      </ng-container>
     </div>
   </div>
 

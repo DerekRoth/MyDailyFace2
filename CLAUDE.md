@@ -267,3 +267,5 @@ Set these in your repository Settings → Secrets and variables → Actions:
 - Google Drive integration is client-side only with proper restrictions
 - PWA is ready for mobile installation and offline use
 - Code follows Angular 19 standalone component architecture
+
+- in CSS, contents should dictate the size of their containers unless we actually want an overflow. Using overflow: hidden should be avoided in most cases. Fluid layout is preferred over media queries. min/max dimensions, clamp(), percentages are preferred over absolute dimensions.

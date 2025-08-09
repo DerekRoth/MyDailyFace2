@@ -11,6 +11,13 @@ interface PhotoSection {
   photos: CameraPhoto[];
 }
 
+interface FlattenedItem {
+  type: 'header' | 'photo';
+  displayName?: string;
+  count?: number;
+  photo?: CameraPhoto;
+}
+
 @Component({
   selector: 'app-browse-pictures',
   imports: [CommonModule, TranslatePipe],
@@ -20,6 +27,7 @@ interface PhotoSection {
 export class BrowsePicturesComponent implements OnInit {
   photos: CameraPhoto[] = [];
   photoSections: PhotoSection[] = [];
+  flattenedPhotoItems: FlattenedItem[] = [];
   photoDataUrls: Map<string, string> = new Map();
   isLoading = true;
   showDeleteConfirm = false;
@@ -432,6 +440,14 @@ export class BrowsePicturesComponent implements OnInit {
     return section.monthYear;
   }
 
+  trackByFlattenedItem(index: number, item: FlattenedItem): string {
+    if (item.type === 'header') {
+      return `header-${item.displayName}`;
+    } else {
+      return `photo-${item.photo!.id}`;
+    }
+  }
+
   private groupPhotosByMonth() {
     const groupedPhotos = new Map<string, CameraPhoto[]>();
     
@@ -456,6 +472,30 @@ export class BrowsePicturesComponent implements OnInit {
     
     // Create flat array of all photos in display order (newest first)
     this.allPhotosFlat = this.photoSections.flatMap(section => section.photos);
+    
+    // Create flattened structure for unified grid
+    this.createFlattenedItems();
+  }
+
+  private createFlattenedItems() {
+    this.flattenedPhotoItems = [];
+    
+    for (const section of this.photoSections) {
+      // Add section header
+      this.flattenedPhotoItems.push({
+        type: 'header',
+        displayName: section.displayName,
+        count: section.photos.length
+      });
+      
+      // Add photos for this section
+      for (const photo of section.photos) {
+        this.flattenedPhotoItems.push({
+          type: 'photo',
+          photo: photo
+        });
+      }
+    }
   }
 
   private formatMonthYear(monthYear: string): string {

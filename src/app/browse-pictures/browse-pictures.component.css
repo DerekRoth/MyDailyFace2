@@ -36,13 +36,16 @@
   flex: 1;
 }
 
+.loading-spinner, .loading-spinner-small {
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
 .loading-spinner {
   width: 32px;
   height: 32px;
   border: 3px solid rgba(0, 122, 255, 0.3);
   border-top: 3px solid var(--button-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
   margin-bottom: 16px;
 }
 
@@ -51,8 +54,6 @@
   height: 20px;
   border: 2px solid rgba(0, 122, 255, 0.3);
   border-top: 2px solid var(--button-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
@@ -70,9 +71,12 @@
   box-sizing: border-box;
 }
 
-/* Photo Sections */
-.photo-section {
-  margin-bottom: 32px;
+/* Unified Grid Layout */
+.unified-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(80px, calc((100% - 12px) / 7)), 1fr));
+  gap: 2px;
+  margin: 0 auto;
 }
 
 .section-header {
@@ -89,6 +93,13 @@
   z-index: 10;
   margin-left: -20px;
   margin-right: -20px;
+  margin-top: 20px;
+  /* Grid spanning: take full width of grid */
+  grid-column: 1 / -1;
+}
+
+.section-header:first-child {
+  margin-top: 0;
 }
 
 .section-header h2 {
@@ -108,13 +119,6 @@
   border-radius: 10px;
   min-width: 24px;
   text-align: center;
-}
-
-.section-photos {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(max(80px, calc((100% - 12px) / 7)), 1fr));
-  gap: 2px;
-  margin: 0 auto;
 }
 
 .photo-item {
@@ -168,22 +172,9 @@
   flex: 1;
 }
 
-.empty-state svg {
-  margin-bottom: 20px;
-}
-
-.empty-state h2 {
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-}
-
-.empty-state p {
-  font-size: 16px;
-  color: var(--text-secondary);
-  line-height: 1.4;
-}
+.empty-state svg { margin-bottom: 20px; }
+.empty-state h2 { font-size: 24px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+.empty-state p { font-size: 16px; color: var(--text-secondary); line-height: 1.4; }
 
 /* Fullscreen Photo Viewer */
 .photo-fullscreen {
@@ -237,9 +228,7 @@
   height: 40px;
 }
 
-.back-button:hover, .delete-button-header:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
+.back-button:hover, .delete-button-header:hover { background-color: rgba(255, 255, 255, 0.1); }
 
 .photo-info-header {
   flex: 1;
@@ -248,16 +237,8 @@
   padding: 0 16px;
 }
 
-.photo-info-header h3 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-
-.photo-info-header p {
-  font-size: 14px;
-  opacity: 0.8;
-}
+.photo-info-header h3 { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
+.photo-info-header p { font-size: 14px; opacity: 0.8; }
 
 .photo-container {
   flex: 1;
@@ -444,42 +425,18 @@
   animation: fadeIn 0.3s ease;
 }
 
-.delete-modal {
-  background-color: var(--bg-secondary);
-  border-radius: 16px;
-  width: 90%;
-  max-width: 320px;
-  overflow: hidden;
-}
-
-.delete-modal-content {
-  padding: 24px;
-  text-align: center;
-}
-
-.delete-modal-content h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-}
-
-.delete-modal-content p {
-  font-size: 14px;
-  color: var(--text-secondary);
-  line-height: 1.4;
-  margin-bottom: 24px;
-}
+.delete-modal { background-color: var(--bg-secondary); border-radius: 16px; width: 90%; max-width: 320px; overflow: hidden; }
+.delete-modal-content { padding: 24px; text-align: center; }
+.delete-modal-content h3 { font-size: 18px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+.delete-modal-content p { font-size: 14px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 24px; }
 
 .delete-modal-actions {
   display: flex;
   gap: 12px;
 }
 
-.cancel-button {
+.cancel-button, .confirm-delete-button {
   flex: 1;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
   border: none;
   border-radius: 8px;
   padding: 12px 16px;
@@ -489,30 +446,11 @@
   transition: background-color 0.2s ease;
 }
 
-.cancel-button:hover {
-  background-color: var(--border-color);
-}
-
-.confirm-delete-button {
-  flex: 1;
-  background-color: #ff3b30;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 16px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.confirm-delete-button:hover {
-  background-color: #d70015;
-}
-
-.confirm-delete-button:active {
-  background-color: #bf0012;
-}
+.cancel-button { background-color: var(--bg-primary); color: var(--text-primary); }
+.cancel-button:hover { background-color: var(--border-color); }
+.confirm-delete-button { background-color: #ff3b30; color: white; }
+.confirm-delete-button:hover { background-color: #d70015; }
+.confirm-delete-button:active { background-color: #bf0012; }
 
 @keyframes fadeIn {
   from { opacity: 0; }

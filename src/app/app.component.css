@@ -1,7 +1,7 @@
 .app-container {
   display: grid;
-  grid-template-rows: 1fr 80px;
-  grid-template-areas: 
+  grid-template-rows: 1fr min-content;
+  grid-template-areas:
     "main"
     "nav";
   height: 100dvh;

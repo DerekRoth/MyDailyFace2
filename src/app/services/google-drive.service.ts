@@ -67,6 +67,9 @@ export class GoogleDriveService {
     const autoSyncEnabled = localStorage.getItem('googleDriveAutoSync') === 'true';
     this.updateSyncStatus({ isEnabled: autoSyncEnabled });
 
+    // Try to restore authentication state
+    this.restoreAuthenticationState();
+
     // Start monitoring connection and sync when available
     this.startAutoSync();
   }
@@ -161,6 +164,8 @@ export class GoogleDriveService {
           if (this.accessToken) {
             try {
               await this.ensureFolderExists();
+              // Store authentication state
+              this.storeAuthenticationState();
               resolve(true);
             } catch (error) {
               console.error('Folder creation failed:', error);
@@ -195,6 +200,9 @@ export class GoogleDriveService {
         window.google.accounts.oauth2.revoke(this.accessToken);
       }
       this.accessToken = null;
+      this.folderId = null;
+      // Clear stored authentication state
+      this.clearAuthenticationState();
       this.updateSyncStatus({
         isAuthenticated: false,
         error: null
@@ -331,6 +339,91 @@ export class GoogleDriveService {
     }
   }
 
+
+  private storeAuthenticationState(): void {
+    try {
+      localStorage.setItem('googleDriveAuthenticated', 'true');
+      if (this.folderId) {
+        localStorage.setItem('googleDriveFolderId', this.folderId);
+      }
+    } catch (error) {
+      console.error('Failed to store authentication state:', error);
+    }
+  }
+
+  private async restoreAuthenticationState(): Promise<void> {
+    try {
+      const isAuthenticated = localStorage.getItem('googleDriveAuthenticated') === 'true';
+      const storedFolderId = localStorage.getItem('googleDriveFolderId');
+      
+      if (isAuthenticated) {
+        // Try to silently re-authenticate
+        await this.attemptSilentSignIn();
+        if (storedFolderId) {
+          this.folderId = storedFolderId;
+        }
+      }
+    } catch (error) {
+      console.error('Failed to restore authentication state:', error);
+      this.clearAuthenticationState();
+    }
+  }
+
+  private async attemptSilentSignIn(): Promise<boolean> {
+    try {
+      await this.initializeGapi();
+      
+      if (!this.tokenClient) {
+        throw new Error('Token client not initialized');
+      }
+
+      // Try to get token silently (no user interaction)
+      return new Promise((resolve) => {
+        this.tokenClient.requestAccessToken({ 
+          prompt: '',  // Empty prompt for silent auth
+          hint: localStorage.getItem('googleDriveUserEmail') || undefined
+        });
+
+        // Set a shorter timeout for silent authentication
+        setTimeout(async () => {
+          if (this.accessToken) {
+            try {
+              // Verify the token works by testing API access
+              await this.ensureFolderExists();
+              this.updateSyncStatus({ 
+                isAuthenticated: true,
+                error: null 
+              });
+              console.log('Silent authentication successful');
+              resolve(true);
+            } catch (error) {
+              console.log('Token is invalid, clearing authentication state');
+              this.clearAuthenticationState();
+              resolve(false);
+            }
+          } else {
+            console.log('Silent authentication failed, user needs to sign in again');
+            this.clearAuthenticationState();
+            resolve(false);
+          }
+        }, 5000); // 5 second timeout for silent auth
+      });
+    } catch (error) {
+      console.error('Silent sign-in failed:', error);
+      this.clearAuthenticationState();
+      return false;
+    }
+  }
+
+  private clearAuthenticationState(): void {
+    try {
+      localStorage.removeItem('googleDriveAuthenticated');
+      localStorage.removeItem('googleDriveFolderId');
+      localStorage.removeItem('googleDriveUserEmail');
+    } catch (error) {
+      console.error('Failed to clear authentication state:', error);
+    }
+  }
 
   private updateSyncStatus(updates: Partial<SyncStatus>): void {
     const currentStatus = this.syncStatusSubject.value;

@@ -19,6 +19,7 @@ export class TakePictureComponent implements OnInit, OnDestroy {
   @ViewChild('freezeFrame', { static: false }) freezeFrameElement!: ElementRef<HTMLDivElement>;
 
   isStreaming = false;
+  videoReady = false;
   isTakingPicture = false;
   error: string | null = null;
 
@@ -77,9 +78,20 @@ export class TakePictureComponent implements OnInit, OnDestroy {
       const stream = await this.cameraStreamService.getStream();
 
       if (this.videoElement) {
-        this.videoElement.nativeElement.srcObject = stream;
+        const video = this.videoElement.nativeElement;
+        video.srcObject = stream;
         this.isStreaming = true;
         this.error = null;
+
+        // Listen for when video is actually playing and has dimensions
+        video.addEventListener('playing', () => {
+          this.videoReady = true;
+        });
+
+        // Also handle case where video might already be playing
+        if (video.readyState >= 3) { // HAVE_FUTURE_DATA or greater
+          this.videoReady = true;
+        }
       }
     } catch (error) {
       console.error('Error accessing camera:', error);

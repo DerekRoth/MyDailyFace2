@@ -14,13 +14,13 @@
         
         <!-- Face alignment overlay -->
         <div class="alignment-overlay" 
-             *ngIf="showOverlay && overlayImageUrl && isStreaming"
+             *ngIf="showOverlay && overlayImageUrl && videoReady"
              [style.opacity]="overlayOpacity">
           <img [src]="overlayImageUrl" [alt]="getOverlayAltText()">
         </div>
 
         <!-- Alignment guide lines overlay -->
-        <div class="alignment-guides-overlay" *ngIf="showAlignmentGuides && isStreaming">
+        <div class="alignment-guides-overlay" *ngIf="showAlignmentGuides && videoReady">
           <!-- Vertical center line -->
           <div class="alignment-guide-line vertical"></div>
           <!-- Eye line -->

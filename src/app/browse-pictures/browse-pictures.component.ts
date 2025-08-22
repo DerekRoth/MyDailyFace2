@@ -52,17 +52,19 @@ export class BrowsePicturesComponent implements OnInit {
   showScrollablePhotos = false;
   openingPhotoDataUrl: string | null = null;
   
-  // Virtual scrolling
+  // Photo navigation
   scrollContainerWidth = 0;
-  virtualContentWidth = 0;
-  visiblePhotos: { photo: CameraPhoto; dataUrl: string | null; position: number }[] = [];
+  visiblePhotos: { photo: CameraPhoto; dataUrl: string | null }[] = [];
   private photoCache = new Map<string, string>(); // Cache loaded photos
   
   // Swipe down to close (vertical only)
+  swipeStartX = 0;
   swipeStartY = 0;
+  swipeCurrentX = 0;
   swipeCurrentY = 0;
   isSwipeActive = false;
   swipeTransform = '';
+  isVerticalSwipe = false;
 
   constructor(
     private cameraService: CameraService,
@@ -228,53 +230,78 @@ export class BrowsePicturesComponent implements OnInit {
 
   onTouchStart(event: TouchEvent) {
     if (event.touches.length === 1) {
+      this.swipeStartX = event.touches[0].clientX;
       this.swipeStartY = event.touches[0].clientY;
       this.isSwipeActive = true;
+      this.isVerticalSwipe = false; // Will be determined in touchmove
     }
   }
 
   onTouchMove(event: TouchEvent) {
     if (!this.isSwipeActive || event.touches.length !== 1) return;
     
+    this.swipeCurrentX = event.touches[0].clientX;
     this.swipeCurrentY = event.touches[0].clientY;
-    const deltaY = this.swipeCurrentY - this.swipeStartY;
     
-    if (deltaY > 0) {
-      // Vertical swipe down - close gesture
-      const progress = Math.min(deltaY / 200, 1); // Max progress at 200px
-      const scale = 1 - (progress * 0.1); // Scale down slightly
-      const opacity = 1 - (progress * 0.3); // Fade background
+    const deltaX = Math.abs(this.swipeCurrentX - this.swipeStartX);
+    const deltaY = Math.abs(this.swipeCurrentY - this.swipeStartY);
+    
+    // Determine swipe direction on first significant movement
+    if (!this.isVerticalSwipe && (deltaX > 10 || deltaY > 10)) {
+      this.isVerticalSwipe = deltaY > deltaX;
+    }
+    
+    // Only handle vertical swipes for close gesture
+    if (this.isVerticalSwipe) {
+      const actualDeltaY = this.swipeCurrentY - this.swipeStartY;
       
-      this.swipeTransform = `translateY(${deltaY}px) scale(${scale})`;
-      
-      // Update background opacity
-      const fullscreenEl = document.querySelector('.photo-fullscreen') as HTMLElement;
-      if (fullscreenEl) {
-        fullscreenEl.style.backgroundColor = `rgba(0, 0, 0, ${opacity * 0.9})`;
+      if (actualDeltaY > 0) {
+        // Vertical swipe down - close gesture
+        const progress = Math.min(actualDeltaY / 200, 1); // Max progress at 200px
+        const scale = 1 - (progress * 0.1); // Scale down slightly
+        const opacity = 1 - (progress * 0.3); // Fade background
+        
+        this.swipeTransform = `translateY(${actualDeltaY}px) scale(${scale})`;
+        
+        // Update background opacity
+        const fullscreenEl = document.querySelector('.photo-fullscreen') as HTMLElement;
+        if (fullscreenEl) {
+          fullscreenEl.style.backgroundColor = `rgba(0, 0, 0, ${opacity * 0.9})`;
+        }
+        
+        // Prevent default to avoid interfering with scroll
+        event.preventDefault();
       }
     }
+    // For horizontal swipes, don't prevent default - let the scroll container handle it
   }
 
   onTouchEnd(event: TouchEvent) {
     if (!this.isSwipeActive) return;
     
-    const deltaY = this.swipeCurrentY - this.swipeStartY;
-    
-    if (deltaY > 100) {
-      // Vertical swipe down - close photo
-      this.closePhoto();
-    } else {
-      // Snap back to original position
-      this.swipeTransform = 'translateY(0px) scale(1)';
-      const fullscreenEl = document.querySelector('.photo-fullscreen') as HTMLElement;
-      if (fullscreenEl) {
-        fullscreenEl.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+    // Only handle vertical swipe close gesture
+    if (this.isVerticalSwipe) {
+      const deltaY = this.swipeCurrentY - this.swipeStartY;
+      
+      if (deltaY > 100) {
+        // Vertical swipe down - close photo
+        this.closePhoto();
+      } else {
+        // Snap back to original position
+        this.swipeTransform = 'translateY(0px) scale(1)';
+        const fullscreenEl = document.querySelector('.photo-fullscreen') as HTMLElement;
+        if (fullscreenEl) {
+          fullscreenEl.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+        }
       }
     }
     
     this.isSwipeActive = false;
+    this.swipeStartX = 0;
     this.swipeStartY = 0;
+    this.swipeCurrentX = 0;
     this.swipeCurrentY = 0;
+    this.isVerticalSwipe = false;
   }
 
 
@@ -532,40 +559,35 @@ export class BrowsePicturesComponent implements OnInit {
       requestAnimationFrame(async () => {
         const container = document.querySelector('.photo-scroll-container') as HTMLElement;
         if (container) {
-          // NOW we can get the actual scroll container width
+          // Get the actual scroll container width
           let actualContainerWidth = container.offsetWidth;
           
-          // Fallback if container width is still 0 (shouldn't happen now but just in case)
+          // Fallback if container width is still 0
           if (actualContainerWidth === 0) {
             const photoContainer = document.querySelector('.photo-container');
             actualContainerWidth = photoContainer ? photoContainer.clientWidth : window.innerWidth;
           }
           
           this.scrollContainerWidth = actualContainerWidth;
-          this.virtualContentWidth = this.allPhotosFlat.length * actualContainerWidth;
           
-          
-          // Initialize visible photos with correct width
+          // Load visible photos for flexbox layout
           await this.updateVisiblePhotos(actualContainerWidth);
           
-          // Disable smooth scrolling AND scroll snap for instant positioning
+          // Disable smooth scrolling for instant positioning
           container.style.scrollBehavior = 'auto';
-          container.style.scrollSnapType = 'none';
           
-          // Scroll to current photo position using the correct width
+          // Scroll to current photo position - with flexbox each photo is 100vw wide
           const targetScroll = this.currentPhotoIndex * actualContainerWidth;
           container.scrollLeft = targetScroll;
           
           // Wait a bit to ensure scroll has taken effect
           setTimeout(() => {
-            // Show the scrollable view FIRST while keeping single photo visible
+            // Show the scrollable view
             this.showScrollablePhotos = true;
             
-            // Then hide the single photo view after a brief moment to ensure overlap
             setTimeout(() => {
-              // Re-enable smooth scrolling and scroll snap
+              // Re-enable smooth scrolling
               container.style.scrollBehavior = 'smooth';
-              container.style.scrollSnapType = 'x mandatory';
               resolve();
             }, 10);
           }, 50);
@@ -603,41 +625,29 @@ export class BrowsePicturesComponent implements OnInit {
       }
     }
 
-    // We'll calculate the actual container width later when we position the scroll
-    // For now, just use a placeholder that will be updated
-    this.scrollContainerWidth = 0;
-    this.virtualContentWidth = 0;
-    
-    
     // Cache the current photo
     const currentPhoto = this.allPhotosFlat[this.currentPhotoIndex];
     if (currentPhoto && this.openingPhotoDataUrl) {
       this.photoCache.set(currentPhoto.id, this.openingPhotoDataUrl);
     }
-    
-    // We'll initialize visible photos in positionScrollContainer with correct width
   }
   
   private async updateVisiblePhotos(containerWidth: number) {
     const newVisiblePhotos: typeof this.visiblePhotos = [];
     
-    // Ensure we use the correct container width
-    if (!containerWidth || containerWidth === 0) {
-      const photoContainer = document.querySelector('.photo-container');
-      containerWidth = photoContainer ? photoContainer.clientWidth : window.innerWidth;
-    }
+    // Show ALL photos but only load dataUrls for a window around current photo
+    const windowSize = 10; // Smaller window for better performance
     
-    
-    // Load current photo and its neighbors
-    for (let offset = -1; offset <= 1; offset++) {
-      const index = this.currentPhotoIndex + offset;
-      if (index >= 0 && index < this.allPhotosFlat.length) {
-        const photo = this.allPhotosFlat[index];
-        const position = index * containerWidth;
-        
-        
+    for (let index = 0; index < this.allPhotosFlat.length; index++) {
+      const photo = this.allPhotosFlat[index];
+      
+      // Only load dataUrl if within the window around current photo
+      let dataUrl: string | null = null;
+      const distanceFromCurrent = Math.abs(index - this.currentPhotoIndex);
+      
+      if (distanceFromCurrent <= windowSize) {
         // Check cache first
-        let dataUrl = this.photoCache.get(photo.id);
+        dataUrl = this.photoCache.get(photo.id) || null;
         if (!dataUrl) {
           const loadedUrl = await this.cameraService.getPhotoDataUrl(photo);
           if (loadedUrl) {
@@ -645,13 +655,12 @@ export class BrowsePicturesComponent implements OnInit {
             this.photoCache.set(photo.id, dataUrl);
           }
         }
-        
-        newVisiblePhotos.push({
-          photo,
-          dataUrl: dataUrl || null,
-          position
-        });
       }
+      
+      newVisiblePhotos.push({
+        photo,
+        dataUrl
+      });
     }
     
     this.visiblePhotos = newVisiblePhotos;

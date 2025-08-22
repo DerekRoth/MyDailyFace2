@@ -103,17 +103,15 @@
       <div class="photo-scroll-container" 
            [style.visibility]="showScrollablePhotos ? 'visible' : 'hidden'"
            (scroll)="onPhotoScroll($event)">
-        <!-- Virtual scroll content -->
-        <div class="virtual-scroll-content" [style.width.px]="virtualContentWidth">
-          <!-- Only render visible photos -->
-          <div class="photo-slide" 
-               *ngFor="let visiblePhoto of visiblePhotos; let i = index"
-               [style.left.px]="visiblePhoto.position"
-               [style.width.px]="scrollContainerWidth">
-            <img 
-              *ngIf="visiblePhoto.dataUrl" 
-              [src]="visiblePhoto.dataUrl" 
-              [alt]="getGenericPhotoAltText()">
+        <!-- Flexbox scroll content - render visible photos -->
+        <div class="photo-slide" 
+             *ngFor="let visiblePhoto of visiblePhotos; let i = index">
+          <img 
+            *ngIf="visiblePhoto.dataUrl" 
+            [src]="visiblePhoto.dataUrl" 
+            [alt]="getGenericPhotoAltText()">
+          <div class="photo-placeholder" *ngIf="!visiblePhoto.dataUrl">
+            <div class="loading-spinner-small"></div>
           </div>
         </div>
       </div>

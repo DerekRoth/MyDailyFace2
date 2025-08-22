@@ -28,6 +28,11 @@
           <!-- Mouth line -->
           <div class="alignment-guide-line horizontal" [style.top.%]="mouthLinePosition"></div>
         </div>
+
+        <!-- Freeze frame animation -->
+        <div #freezeFrame class="freeze-frame" *ngIf="showFreezeFrame" [class.animate-to-browse]="animatingToBrowse">
+          <img [src]="freezeFrameUrl" [alt]="getCapturedPhotoAltText()">
+        </div>
       </div>
     </div>
     
@@ -92,11 +97,6 @@
 
   <!-- Flash effect -->
   <div class="flash-overlay" *ngIf="showFlash"></div>
-  
-  <!-- Freeze frame animation -->
-  <div #freezeFrame class="freeze-frame" *ngIf="showFreezeFrame" [class.animate-to-browse]="animatingToBrowse">
-    <img [src]="freezeFrameUrl" [alt]="getCapturedPhotoAltText()">
-  </div>
 
   <canvas #canvas style="display: none;"></canvas>
 </div>

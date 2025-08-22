@@ -184,13 +184,15 @@ export class TakePictureComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       // Get the Browse navigation item position
       const browseNavItem = document.querySelector('.bottom-navigation .nav-item:nth-child(2)');
-      if (!browseNavItem || !this.freezeFrameElement) {
+      const video = this.videoElement.nativeElement;
+      if (!browseNavItem || !this.freezeFrameElement || !video) {
         // Fallback if elements not found
         this.resetAnimationState();
         return;
       }
 
       const freezeFrame = this.freezeFrameElement.nativeElement;
+
       const browseRect = browseNavItem.getBoundingClientRect();
       const freezeRect = freezeFrame.getBoundingClientRect();
 

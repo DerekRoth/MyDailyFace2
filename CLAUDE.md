@@ -269,3 +269,4 @@ Set these in your repository Settings → Secrets and variables → Actions:
 - Code follows Angular 19 standalone component architecture
 
 - in CSS, contents should dictate the size of their containers unless we actually want an overflow. Using overflow: hidden should be avoided in most cases. Fluid layout is preferred over media queries. min/max dimensions, clamp(), percentages are preferred over absolute dimensions.
+- use the puppeteer MCP when you need to check what is displayed in the app, console messages or storage

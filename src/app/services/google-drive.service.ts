@@ -59,6 +59,8 @@ export class GoogleDriveService {
   private folderId: string | null = null;
   private tokenClient: any = null;
   private accessToken: string | null = null;
+  private refreshToken: string | null = null;
+  private tokenExpiresAt: Date | null = null;
   private autoSyncInterval: any = null;
   private isSyncing: boolean = false;
 
@@ -104,13 +106,7 @@ export class GoogleDriveService {
                   this.updateSyncStatus({ error: 'Authentication failed' });
                   return;
                 }
-                this.accessToken = response.access_token;
-                this.updateSyncStatus({
-                  isAuthenticated: true,
-                  error: null
-                });
-                // Trigger automatic sync when authenticated
-                this.triggerBackgroundSync();
+                this.handleTokenResponse(response);
               }
             });
 
@@ -155,8 +151,11 @@ export class GoogleDriveService {
         throw new Error('Token client not initialized');
       }
 
-      // Request access token
-      this.tokenClient.requestAccessToken({ prompt: 'consent' });
+      // Request access token with offline access for refresh token
+      this.tokenClient.requestAccessToken({ 
+        prompt: 'consent',
+        include_granted_scopes: true
+      });
 
       // Wait for the callback to set the access token
       return new Promise((resolve) => {
@@ -214,7 +213,7 @@ export class GoogleDriveService {
 
   async uploadPhoto(photoBlob: Blob, fileName: string): Promise<string | null> {
     try {
-      if (!this.isAuthenticated()) {
+      if (!await this.ensureValidToken()) {
         throw new Error('Not authenticated with Google Drive');
       }
 
@@ -272,7 +271,7 @@ export class GoogleDriveService {
     const fileName = `dailyface_${photoId}_${timestamp.toISOString().split('T')[0]}.jpg`;
     
     try {
-      if (!this.isAuthenticated()) {
+      if (!await this.ensureValidToken()) {
         console.warn('Not authenticated with Google Drive');
         return false;
       }
@@ -342,6 +341,19 @@ export class GoogleDriveService {
 
   private storeAuthenticationState(): void {
     try {
+      const authData = {
+        authenticated: true,
+        accessToken: this.accessToken,
+        refreshToken: this.refreshToken,
+        expiresAt: this.tokenExpiresAt?.toISOString(),
+        folderId: this.folderId
+      };
+      
+      // Simple encoding to obscure tokens in localStorage (not cryptographic security)
+      const encoded = btoa(JSON.stringify(authData));
+      localStorage.setItem('googleDriveAuthData', encoded);
+      
+      // Keep legacy flag for compatibility
       localStorage.setItem('googleDriveAuthenticated', 'true');
       if (this.folderId) {
         localStorage.setItem('googleDriveFolderId', this.folderId);
@@ -353,14 +365,48 @@ export class GoogleDriveService {
 
   private async restoreAuthenticationState(): Promise<void> {
     try {
-      const isAuthenticated = localStorage.getItem('googleDriveAuthenticated') === 'true';
-      const storedFolderId = localStorage.getItem('googleDriveFolderId');
+      const encodedData = localStorage.getItem('googleDriveAuthData');
       
-      if (isAuthenticated) {
-        // Try to silently re-authenticate
-        await this.attemptSilentSignIn();
-        if (storedFolderId) {
-          this.folderId = storedFolderId;
+      if (encodedData) {
+        try {
+          const authData = JSON.parse(atob(encodedData));
+          this.accessToken = authData.accessToken;
+          this.refreshToken = authData.refreshToken;
+          this.tokenExpiresAt = authData.expiresAt ? new Date(authData.expiresAt) : null;
+          this.folderId = authData.folderId;
+          
+          // Check if token is still valid or can be refreshed
+          if (this.isTokenExpired()) {
+            console.log('Stored token expired, attempting refresh');
+            const refreshed = await this.refreshAccessToken();
+            if (!refreshed) {
+              console.log('Token refresh failed, clearing auth state');
+              this.clearAuthenticationState();
+              return;
+            }
+          }
+          
+          // Validate the token by testing API access
+          await this.initializeGapi();
+          await this.ensureFolderExists();
+          
+          this.updateSyncStatus({ 
+            isAuthenticated: true,
+            error: null 
+          });
+          
+          console.log('Authentication state restored successfully');
+          
+        } catch (parseError) {
+          console.error('Failed to parse stored auth data:', parseError);
+          this.clearAuthenticationState();
+        }
+      } else {
+        // Fallback to legacy authentication check
+        const isAuthenticated = localStorage.getItem('googleDriveAuthenticated') === 'true';
+        if (isAuthenticated) {
+          console.log('Legacy auth flag found, attempting silent sign-in');
+          await this.attemptSilentSignIn();
         }
       }
     } catch (error) {
@@ -373,41 +419,18 @@ export class GoogleDriveService {
     try {
       await this.initializeGapi();
       
-      if (!this.tokenClient) {
-        throw new Error('Token client not initialized');
+      // If we have a refresh token, try to use it
+      if (this.refreshToken) {
+        console.log('Attempting token refresh with stored refresh token');
+        return await this.refreshAccessToken();
       }
-
-      // Try to get token silently (no user interaction)
-      return new Promise((resolve) => {
-        this.tokenClient.requestAccessToken({ 
-          prompt: '',  // Empty prompt for silent auth
-          hint: localStorage.getItem('googleDriveUserEmail') || undefined
-        });
-
-        // Set a shorter timeout for silent authentication
-        setTimeout(async () => {
-          if (this.accessToken) {
-            try {
-              // Verify the token works by testing API access
-              await this.ensureFolderExists();
-              this.updateSyncStatus({ 
-                isAuthenticated: true,
-                error: null 
-              });
-              console.log('Silent authentication successful');
-              resolve(true);
-            } catch (error) {
-              console.log('Token is invalid, clearing authentication state');
-              this.clearAuthenticationState();
-              resolve(false);
-            }
-          } else {
-            console.log('Silent authentication failed, user needs to sign in again');
-            this.clearAuthenticationState();
-            resolve(false);
-          }
-        }, 5000); // 5 second timeout for silent auth
-      });
+      
+      // If no refresh token, we can't do silent auth with Google Identity Services
+      // The user will need to sign in again
+      console.log('No refresh token available, silent authentication not possible');
+      this.clearAuthenticationState();
+      return false;
+      
     } catch (error) {
       console.error('Silent sign-in failed:', error);
       this.clearAuthenticationState();
@@ -417,12 +440,141 @@ export class GoogleDriveService {
 
   private clearAuthenticationState(): void {
     try {
+      // Clear tokens from memory
+      this.accessToken = null;
+      this.refreshToken = null;
+      this.tokenExpiresAt = null;
+      this.folderId = null;
+      
+      // Clear localStorage
+      localStorage.removeItem('googleDriveAuthData');
       localStorage.removeItem('googleDriveAuthenticated');
       localStorage.removeItem('googleDriveFolderId');
       localStorage.removeItem('googleDriveUserEmail');
+      
+      // Update sync status
+      this.updateSyncStatus({
+        isAuthenticated: false,
+        error: null
+      });
     } catch (error) {
       console.error('Failed to clear authentication state:', error);
     }
+  }
+
+  private handleTokenResponse(response: any): void {
+    try {
+      this.accessToken = response.access_token;
+      
+      // Google Identity Services doesn't provide refresh tokens directly
+      // We'll store the access token and set a reasonable expiration
+      const expiresIn = response.expires_in || 3600; // Default 1 hour
+      this.tokenExpiresAt = new Date(Date.now() + (expiresIn * 1000));
+      
+      // Store authentication state
+      this.storeAuthenticationState();
+      
+      this.updateSyncStatus({
+        isAuthenticated: true,
+        error: null
+      });
+      
+      console.log('Token received and stored, expires at:', this.tokenExpiresAt);
+      
+      // Trigger automatic sync when authenticated
+      this.triggerBackgroundSync();
+      
+    } catch (error) {
+      console.error('Failed to handle token response:', error);
+      this.updateSyncStatus({ error: 'Failed to process authentication' });
+    }
+  }
+
+  private isTokenExpired(): boolean {
+    if (!this.tokenExpiresAt || !this.accessToken) {
+      return true;
+    }
+    
+    // Consider token expired 5 minutes before actual expiration
+    const bufferTime = 5 * 60 * 1000; // 5 minutes
+    return Date.now() > (this.tokenExpiresAt.getTime() - bufferTime);
+  }
+
+  private async refreshAccessToken(): Promise<boolean> {
+    try {
+      // With Google Identity Services (GIS), refresh tokens aren't directly supported
+      // The recommended approach is to request a new token silently
+      await this.initializeGapi();
+      
+      if (!this.tokenClient) {
+        throw new Error('Token client not initialized');
+      }
+      
+      // Request a new token silently if user was previously authenticated
+      return new Promise((resolve) => {
+        this.tokenClient.requestAccessToken({ 
+          prompt: '',  // Empty prompt for silent renewal
+          include_granted_scopes: true
+        });
+
+        // Set timeout for silent token renewal
+        setTimeout(() => {
+          if (this.accessToken && !this.isTokenExpired()) {
+            console.log('Token refreshed successfully');
+            resolve(true);
+          } else {
+            console.log('Token refresh failed or timed out');
+            resolve(false);
+          }
+        }, 5000); // 5 second timeout
+      });
+      
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+      return false;
+    }
+  }
+
+  private async validateToken(): Promise<boolean> {
+    if (!this.accessToken || this.isTokenExpired()) {
+      return false;
+    }
+    
+    try {
+      // Test the token by making a simple API call
+      const response = await fetch('https://www.googleapis.com/drive/v3/about?fields=user', {
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`
+        }
+      });
+      
+      return response.ok;
+    } catch (error) {
+      console.error('Token validation failed:', error);
+      return false;
+    }
+  }
+
+  private async ensureValidToken(): Promise<boolean> {
+    // Check if current token is valid
+    if (this.accessToken && !this.isTokenExpired()) {
+      const isValid = await this.validateToken();
+      if (isValid) {
+        return true;
+      }
+    }
+    
+    // Try to refresh the token
+    console.log('Token invalid or expired, attempting refresh');
+    const refreshed = await this.refreshAccessToken();
+    
+    if (!refreshed) {
+      console.log('Token refresh failed, clearing authentication');
+      this.clearAuthenticationState();
+      return false;
+    }
+    
+    return true;
   }
 
   private updateSyncStatus(updates: Partial<SyncStatus>): void {
@@ -434,7 +586,7 @@ export class GoogleDriveService {
   }
 
   isAuthenticated(): boolean {
-    return !!this.accessToken && this.syncStatusSubject.value.isAuthenticated;
+    return !!this.accessToken && !this.isTokenExpired() && this.syncStatusSubject.value.isAuthenticated;
   }
 
   isConfigured(): boolean {
@@ -470,8 +622,14 @@ export class GoogleDriveService {
 
     const syncStatus = this.getCurrentStatus();
 
-    // Only sync if enabled, authenticated, and online
-    if (!syncStatus.isEnabled || !syncStatus.isAuthenticated || !navigator.onLine) {
+    // Only sync if enabled, online, and have valid token
+    if (!syncStatus.isEnabled || !navigator.onLine) {
+      return;
+    }
+
+    // Ensure we have a valid token before syncing
+    if (!await this.ensureValidToken()) {
+      console.log('Cannot sync: invalid or expired authentication');
       return;
     }
 

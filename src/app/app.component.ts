@@ -8,12 +8,14 @@ import { TranslatePipe } from './pipes/translate.pipe';
 import { ErrorTrackerService, ErrorEntry } from './services/error-tracker.service';
 import { CameraStreamService } from './services/camera-stream.service';
 import { OfflineIndicatorComponent } from './components/offline-indicator/offline-indicator.component';
+import { AuthStatusNotificationComponent } from './components/auth-status-notification/auth-status-notification.component';
 import { AppUpdateService } from './services/app-update.service';
 import { OfflineQueueService } from './services/offline-queue.service';
+import { TokenRefreshWorkerService } from './services/token-refresh-worker.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe, CommonModule, OfflineIndicatorComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe, CommonModule, OfflineIndicatorComponent, AuthStatusNotificationComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -32,7 +34,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private errorTracker: ErrorTrackerService,
     private cameraStreamService: CameraStreamService,
     private appUpdateService: AppUpdateService,
-    private offlineQueueService: OfflineQueueService
+    private offlineQueueService: OfflineQueueService,
+    private tokenRefreshWorker: TokenRefreshWorkerService
   ) {}
 
   ngOnInit() {
@@ -59,6 +62,13 @@ export class AppComponent implements OnInit, OnDestroy {
 
     // Service worker update handling (using new AppUpdateService)
     // The AppUpdateService handles all update logic now
+
+    // Initialize token refresh worker for background auth management
+    if (this.tokenRefreshWorker.isSupported()) {
+      console.log('Token refresh worker initialized');
+    } else {
+      console.warn('Service workers not supported - background token refresh unavailable');
+    }
 
     // Clean up camera when page is about to unload
     window.addEventListener('beforeunload', () => {

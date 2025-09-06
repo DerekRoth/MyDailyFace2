@@ -33,6 +33,11 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "token-refresh-worker.js",
+                "input": "src",
+                "output": "/"
               }
             ],
             "styles": [

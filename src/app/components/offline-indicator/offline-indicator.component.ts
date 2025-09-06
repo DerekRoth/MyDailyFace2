@@ -111,6 +111,8 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
 
     .rotating {
       animation: rotate 1s linear infinite;
+      transform-origin: center center;
+      display: inline-block;
     }
 
     .queue-indicator {

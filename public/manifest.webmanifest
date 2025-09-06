@@ -1,7 +1,7 @@
 {
   "name": "DailyFace.me",
   "short_name": "DailyFace.me",
-  "description": "Take daily selfies and track your face changes over time with sophisticated camera animations and Google Drive sync",
+  "description": "Take daily selfies and track your face changes over time with sophisticated camera animations and optional Google Drive sync for backup",
   "id": "dailyface.me",
   "display": "standalone",
   "scope": "./",
@@ -9,11 +9,17 @@
   "theme_color": "#007AFF",
   "background_color": "#FFFFFF",
   "orientation": "portrait-primary",
-  "categories": ["photography", "utilities", "lifestyle"],
+  "categories": ["photography", "utilities", "lifestyle", "health"],
   "lang": "en",
   "dir": "ltr",
   "prefer_related_applications": false,
   "related_applications": [],
+  "protocol_handlers": [
+    {
+      "protocol": "web+dailyface",
+      "url": "./?action=%s"
+    }
+  ],
   "iarc_rating_id": "e84b072d-71de-5b85-a9a3-a7426ac863d7",
   "launch_handler": {
     "client_mode": "focus-existing"
@@ -35,6 +41,45 @@
   "scope_extensions": [
     {
       "origin": "https://derekroth.github.io"
+    },
+    {
+      "origin": "https://dailyface.me"
+    }
+  ],
+  "permissions": [
+    "camera",
+    "persistent-storage"
+  ],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "handle_links": "preferred",
+  "shortcuts": [
+    {
+      "name": "Take Photo",
+      "short_name": "Take Photo",
+      "description": "Take your daily selfie",
+      "url": "./take-picture",
+      "icons": [
+        {
+          "src": "icons/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Browse Photos",
+      "short_name": "Browse", 
+      "description": "View your photo timeline",
+      "url": "./browse-pictures",
+      "icons": [
+        {
+          "src": "icons/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ],
   "icons": [

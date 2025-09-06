@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, interval } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { IndexedDbService } from './indexed-db.service';
+import { TokenRefreshWorkerService } from './token-refresh-worker.service';
 
 declare global {
   interface Window {
@@ -64,7 +65,10 @@ export class GoogleDriveService {
   private autoSyncInterval: any = null;
   private isSyncing: boolean = false;
 
-  constructor(private indexedDbService: IndexedDbService) {
+  constructor(
+    private indexedDbService: IndexedDbService,
+    private tokenRefreshWorker: TokenRefreshWorkerService
+  ) {
     // Load auto-sync preference from localStorage
     const autoSyncEnabled = localStorage.getItem('googleDriveAutoSync') === 'true';
     this.updateSyncStatus({ isEnabled: autoSyncEnabled });
@@ -74,6 +78,9 @@ export class GoogleDriveService {
 
     // Start monitoring connection and sync when available
     this.startAutoSync();
+
+    // Listen for background token refresh events
+    this.setupTokenRefreshListeners();
   }
 
   async initializeGapi(): Promise<void> {
@@ -151,11 +158,19 @@ export class GoogleDriveService {
         throw new Error('Token client not initialized');
       }
 
-      // Request access token with offline access for refresh token
+      // Request access token - use select_account for published apps to reduce friction
+      // Use consent only for first-time users or when permissions change
+      const isFirstTime = !localStorage.getItem('googleDriveHasConsented');
+      
       this.tokenClient.requestAccessToken({ 
-        prompt: 'consent',
-        include_granted_scopes: true
+        prompt: isFirstTime ? 'consent' : 'select_account',
+        include_granted_scopes: true,
+        enable_granular_consent: true // For published apps
       });
+      
+      if (isFirstTime) {
+        localStorage.setItem('googleDriveHasConsented', 'true');
+      }
 
       // Wait for the callback to set the access token
       return new Promise((resolve) => {
@@ -228,13 +243,13 @@ export class GoogleDriveService {
       form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
       form.append('file', photoBlob);
 
-      const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`
-        },
-        body: form
-      });
+      const response = await this.makeAuthenticatedRequest(
+        'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+        {
+          method: 'POST',
+          body: form
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Upload failed: ${response.statusText}`);
@@ -344,9 +359,11 @@ export class GoogleDriveService {
       const authData = {
         authenticated: true,
         accessToken: this.accessToken,
-        refreshToken: this.refreshToken,
+        refreshToken: this.refreshToken, // Will be null for client-side
         expiresAt: this.tokenExpiresAt?.toISOString(),
-        folderId: this.folderId
+        folderId: this.folderId,
+        clientId: this.config.clientId, // Store for background refresh
+        lastTokenRefresh: new Date().toISOString()
       };
       
       // Simple encoding to obscure tokens in localStorage (not cryptographic security)
@@ -471,7 +488,7 @@ export class GoogleDriveService {
       const expiresIn = response.expires_in || 3600; // Default 1 hour
       this.tokenExpiresAt = new Date(Date.now() + (expiresIn * 1000));
       
-      // Store authentication state
+      // Store authentication state with client ID for background refresh
       this.storeAuthenticationState();
       
       this.updateSyncStatus({
@@ -480,6 +497,11 @@ export class GoogleDriveService {
       });
       
       console.log('Token received and stored, expires at:', this.tokenExpiresAt);
+      
+      // Schedule background token refresh
+      if (this.tokenRefreshWorker.isSupported()) {
+        this.tokenRefreshWorker.scheduleTokenRefresh();
+      }
       
       // Trigger automatic sync when authenticated
       this.triggerBackgroundSync();
@@ -502,22 +524,44 @@ export class GoogleDriveService {
 
   private async refreshAccessToken(): Promise<boolean> {
     try {
-      // With Google Identity Services (GIS), refresh tokens aren't directly supported
-      // The recommended approach is to request a new token silently
+      // For published apps, try silent refresh first
+      if (this.isPublishedApp()) {
+        const silentSuccess = await this.attemptSilentRefresh();
+        if (silentSuccess) {
+          return true;
+        }
+      }
+      
+      // If silent refresh fails or app is in testing, try interactive refresh
       await this.initializeGapi();
       
       if (!this.tokenClient) {
         throw new Error('Token client not initialized');
       }
       
-      // Request a new token silently if user was previously authenticated
+      // Request a new token with minimal user interaction
       return new Promise((resolve) => {
+        const originalCallback = this.tokenClient.callback;
+        
+        this.tokenClient.callback = (response: any) => {
+          if (response.error) {
+            console.error('Token refresh error:', response.error);
+            resolve(false);
+          } else {
+            this.handleTokenResponse(response);
+            resolve(true);
+          }
+          
+          // Restore original callback
+          this.tokenClient.callback = originalCallback;
+        };
+        
         this.tokenClient.requestAccessToken({ 
           prompt: '',  // Empty prompt for silent renewal
           include_granted_scopes: true
         });
 
-        // Set timeout for silent token renewal
+        // Set timeout for token renewal
         setTimeout(() => {
           if (this.accessToken && !this.isTokenExpired()) {
             console.log('Token refreshed successfully');
@@ -526,7 +570,7 @@ export class GoogleDriveService {
             console.log('Token refresh failed or timed out');
             resolve(false);
           }
-        }, 5000); // 5 second timeout
+        }, 10000); // 10 second timeout for interactive refresh
       });
       
     } catch (error) {
@@ -542,11 +586,9 @@ export class GoogleDriveService {
     
     try {
       // Test the token by making a simple API call
-      const response = await fetch('https://www.googleapis.com/drive/v3/about?fields=user', {
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`
-        }
-      });
+      const response = await this.makeAuthenticatedRequest(
+        'https://www.googleapis.com/drive/v3/about?fields=user'
+      );
       
       return response.ok;
     } catch (error) {
@@ -784,11 +826,9 @@ export class GoogleDriveService {
 
   private async downloadPhoto(fileId: string): Promise<Blob | null> {
     try {
-      const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`
-        }
-      });
+      const response = await this.makeAuthenticatedRequest(
+        `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`
+      );
 
       if (!response.ok) {
         throw new Error(`Download failed: ${response.statusText}`);
@@ -816,6 +856,110 @@ export class GoogleDriveService {
 
   private formatDateForFilename(date: Date): string {
     return date.toISOString().split('T')[0];
+  }
+
+  private setupTokenRefreshListeners(): void {
+    // Listen for successful background token refresh
+    window.addEventListener('tokenRefreshed', ((event: CustomEvent) => {
+      console.log('Background token refresh successful');
+      const tokenData = event.detail;
+      
+      // Update our local token data
+      if (tokenData?.access_token) {
+        this.accessToken = tokenData.access_token;
+        this.tokenExpiresAt = tokenData.expires_at ? new Date(tokenData.expires_at) : null;
+        
+        // Update sync status
+        this.updateSyncStatus({
+          isAuthenticated: true,
+          error: null
+        });
+        
+        console.log('Local token updated from background refresh');
+      }
+    }) as EventListener);
+    
+    // Listen for background token refresh failures
+    window.addEventListener('tokenRefreshFailed', ((event: CustomEvent) => {
+      console.log('Background token refresh failed:', event.detail);
+      
+      // Don't immediately clear auth - give user a chance to manually refresh
+      this.updateSyncStatus({
+        error: 'Authentication may need renewal - sync will retry'
+      });
+    }) as EventListener);
+  }
+  
+  private async attemptSilentRefresh(): Promise<boolean> {
+    try {
+      // Use the background worker's silent refresh capability
+      if (this.tokenRefreshWorker.isActive()) {
+        this.tokenRefreshWorker.forceTokenRefresh();
+        
+        // Wait a bit for the refresh to complete
+        return new Promise((resolve) => {
+          const timeout = setTimeout(() => resolve(false), 8000);
+          
+          const listener = () => {
+            clearTimeout(timeout);
+            window.removeEventListener('tokenRefreshed', listener);
+            resolve(true);
+          };
+          
+          window.addEventListener('tokenRefreshed', listener);
+        });
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Silent refresh attempt failed:', error);
+      return false;
+    }
+  }
+  
+  private isPublishedApp(): boolean {
+    // Check if this is a published app (not in testing phase)
+    // Published apps have better token refresh capabilities
+    const userAgent = navigator.userAgent;
+    const isWebView = /wv|WebView/i.test(userAgent);
+    const isStandaloneApp = window.matchMedia('(display-mode: standalone)').matches;
+    
+    // For store-packaged apps or PWAs installed as standalone
+    return isWebView || isStandaloneApp || window.location.protocol === 'https:';
+  }
+  
+  // Enhanced error handling for API calls
+  private async makeAuthenticatedRequest(url: string, options: RequestInit = {}): Promise<Response> {
+    let response = await fetch(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+        'Authorization': `Bearer ${this.accessToken}`
+      }
+    });
+    
+    // If token expired, try to refresh and retry once
+    if (response.status === 401 || response.status === 403) {
+      console.log('Token expired, attempting refresh and retry');
+      
+      const refreshed = await this.refreshAccessToken();
+      if (refreshed) {
+        // Retry the request with new token
+        response = await fetch(url, {
+          ...options,
+          headers: {
+            ...options.headers,
+            'Authorization': `Bearer ${this.accessToken}`
+          }
+        });
+      } else {
+        // If refresh failed, clear auth state
+        this.clearAuthenticationState();
+        throw new Error('Authentication failed - please sign in again');
+      }
+    }
+    
+    return response;
   }
 
   stopAutoSync(): void {

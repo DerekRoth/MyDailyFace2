@@ -208,9 +208,7 @@ export class SettingsComponent implements OnInit, OnDestroy, AfterViewInit {
 
     try {
       const success = await this.googleDriveService.signIn();
-      if (success) {
-        alert(this.localeService.getTranslation('settings.alert_google_drive_connected'));
-      } else {
+      if (!success) {
         alert(this.localeService.getTranslation('settings.alert_google_drive_connection_failed'));
       }
     } catch (error) {

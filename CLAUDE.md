@@ -273,12 +273,80 @@ Set these in your repository Settings → Secrets and variables → Actions:
 - `src/app/browse-pictures/browse-pictures.component.css` - CSS Grid layout
 - `src/app/app.component.css` - Bottom navigation structure
 
+## Invariants — do not regress these
+
+These encode bugs that shipped once and were painful to find. Check against this list
+when touching sync, storage, or the translate pipe.
+
+### Sync (the queue + background sync must stay coordinated)
+- **The offline queue must never contain photo bytes.** It is persisted with
+  `JSON.stringify`, which silently turns an `ArrayBuffer` into `{}` — the original bug
+  uploaded the string `"[object Object]"` to Drive and marked the real photo as synced.
+  Queue photoIds; re-read bytes from IndexedDB at upload time.
+  `offline-queue.service.spec.ts` pins this.
+- **Uploads must be idempotent.** Two paths can upload the same photo (queue tick +
+  30s background sync), and a retry after a lost success response must not duplicate.
+  `uploadPhoto()` checks Drive for the filename first — keep that check.
+- **Never delete a local photo that isn't backed up.** Conflict resolution downloads
+  and saves the Drive copy *before* deleting the local one, and skips the replacement
+  entirely when the local photo is unsynced.
+- **Always queue Drive deletions**, independent of the current auth state (the token
+  expires hourly), and never count offline/unauthenticated as a retry — a dropped
+  delete action means the photo resurrects on the next download sync.
+- **Only HTTP 401 means bad credentials.** Google returns 403 for rate limiting and
+  quota; treating it as an auth failure signs the user out on a transient error.
+- Drive `files.list` calls must follow `nextPageToken` (hard cap of 1000 per page) and
+  scope queries to the app folder (`'folderId' in parents`), with single quotes escaped.
+
+### IndexedDB (currently version 3)
+- **Never `await` inside a transaction callback** — IndexedDB transactions auto-commit
+  when the microtask queue drains, so any `FileReader`/fetch await makes subsequent
+  `put()` calls throw `TransactionInactiveError`. This silently broke the v1→v2
+  migration; blob→ArrayBuffer conversion now happens lazily in `getPhoto()`.
+- **Booleans are not valid index keys.** That's why records carry a numeric
+  `syncedFlag` (0/1) mirroring `syncedToGoogleDrive`, maintained in `savePhoto` and
+  `updatePhotoSyncStatus`. Keep both fields in sync when adding write paths.
+- Schema changes: bump `dbVersion`, do structural work in `onupgradeneeded` (cursor
+  loops are fine there — they're event-driven), and keep `onblocked`/`onversionchange`
+  handling intact.
+
+### Rendering & change detection
+- **TranslatePipe is impure** — anything reachable from `getTranslation()` runs for
+  every binding on every change-detection cycle. The translation table is built once
+  and memoized; never put allocation or I/O in that path.
+- `@angular/animations` is **not installed** and there is no `provideAnimations()`.
+  A `[@trigger]` binding in any template throws NG05105 at runtime (this killed the
+  auth notification once). Use CSS animations/transitions.
+- Long `*ngFor` lists need `trackBy`, and don't replace large arrays wholesale on
+  scroll events — mutate entries in place (see the fullscreen swiper).
+- Components that schedule timeouts or add document/window listeners must clean up in
+  `ngOnDestroy` (see the `schedule()` helper pattern in take-picture/browse-pictures,
+  `takeUntil(destroy$)` for subscriptions). Cross-component state goes through a
+  BehaviorSubject service (`CaptureSettingsService`), never localStorage + StorageEvent
+  (real `storage` events don't fire in the tab that wrote the value).
+
+### Testing & verification
+- `tsconfig.spec.json` must keep `src/polyfills.ts` in `include` — the karma builder
+  references it, and without it zero tests run.
+- Component specs need `provideRouter(...)` (RouterLink injects ActivatedRoute) and,
+  for AppComponent, `provideServiceWorker('ngsw-worker.js', { enabled: false })`.
+- The locale key-parity spec fails if any of the 5 languages is missing a key — when
+  adding translations, add to *all* language blocks in one edit session.
+- To verify the built app in a browser: `npm run build`, serve
+  `dist/my-daily-face/browser` with `python3 -m http.server <port> --bind 127.0.0.1`,
+  then drive it with the puppeteer MCP. Listen for `securitypolicyviolation` events to
+  catch CSP breakage (127.0.0.1 counts as a secure context, so most things work).
+- `ng serve` has the service worker disabled by design (`enabled: !isDevMode()`).
+  For SW testing use the built app via `node https-server.js` (port 8443).
+
 ## Notes for Future Development
 - Animation system is fully JavaScript-based for better control
 - All timing is centralized and debug-friendly
 - Google Drive integration is client-side only with proper restrictions
 - PWA is ready for mobile installation and offline use
 - Code follows Angular 19 standalone component architecture
+- Workflow: commits go directly to main; pushing triggers the Pages deploy, and the
+  CI test step gates it
 
 - in CSS, contents should dictate the size of their containers unless we actually want an overflow. Using overflow: hidden should be avoided in most cases. Fluid layout is preferred over media queries. min/max dimensions, clamp(), percentages are preferred over absolute dimensions.
 - use the puppeteer MCP when you need to check what is displayed in the app, console messages or storage

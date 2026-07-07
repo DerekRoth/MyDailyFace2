@@ -100,6 +100,16 @@ export class SettingsComponent implements OnInit, OnDestroy, AfterViewInit {
     
     // Check if Google Drive is configured
     this.isGoogleDriveConfigured = this.googleDriveService.isConfigured();
+
+    // Pre-initialize the Google API client: requestAccessToken() must run
+    // while the Connect click's transient user activation is still alive, or
+    // the browser blocks the OAuth popup — so the slow init (gapi client +
+    // discovery doc fetch) can't happen inside the click handler.
+    if (this.isGoogleDriveConfigured) {
+      this.googleDriveService.initializeGapi().catch(() => {
+        // Already reported via syncStatus.error; signIn() retries on click
+      });
+    }
     
     // Load current animation speed
     this.currentAnimationSpeed = this.testDataGenerator.getAnimationSpeed();

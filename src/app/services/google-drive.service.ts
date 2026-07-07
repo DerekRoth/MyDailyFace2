@@ -58,6 +58,11 @@ export class GoogleDriveService {
   private isInitialized = false;
   private folderId: string | null = null;
   private tokenClient: any = null;
+  private gapiInitPromise: Promise<void> | null = null;
+  // Registered by an in-flight signIn() so token-client failures (blocked or
+  // closed popup, denied consent) settle it immediately instead of leaving it
+  // to its 30s timeout
+  private authFailureCallback: ((reason: string) => void) | null = null;
   // The access token is kept in memory only — persisting it (e.g. in
   // localStorage) would expose it to any script on the origin. Renewal goes
   // through the GIS token client with an empty prompt instead.
@@ -87,6 +92,19 @@ export class GoogleDriveService {
       throw new Error('Google Drive API credentials not configured in environment');
     }
 
+    // Share one in-flight initialization: the eager call from the settings
+    // page and a Connect click's signIn() can overlap, and running the init
+    // sequence twice would create two token clients.
+    if (!this.gapiInitPromise) {
+      this.gapiInitPromise = this.doInitializeGapi().catch((error) => {
+        this.gapiInitPromise = null; // allow the next caller to retry
+        throw error;
+      });
+    }
+    return this.gapiInitPromise;
+  }
+
+  private async doInitializeGapi(): Promise<void> {
     try {
       // Wait for Google APIs to load
       await this.waitForGoogleAPIs();
@@ -108,9 +126,16 @@ export class GoogleDriveService {
                 if (response.error) {
                   console.error('Token client error:', response.error);
                   this.updateSyncStatus({ error: 'Authentication failed' });
+                  this.authFailureCallback?.(response.error);
                   return;
                 }
                 this.handleTokenResponse(response);
+              },
+              // Non-OAuth failures (popup blocked/closed) never reach the
+              // callback above — only this hook sees them
+              error_callback: (error: any) => {
+                console.error('Token client error:', error?.type || error);
+                this.authFailureCallback?.(error?.type || 'unknown');
               }
             });
 
@@ -158,29 +183,41 @@ export class GoogleDriveService {
       // Request access token - use select_account for published apps to reduce friction
       // Use consent only for first-time users or when permissions change
       const isFirstTime = !localStorage.getItem('googleDriveHasConsented');
-      
-      this.tokenClient.requestAccessToken({ 
-        prompt: isFirstTime ? 'consent' : 'select_account',
-        include_granted_scopes: true,
-        enable_granular_consent: true // For published apps
-      });
-      
-      if (isFirstTime) {
-        localStorage.setItem('googleDriveHasConsented', 'true');
-      }
 
-      // Wait for the callback to set the access token
-      return new Promise((resolve) => {
+      // Set up the wait before opening the popup: a blocked popup fires
+      // error_callback synchronously from requestAccessToken()
+      const result = new Promise<boolean>((resolve) => {
+        let done = false;
+        const finish = (success: boolean) => {
+          if (done) return;
+          done = true;
+          this.authFailureCallback = null;
+          resolve(success);
+        };
+
+        this.authFailureCallback = (reason: string) => {
+          this.updateSyncStatus({
+            error: reason === 'popup_failed_to_open'
+              ? 'Sign-in popup was blocked by the browser'
+              : reason === 'popup_closed'
+                ? 'Sign-in was cancelled'
+                : 'Authentication failed'
+          });
+          finish(false);
+        };
+
+        // Wait for the callback to set the access token
         const checkAuth = async () => {
+          if (done) return;
           if (this.accessToken) {
             try {
               await this.ensureFolderExists();
               // Store authentication state
               this.storeAuthenticationState();
-              resolve(true);
+              finish(true);
             } catch (error) {
               console.error('Folder creation failed:', error);
-              resolve(false);
+              finish(false);
             }
           } else {
             setTimeout(checkAuth, 100);
@@ -194,10 +231,22 @@ export class GoogleDriveService {
         setTimeout(() => {
           if (!this.accessToken) {
             this.updateSyncStatus({ error: 'Authentication timeout' });
-            resolve(false);
+            finish(false);
           }
         }, 30000);
       });
+
+      this.tokenClient.requestAccessToken({
+        prompt: isFirstTime ? 'consent' : 'select_account',
+        include_granted_scopes: true,
+        enable_granular_consent: true // For published apps
+      });
+
+      if (isFirstTime) {
+        localStorage.setItem('googleDriveHasConsented', 'true');
+      }
+
+      return result;
     } catch (error) {
       console.error('Sign-in failed:', error);
       this.updateSyncStatus({ error: 'Sign-in failed' });

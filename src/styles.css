@@ -143,6 +143,32 @@ input, textarea {
   animation-duration: calc(var(--animation-speed-multiplier, 1) * 1s) !important;
 }
 
+/* View Transitions (route cross-fades + photo open/close morphs).
+   ::view-transition pseudo-elements attach to the document root, so these
+   rules must live here — component-scoped copies never match. */
+::view-transition-group(*),
+::view-transition-old(*),
+::view-transition-new(*) {
+  animation-duration: calc(var(--animation-speed-multiplier, 1) * 250ms);
+}
+
+/* The photo morphs between a square thumbnail and a letterboxed fullscreen
+   image — keep the snapshots filling the moving box while it changes shape */
+::view-transition-old(active-photo),
+::view-transition-new(active-photo) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
 /* Apply to specific interactive elements that need transitions */
 button,
 .nav-item,

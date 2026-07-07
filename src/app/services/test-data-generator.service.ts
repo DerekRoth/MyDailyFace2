@@ -414,9 +414,19 @@ export class TestDataGeneratorService {
 
   // Animation debugging
   setAnimationSpeed(multiplier: number): void {
-    // Apply CSS custom property to slow down all transitions and animations
-    document.documentElement.style.setProperty('--animation-speed-multiplier', multiplier.toString());
-    
+    // Apply the CSS custom property through a :root stylesheet rule, NOT an
+    // inline style on documentElement: ::view-transition pseudo-elements in
+    // Chrome inherit custom properties from :root rules but not from the root
+    // element's inline style, and the slowdown must also stretch the view
+    // transition morphs (photo open/close, tab switches)
+    let styleEl = document.getElementById('debug-animation-speed') as HTMLStyleElement | null;
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = 'debug-animation-speed';
+      document.head.appendChild(styleEl);
+    }
+    styleEl.textContent = `:root { --animation-speed-multiplier: ${multiplier}; }`;
+
     // Store preference
     localStorage.setItem('debugAnimationSpeed', multiplier.toString());
   }
@@ -427,7 +437,7 @@ export class TestDataGeneratorService {
   }
 
   resetAnimationSpeed(): void {
-    document.documentElement.style.removeProperty('--animation-speed-multiplier');
+    document.getElementById('debug-animation-speed')?.remove();
     localStorage.removeItem('debugAnimationSpeed');
   }
 

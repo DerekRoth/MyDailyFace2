@@ -23,15 +23,19 @@
         </div>
         
         <!-- Photo Item -->
+        <!-- The active thumbnail carries the transition name only while the
+             viewer is closed; when it opens, the name moves to the fullscreen
+             photo (duplicate names make the browser skip the transition) -->
         <div class="photo-item"
              *ngIf="item.type === 'photo' && item.photo"
              [attr.data-photo-id]="item.photo.id"
+             [style.view-transition-name]="item.photo.id === activePhotoId && !showPhotoModal ? 'active-photo' : null"
              role="button"
              tabindex="0"
              [attr.aria-label]="getPhotoAltText(item.photo)"
-             (click)="openPhoto(item.photo, $event)"
-             (keydown.enter)="openPhoto(item.photo, $event)"
-             (keydown.space)="openPhoto(item.photo, $event); $event.preventDefault()">
+             (click)="openPhoto(item.photo)"
+             (keydown.enter)="openPhoto(item.photo)"
+             (keydown.space)="openPhoto(item.photo); $event.preventDefault()">
           <div class="photo-thumbnail">
             <img 
               [src]="getPhotoDataUrl(item.photo)" 
@@ -57,10 +61,8 @@
   </div>
 
   <!-- Fullscreen Photo View with Zoom Transition -->
-  <div class="photo-fullscreen" 
-       *ngIf="showPhotoModal && openingPhotoDataUrl" 
-       [class.animate-open]="animatePhotoOpen"
-       [class.animate-close]="animatePhotoClose"
+  <div class="photo-fullscreen"
+       *ngIf="showPhotoModal && openingPhotoDataUrl"
        (touchstart)="onTouchStart($event)"
        (touchmove)="onTouchMove($event)"
        (touchend)="onTouchEnd($event)">
@@ -88,39 +90,37 @@
     </div>
     
     <!-- Unified Photo Container -->
-    <div class="photo-container" 
-         [class.animate-open]="animatePhotoOpen"
-         [class.animate-close]="animatePhotoClose"
-         [style.transform-origin]="transitionOrigin ? transitionOrigin.x + 'px ' + transitionOrigin.y + 'px' : 'center'"
-         [style.transform]="swipeTransform"
-         [style.--close-scale]="closeScale">
-      
+    <div class="photo-container"
+         [style.transform]="swipeTransform">
+
       <!-- Single Photo View (for opening animation) -->
       <div class="single-photo-view" [style.display]="showScrollablePhotos ? 'none' : 'flex'">
-        <img 
-          *ngIf="openingPhotoDataUrl" 
-          [src]="openingPhotoDataUrl" 
+        <img
+          *ngIf="openingPhotoDataUrl"
+          [src]="openingPhotoDataUrl"
+          [style.view-transition-name]="showScrollablePhotos ? null : 'active-photo'"
           [alt]="getGenericPhotoAltText()"
           loading="lazy">
       </div>
-      
+
       <!-- Scrollable View (for navigation) -->
-      <div class="photo-scroll-container" 
+      <div class="photo-scroll-container"
            [style.visibility]="showScrollablePhotos ? 'visible' : 'hidden'"
            (scroll)="onPhotoScroll($event)">
         <!-- Flexbox scroll content - render visible photos -->
         <div class="photo-slide"
              *ngFor="let visiblePhoto of visiblePhotos; trackBy: trackByVisiblePhoto">
-          <img 
-            *ngIf="visiblePhoto.dataUrl" 
-            [src]="visiblePhoto.dataUrl" 
+          <img
+            *ngIf="visiblePhoto.dataUrl"
+            [src]="visiblePhoto.dataUrl"
+            [style.view-transition-name]="showScrollablePhotos && visiblePhoto.photo.id === activePhotoId ? 'active-photo' : null"
             [alt]="getGenericPhotoAltText()">
           <div class="photo-placeholder" *ngIf="!visiblePhoto.dataUrl">
             <div class="loading-spinner-small"></div>
           </div>
         </div>
       </div>
-      
+
     </div>
   </div>
 

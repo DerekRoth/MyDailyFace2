@@ -1,7 +1,6 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { ApplicationRef, Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CameraService, CameraPhoto } from '../services/camera.service';
-import { TestDataGeneratorService } from '../services/test-data-generator.service';
 import { TranslatePipe } from '../pipes/translate.pipe';
 import { LocaleService } from '../services/locale.service';
 
@@ -35,11 +34,12 @@ export class BrowsePicturesComponent implements OnInit, OnDestroy {
   
   // Animation states
   showPhotoModal = false;
-  animatePhotoOpen = false;
-  animatePhotoClose = false;
   showPhotoInterface = false;
-  transitionOrigin: { x: number; y: number; width: number; height: number } | null = null;
-  closeScale = 0;
+  // The photo carrying view-transition-name: active-photo. Exactly one element
+  // may hold the name at a time or the browser skips the whole transition —
+  // the template conditions thumbnail vs fullscreen bindings on showPhotoModal
+  // and showScrollablePhotos to guarantee that.
+  activePhotoId = '';
   
   // Photo navigation
   currentPhotoIndex = 0;
@@ -68,8 +68,8 @@ export class BrowsePicturesComponent implements OnInit, OnDestroy {
 
   constructor(
     private cameraService: CameraService,
-    private testDataGenerator: TestDataGeneratorService,
-    private localeService: LocaleService
+    private localeService: LocaleService,
+    private appRef: ApplicationRef
   ) {}
 
   private destroyed = false;
@@ -149,114 +149,90 @@ export class BrowsePicturesComponent implements OnInit, OnDestroy {
     return this.photoDataUrls.get(photo.id);
   }
 
-  async openPhoto(photo: CameraPhoto, event: Event) {
-    const clickedElement = event.currentTarget as HTMLElement;
-    const rect = clickedElement.getBoundingClientRect();
-    
-    // Store the clicked element's position and size for transition
-    this.transitionOrigin = {
-      x: rect.left + rect.width / 2,
-      y: rect.top + rect.height / 2,
-      width: rect.width,
-      height: rect.height
+  /**
+   * Runs a state change inside a same-document view transition. The browser
+   * snapshots the page before the callback, applies the change, then morphs
+   * elements whose view-transition-name matches across both states. Falls
+   * back to applying the change instantly where the API is unavailable.
+   */
+  private runViewTransition(update: () => void): Promise<void> {
+    const doc = document as Document & {
+      startViewTransition?: (updateCallback: () => void) => { finished: Promise<void> };
     };
-    
-    // Store the opened photo ID and data URL for single photo display
+    if (!doc.startViewTransition) {
+      update();
+      return Promise.resolve();
+    }
+    const transition = doc.startViewTransition(() => {
+      update();
+      // The new state is captured when this callback returns — flush change
+      // detection synchronously so the DOM already reflects it
+      this.appRef.tick();
+    });
+    // finished only rejects if the update callback throws; a skipped
+    // transition still applies the state change, so swallow and continue
+    return transition.finished.catch(() => {});
+  }
+
+  async openPhoto(photo: CameraPhoto) {
+    // Name the clicked thumbnail before the old state is captured
+    this.activePhotoId = photo.id;
     this.openedPhotoId = photo.id;
     this.openingPhotoDataUrl = await this.cameraService.getPhotoDataUrl(photo);
-    
-    // Find the current photo index in the flat array
     this.currentPhotoIndex = this.allPhotosFlat.findIndex(p => p.id === photo.id);
-    
-    // Start with single photo mode for opening animation
-    this.showScrollablePhotos = false;
-    this.showPhotoModal = true;
-    
-    // Update displayed date and time
-    this.updateDisplayedInfo();
-    
-    // Calculate initial scale based on thumbnail size
-    this.schedule(() => {
-      const photoContainer = document.querySelector('.photo-container') as HTMLElement;
-      if (photoContainer && this.transitionOrigin) {
-        const containerRect = photoContainer.getBoundingClientRect();
-        this.closeScale = Math.min(
-          this.transitionOrigin.width / containerRect.width,
-          this.transitionOrigin.height / containerRect.height
-        );
-      }
-      this.animatePhotoOpen = true;
 
-      // Show interface elements after opening animation completes
-      this.schedule(async () => {
-        this.showPhotoInterface = true;
-        // Prepare the scrollable photo container in the background
-        await this.prepareScrollablePhotos();
-        // Position the scroll container to center BEFORE showing it
-        await this.positionScrollContainer();
-        // Now switch to scrollable mode (container is already positioned)
-        // Note: showScrollablePhotos is handled in positionScrollContainer to avoid flicker
-      }, this.testDataGenerator.getAdjustedTimeout(300));
-    }, this.testDataGenerator.getAdjustedTimeout(10));
+    // Start with single photo mode; the scrollable swiper is prepared after
+    // the opening transition finishes
+    this.showScrollablePhotos = false;
+    this.updateDisplayedInfo();
+    this.appRef.tick();
+
+    await this.runViewTransition(() => {
+      this.showPhotoModal = true;
+    });
+    if (this.destroyed || !this.showPhotoModal) {
+      return;
+    }
+
+    this.showPhotoInterface = true;
+    await this.prepareScrollablePhotos();
+    // Position the scroll container to center BEFORE showing it
+    // Note: showScrollablePhotos is handled in positionScrollContainer to avoid flicker
+    await this.positionScrollContainer();
   }
 
   closePhoto() {
     // Hide interface elements immediately when closing starts
     this.showPhotoInterface = false;
-    
-    // Find the current photo's thumbnail in the grid to animate back to it
+
+    // Morph back to the current photo's thumbnail (the user may have swiped
+    // away from the one they opened)
     const currentPhoto = this.allPhotosFlat[this.currentPhotoIndex];
     if (currentPhoto) {
-      // Find the thumbnail element using the data-photo-id attribute
-      const thumbnail = document.querySelector(`[data-photo-id="${currentPhoto.id}"]`) as HTMLElement;
-      if (thumbnail) {
-        const rect = thumbnail.getBoundingClientRect();
-        // Update transition origin to current photo's thumbnail
-        this.transitionOrigin = {
-          x: rect.left + rect.width / 2,
-          y: rect.top + rect.height / 2,
-          width: rect.width,
-          height: rect.height
-        };
-        console.log('Found current photo thumbnail for:', currentPhoto.id);
-      } else {
-        console.log('Could not find thumbnail for current photo:', currentPhoto.id);
-        // Keep the original transition origin as fallback
-      }
+      this.activePhotoId = currentPhoto.id;
     }
-    
-    // Calculate the target scale based on thumbnail size vs fullscreen
-    if (this.transitionOrigin) {
-      const photoContainer = document.querySelector('.photo-container') as HTMLElement;
-      if (photoContainer) {
-        const containerRect = photoContainer.getBoundingClientRect();
-        this.closeScale = Math.min(
-          this.transitionOrigin.width / containerRect.width,
-          this.transitionOrigin.height / containerRect.height
-        );
+    this.appRef.tick();
+
+    this.runViewTransition(() => {
+      this.resetModalState();
+    }).then(() => {
+      if (!this.destroyed) {
+        this.activePhotoId = '';
+        // Clear photo cache to free memory
+        this.photoCache.clear();
       }
-    }
-    
-    // Start close animation
-    this.animatePhotoClose = true;
-    
-    // Reset swipe transform
+    });
+  }
+
+  private resetModalState() {
+    this.showPhotoModal = false;
+    this.showPhotoInterface = false;
+    this.showScrollablePhotos = false;
+    this.openingPhotoDataUrl = null;
+    this.openedPhotoId = '';
     this.swipeTransform = '';
-    
-    // Wait for closing animation to complete (2x slower than opening)
-    this.schedule(() => {
-      this.showPhotoModal = false;
-      this.transitionOrigin = null;
-      this.animatePhotoOpen = false;
-      this.animatePhotoClose = false;
-      this.showPhotoInterface = false;
-      this.showScrollablePhotos = false;
-      this.openingPhotoDataUrl = null;
-      this.openedPhotoId = '';
-      this.closeScale = 0;
-      // Clear photo cache to free memory
-      this.photoCache.clear();
-    }, this.testDataGenerator.getAdjustedTimeout(600));
+    // activePhotoId stays set — the grid thumbnail needs the transition name
+    // through the close morph; callers clear it once the transition finishes
   }
 
   onTouchStart(event: TouchEvent) {
@@ -359,105 +335,65 @@ export class BrowsePicturesComponent implements OnInit, OnDestroy {
   async deletePhoto() {
     if (!this.photoToDelete) return;
 
+    const deletedId = this.photoToDelete.id;
+    const currentPhoto = this.allPhotosFlat[this.currentPhotoIndex];
+    const isDeletingCurrentPhoto = currentPhoto?.id === deletedId;
+
     try {
-      // Check if we're viewing the photo being deleted in fullscreen
-      const currentPhoto = this.allPhotosFlat[this.currentPhotoIndex];
-      const isDeletingCurrentPhoto = currentPhoto?.id === this.photoToDelete.id;
-      
-      if (isDeletingCurrentPhoto && this.showPhotoModal) {
-        // We're in fullscreen mode - animate the deletion
-        await this.animatePhotoDeletion();
-      }
-      
       // Actually delete from storage
-      await this.cameraService.deletePhoto(this.photoToDelete.id);
-      
-      // Remove from local arrays
-      this.photos = this.photos.filter(p => p.id !== this.photoToDelete!.id);
-      this.photoDataUrls.delete(this.photoToDelete.id);
-      
-      // Regroup photos after deletion
-      this.groupPhotosByMonth();
-      
-      // Update current photo if we were viewing deleted photo
-      if (isDeletingCurrentPhoto) {
-        if (this.allPhotosFlat.length > 0) {
-          // Adjust current index if needed
-          if (this.currentPhotoIndex >= this.allPhotosFlat.length) {
-            this.currentPhotoIndex = this.allPhotosFlat.length - 1;
-          }
-          // Update visible photos and display info only if still in fullscreen mode
-          if (this.showPhotoModal) {
-            await this.updateVisiblePhotos();
-            this.updateDisplayedInfo();
-          }
-        } else {
-          // No photos left, close the viewer
-          this.closePhoto();
-        }
-      }
-      
-      this.cancelDelete();
+      await this.cameraService.deletePhoto(deletedId);
     } catch (error) {
       console.error('Error deleting photo:', error);
       // Could add user-facing error message here
-    }
-  }
-
-  private async animatePhotoDeletion(): Promise<void> {
-    return new Promise((resolve) => {
-      // Find the current photo element in the scrollable view
-      const currentPhotoSlide = document.querySelector('.photo-slide img') as HTMLElement;
-      
-      if (currentPhotoSlide) {
-        // Apply fade-out animation with debug speed support
-        const fadeOutDuration = this.testDataGenerator.getAdjustedTimeout(300);
-        
-        currentPhotoSlide.style.transition = `opacity ${fadeOutDuration}ms ease-out`;
-        currentPhotoSlide.style.opacity = '0';
-        
-        // Wait for fade-out to complete, then move to next photo
-        this.schedule(() => {
-          // Move to the next photo (or previous if at end)
-          this.moveToNextPhotoAfterDeletion();
-          resolve();
-        }, fadeOutDuration);
-      } else {
-        // No animation element found, just resolve immediately
-        resolve();
-      }
-    });
-  }
-
-  private moveToNextPhotoAfterDeletion(): void {
-    if (this.allPhotosFlat.length <= 1) {
-      // Only one photo (the one being deleted), no need to move
       return;
     }
-    
-    // Determine next photo index
-    let nextIndex = this.currentPhotoIndex;
-    
-    // If we're not at the last photo, stay at the same index (which will show the next photo)
-    // If we're at the last photo, move to the previous one
-    if (this.currentPhotoIndex >= this.allPhotosFlat.length - 1) {
-      nextIndex = this.currentPhotoIndex - 1;
+
+    const applyDeletion = () => {
+      this.photos = this.photos.filter(p => p.id !== deletedId);
+      this.photoDataUrls.delete(deletedId);
+      this.photoCache.delete(deletedId);
+      this.groupPhotosByMonth();
+      if (this.currentPhotoIndex >= this.allPhotosFlat.length) {
+        this.currentPhotoIndex = Math.max(0, this.allPhotosFlat.length - 1);
+      }
+      // The confirmation dialog fades out as part of the same transition
+      this.showDeleteConfirm = false;
+      this.photoToDelete = null;
+    };
+
+    if (isDeletingCurrentPhoto && this.showPhotoModal && this.allPhotosFlat.length > 1) {
+      // Fullscreen: cross-fade from the deleted photo to its neighbor
+      await this.runViewTransition(() => {
+        applyDeletion();
+        void this.updateVisiblePhotos();
+        this.updateDisplayedInfo();
+        // Render the rebuilt slides, then jump the swiper into place so the
+        // new state is final before it gets captured
+        this.appRef.tick();
+        this.snapScrollToCurrentPhoto();
+      });
+    } else if (isDeletingCurrentPhoto && this.showPhotoModal) {
+      // Last photo deleted — remove it and close the viewer in one transition
+      await this.runViewTransition(() => {
+        applyDeletion();
+        this.resetModalState();
+      });
+      if (!this.destroyed) {
+        this.activePhotoId = '';
+        this.photoCache.clear();
+      }
+    } else {
+      // Grid deletion — animate the reflow instead of popping
+      await this.runViewTransition(applyDeletion);
     }
-    
-    // Update current index
-    this.currentPhotoIndex = nextIndex;
-    
-    // Animate the scroll container to the new position
-    const container = document.querySelector('.photo-scroll-container') as HTMLElement;
-    if (container && this.scrollContainerWidth > 0) {
-      const targetScroll = this.currentPhotoIndex * this.scrollContainerWidth;
-      
-      // Use smooth scrolling for the transition
+  }
+
+  private snapScrollToCurrentPhoto(): void {
+    const container = document.querySelector('.photo-scroll-container') as HTMLElement | null;
+    if (container && container.offsetWidth > 0) {
+      container.style.scrollBehavior = 'auto';
+      container.scrollLeft = this.currentPhotoIndex * container.offsetWidth;
       container.style.scrollBehavior = 'smooth';
-      container.scrollLeft = targetScroll;
-      
-      // Update display info immediately for responsiveness
-      this.updateDisplayedInfo();
     }
   }
 

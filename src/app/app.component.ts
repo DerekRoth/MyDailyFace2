@@ -11,6 +11,7 @@ import { OfflineIndicatorComponent } from './components/offline-indicator/offlin
 import { AuthStatusNotificationComponent } from './components/auth-status-notification/auth-status-notification.component';
 import { AppUpdateService } from './services/app-update.service';
 import { OfflineQueueService } from './services/offline-queue.service';
+import { TestDataGeneratorService } from './services/test-data-generator.service';
 
 @Component({
   selector: 'app-root',
@@ -33,7 +34,10 @@ export class AppComponent implements OnInit, OnDestroy {
     private errorTracker: ErrorTrackerService,
     private cameraStreamService: CameraStreamService,
     private appUpdateService: AppUpdateService,
-    private offlineQueueService: OfflineQueueService
+    private offlineQueueService: OfflineQueueService,
+    // Instantiated at startup so the stored debug animation speed is restored
+    // on every route (browse no longer injects it)
+    private testDataGenerator: TestDataGeneratorService
   ) {}
 
   ngOnInit() {

@@ -56,10 +56,16 @@ DailyFace.me is a Progressive Web App (PWA) built with Angular 19 that allows us
 - **Debug-friendly** with animation speed multipliers
 
 ### Animation System
-- **Pure JavaScript** animations using Web Animations API
-- **Dynamic positioning** calculated from actual DOM elements
-- **Speed debugging** with 2x, 5x, 10x slowdown options
-- **Synchronized timing** between CSS and JavaScript
+- **Capture jump animation**: pure JavaScript via the Web Animations API (custom
+  arc path — deliberately NOT a view transition)
+- **Photo open/close in Browse + route changes**: CSS View Transitions API —
+  `view-transition-name: active-photo` morphs the grid thumbnail to/from the
+  fullscreen photo; the router uses `withViewTransitions()` for tab cross-fades
+  with the bottom nav pinned via `view-transition-name: bottom-nav`
+- **Speed debugging** with 2x, 5x, 10x slowdown options (applies to view
+  transitions too, via an injected `:root` style rule)
+- **Graceful fallback**: browsers without `document.startViewTransition` get an
+  instant state swap (`runViewTransition()` in browse-pictures)
 
 ### Services Architecture
 - **CameraService**: WebRTC photo capture, thumbnail generation, photo index (metadata-only listing)
@@ -316,7 +322,20 @@ when touching sync, storage, or the translate pipe.
   and memoized; never put allocation or I/O in that path.
 - `@angular/animations` is **not installed** and there is no `provideAnimations()`.
   A `[@trigger]` binding in any template throws NG05105 at runtime (this killed the
-  auth notification once). Use CSS animations/transitions.
+  auth notification once). Use CSS animations/transitions or view transitions.
+- **View transitions have three sharp edges.** (1) `::view-transition-*` pseudo
+  rules only work in the global `styles.css` — component-scoped copies never match
+  (the pseudos live on the document root). (2) Only ONE rendered element may carry
+  a given `view-transition-name` at a time, or the browser silently skips the whole
+  transition — that's why the browse template conditions the `active-photo` binding
+  on `showPhotoModal`/`showScrollablePhotos`. (3) The pseudos don't see custom
+  properties set as *inline style* on `documentElement`; `setAnimationSpeed()`
+  therefore injects a `:root { --animation-speed-multiplier: … }` style rule.
+- **`inlineCritical` must stay disabled** in the production build config
+  (angular.json). It rewrites the styles `<link>` to `media="print"` with an inline
+  `onload=` swap that the CSP blocks (no `unsafe-inline` in `script-src`), leaving
+  the full stylesheet permanently inactive — non-critical styles silently vanish.
+  This shipped broken for a while before view transitions exposed it.
 - Long `*ngFor` lists need `trackBy`, and don't replace large arrays wholesale on
   scroll events — mutate entries in place (see the fullscreen swiper).
 - Components that schedule timeouts or add document/window listeners must clean up in

@@ -1,10 +1,17 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { provideServiceWorker } from '@angular/service-worker';
 import { AppComponent } from './app.component';
+import { routes } from './app.routes';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppComponent],
+      providers: [
+        provideRouter(routes),
+        provideServiceWorker('ngsw-worker.js', { enabled: false })
+      ]
     }).compileComponents();
   });
 
@@ -20,10 +27,10 @@ describe('AppComponent', () => {
     expect(app.title).toEqual('DailyFace.me');
   });
 
-  it('should render title', () => {
+  it('should render the bottom navigation', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, DailyFace.me');
+    expect(compiled.querySelector('.bottom-navigation')).toBeTruthy();
   });
 });

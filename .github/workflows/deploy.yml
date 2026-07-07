@@ -43,6 +43,9 @@ jobs:
         };
         EOF
 
+    - name: Test
+      run: npm test -- --watch=false --browsers=ChromeHeadless
+
     - name: Build
       run: npm run build
 

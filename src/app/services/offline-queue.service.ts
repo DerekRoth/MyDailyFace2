@@ -11,9 +11,12 @@ export interface QueuedAction {
   timestamp: Date;
   retryCount: number;
   maxRetries: number;
-  data?: ArrayBuffer;
-  fileName?: string;
+  googleDriveFileId?: string;
 }
+
+// 'blocked' means the action couldn't be attempted (offline / not authenticated)
+// and must not consume a retry
+type ActionResult = 'done' | 'retry' | 'blocked';
 
 export interface OfflineStatus {
   isOnline: boolean;
@@ -85,36 +88,17 @@ export class OfflineQueueService {
     }, this.SYNC_INTERVAL);
   }
 
-  async queuePhotoUpload(photoBlob: Blob, photoId: string, timestamp: Date): Promise<void> {
-    // Convert blob to ArrayBuffer for storage
-    const arrayBuffer = await this.blobToArrayBuffer(photoBlob);
-    const fileName = `dailyface_${photoId}_${timestamp.toISOString().split('T')[0]}.jpg`;
+  // The queue stores only the photoId — the photo bytes stay in IndexedDB and are
+  // read at upload time. (Bytes must never live in the queue: it is persisted via
+  // JSON.stringify, which silently turns an ArrayBuffer into {}.)
+  async queuePhotoUpload(photoId: string, timestamp: Date): Promise<void> {
+    if (this.queue.some(a => a.type === 'upload' && a.photoId === photoId)) {
+      return; // Already queued
+    }
 
     const queuedAction: QueuedAction = {
       id: this.generateActionId(),
       type: 'upload',
-      photoId,
-      timestamp,
-      retryCount: 0,
-      maxRetries: this.MAX_RETRIES,
-      data: arrayBuffer,
-      fileName
-    };
-
-    this.queue.push(queuedAction);
-    this.saveQueue();
-    this.updateOfflineStatus({ hasQueuedActions: this.queue.length });
-
-    // Try immediate processing if online
-    if (navigator.onLine) {
-      setTimeout(() => this.processQueue(), 100);
-    }
-  }
-
-  async queuePhotoDelete(photoId: string, timestamp: Date): Promise<void> {
-    const queuedAction: QueuedAction = {
-      id: this.generateActionId(),
-      type: 'delete',
       photoId,
       timestamp,
       retryCount: 0,
@@ -129,6 +113,36 @@ export class OfflineQueueService {
     if (navigator.onLine) {
       setTimeout(() => this.processQueue(), 100);
     }
+  }
+
+  async queuePhotoDelete(photoId: string, timestamp: Date, googleDriveFileId?: string): Promise<void> {
+    // A pending upload for this photo is now pointless — drop it
+    this.queue = this.queue.filter(a => !(a.type === 'upload' && a.photoId === photoId));
+
+    if (!this.queue.some(a => a.type === 'delete' && a.photoId === photoId)) {
+      const queuedAction: QueuedAction = {
+        id: this.generateActionId(),
+        type: 'delete',
+        photoId,
+        timestamp,
+        retryCount: 0,
+        maxRetries: this.MAX_RETRIES,
+        googleDriveFileId
+      };
+      this.queue.push(queuedAction);
+    }
+
+    this.saveQueue();
+    this.updateOfflineStatus({ hasQueuedActions: this.queue.length });
+
+    // Try immediate processing if online
+    if (navigator.onLine) {
+      setTimeout(() => this.processQueue(), 100);
+    }
+  }
+
+  hasPendingUpload(photoId: string): boolean {
+    return this.queue.some(a => a.type === 'upload' && a.photoId === photoId);
   }
 
   private async processQueue(): Promise<void> {
@@ -151,20 +165,21 @@ export class OfflineQueueService {
 
     for (const action of actionsToProcess) {
       try {
-        let success = false;
+        let result: ActionResult = 'retry';
 
         if (action.type === 'upload') {
-          success = await this.processUploadAction(action);
+          result = await this.processUploadAction(action);
         } else if (action.type === 'delete') {
-          success = await this.processDeleteAction(action);
+          result = await this.processDeleteAction(action);
         }
 
-        if (success) {
+        if (result === 'done') {
           // Remove from queue
           this.queue = this.queue.filter(a => a.id !== action.id);
           processedCount++;
-        } else {
-          // Increment retry count
+        } else if (result === 'retry') {
+          // Only real failures consume a retry — being offline or signed out
+          // must not silently discard the action
           action.retryCount++;
           if (action.retryCount >= action.maxRetries) {
             // Remove failed action after max retries
@@ -192,44 +207,50 @@ export class OfflineQueueService {
     }
   }
 
-  private async processUploadAction(action: QueuedAction): Promise<boolean> {
-    if (!action.data || !action.fileName) {
-      return false;
-    }
-
+  private async processUploadAction(action: QueuedAction): Promise<ActionResult> {
     try {
       // Check if Google Drive service is authenticated
       if (!this.googleDriveService.isAuthenticated()) {
-        return false; // Can't sync without authentication
+        return 'blocked'; // Can't sync without authentication
       }
 
-      const blob = this.arrayBufferToBlob(action.data);
-      const fileId = await this.googleDriveService.uploadPhoto(blob, action.fileName);
-
-      if (fileId) {
-        // Update local photo record with sync status
-        await this.indexedDbService.updatePhotoSyncStatus(action.photoId, fileId, true);
-        return true;
+      const photo = await this.indexedDbService.getPhoto(action.photoId);
+      if (!photo) {
+        // Photo was deleted locally before it could be uploaded
+        return 'done';
+      }
+      if (photo.syncedToGoogleDrive) {
+        // Already uploaded by another sync path
+        return 'done';
+      }
+      if (!photo.data) {
+        console.warn(`Queued photo ${action.photoId} has no data, dropping upload`);
+        return 'done';
       }
 
-      return false;
+      const blob = this.arrayBufferToBlob(photo.data);
+      const fileId = await this.googleDriveService.syncPhoto(blob, photo.id, photo.timestamp);
+      return fileId ? 'done' : 'retry';
     } catch (error) {
       console.error('Upload action failed:', error);
-      return false;
+      return 'retry';
     }
   }
 
-  private async processDeleteAction(action: QueuedAction): Promise<boolean> {
+  private async processDeleteAction(action: QueuedAction): Promise<ActionResult> {
     try {
       // Check if Google Drive service is authenticated
       if (!this.googleDriveService.isAuthenticated()) {
-        return false; // Can't sync without authentication
+        return 'blocked'; // Can't sync without authentication
       }
 
-      return await this.googleDriveService.deletePhoto(action.photoId, action.timestamp);
+      const deleted = await this.googleDriveService.deletePhoto(
+        action.photoId, action.timestamp, action.googleDriveFileId
+      );
+      return deleted ? 'done' : 'retry';
     } catch (error) {
       console.error('Delete action failed:', error);
-      return false;
+      return 'retry';
     }
   }
 
@@ -289,15 +310,6 @@ export class OfflineQueueService {
 
   private generateActionId(): string {
     return `action_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  }
-
-  private async blobToArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as ArrayBuffer);
-      reader.onerror = () => reject(reader.error);
-      reader.readAsArrayBuffer(blob);
-    });
   }
 
   private arrayBufferToBlob(arrayBuffer: ArrayBuffer, type: string = 'image/jpeg'): Blob {

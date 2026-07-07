@@ -4,7 +4,6 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { GoogleDriveService } from '../../services/google-drive.service';
-import { TokenRefreshWorkerService } from '../../services/token-refresh-worker.service';
 
 interface NotificationMessage {
   type: 'info' | 'success' | 'warning' | 'error';
@@ -22,9 +21,8 @@ interface NotificationMessage {
     <div 
       *ngIf="currentNotification" 
       class="auth-notification"
-      [class]="'notification-' + currentNotification.type"
-      [@slideIn]>
-      
+      [class]="'notification-' + currentNotification.type">
+
       <div class="notification-content">
         <div class="notification-icon">
           <span *ngIf="currentNotification.type === 'success'">✓</span>
@@ -68,6 +66,18 @@ interface NotificationMessage {
       overflow: hidden;
       backdrop-filter: blur(10px);
       transition: all 0.3s ease;
+      animation: notification-slide-in 0.3s ease;
+    }
+
+    @keyframes notification-slide-in {
+      from {
+        opacity: 0;
+        translate: 0 -20px;
+      }
+      to {
+        opacity: 1;
+        translate: 0 0;
+      }
     }
     
     .notification-success {
@@ -173,10 +183,7 @@ interface NotificationMessage {
         font-size: 13px;
       }
     }
-  `],
-  animations: [
-    // Add slide in animation if needed
-  ]
+  `]
 })
 export class AuthStatusNotificationComponent implements OnInit, OnDestroy {
   currentNotification: NotificationMessage | null = null;
@@ -184,8 +191,7 @@ export class AuthStatusNotificationComponent implements OnInit, OnDestroy {
   private notificationTimeout: number | null = null;
 
   constructor(
-    private googleDriveService: GoogleDriveService,
-    private tokenRefreshWorker: TokenRefreshWorkerService
+    private googleDriveService: GoogleDriveService
   ) {}
 
   ngOnInit(): void {
@@ -195,32 +201,6 @@ export class AuthStatusNotificationComponent implements OnInit, OnDestroy {
       .subscribe(status => {
         this.handleSyncStatusChange(status);
       });
-
-    // Listen for token refresh worker status
-    this.tokenRefreshWorker.status$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(workerStatus => {
-        this.handleWorkerStatusChange(workerStatus);
-      });
-
-    // Listen for background token refresh events
-    window.addEventListener('tokenRefreshed', ((event: CustomEvent) => {
-      this.showNotification({
-        type: 'success',
-        message: 'Google Drive sync refreshed automatically',
-        duration: 3000
-      });
-    }) as EventListener);
-
-    window.addEventListener('tokenRefreshFailed', ((event: CustomEvent) => {
-      this.showNotification({
-        type: 'warning',
-        message: 'Google Drive sync may need reconnection',
-        action: 'Reconnect',
-        actionCallback: () => this.reconnectGoogleDrive(),
-        duration: 0 // Persistent until dismissed
-      });
-    }) as EventListener);
   }
 
   ngOnDestroy(): void {
@@ -256,16 +236,6 @@ export class AuthStatusNotificationComponent implements OnInit, OnDestroy {
           duration: 2000
         });
       }
-    }
-  }
-
-  private handleWorkerStatusChange(status: any): void {
-    if (status.error) {
-      this.showNotification({
-        type: 'warning',
-        message: 'Background sync unavailable',
-        duration: 5000
-      });
     }
   }
 

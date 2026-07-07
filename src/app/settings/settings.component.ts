@@ -13,6 +13,7 @@ import { LocaleService, SupportedLanguage } from '../services/locale.service';
 import { TranslatePipe } from '../pipes/translate.pipe';
 import { ErrorTrackerService, ErrorEntry } from '../services/error-tracker.service';
 import { OfflineQueueService } from '../services/offline-queue.service';
+import { CaptureSettingsService } from '../services/capture-settings.service';
 
 @Component({
   selector: 'app-settings',
@@ -73,6 +74,8 @@ export class SettingsComponent implements OnInit, OnDestroy, AfterViewInit {
   supportedLanguages: SupportedLanguage[] = [];
   
   private destroy$ = new Subject<void>();
+  private versionTapTimeout: number | null = null;
+  private activeDragCleanup: (() => void) | null = null;
 
   constructor(
     private cameraService: CameraService,
@@ -84,7 +87,8 @@ export class SettingsComponent implements OnInit, OnDestroy, AfterViewInit {
     private localeService: LocaleService,
     private cdr: ChangeDetectorRef,
     private errorTracker: ErrorTrackerService,
-    private offlineQueueService: OfflineQueueService
+    private offlineQueueService: OfflineQueueService,
+    private captureSettings: CaptureSettingsService
   ) {
     // Initialize language settings immediately
     this.supportedLanguages = this.localeService.supportedLanguages;
@@ -177,6 +181,11 @@ export class SettingsComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+    if (this.versionTapTimeout !== null) {
+      clearTimeout(this.versionTapTimeout);
+    }
+    // Remove document drag listeners if the component dies mid-drag
+    this.activeDragCleanup?.();
   }
 
   ngAfterViewInit() {
@@ -256,26 +265,20 @@ export class SettingsComponent implements OnInit, OnDestroy, AfterViewInit {
 
     if (confirm(this.localeService.getTranslation('settings.confirm_sync_all_photos'))) {
       try {
-        // Update sync status to show syncing
-        this.googleDriveService['updateSyncStatus']({ isSyncing: true });
-        
+        this.googleDriveService.markManualSyncStarted();
+
         const result = await this.cameraService.syncAllPhotosToGoogleDrive();
-        
-        this.googleDriveService['updateSyncStatus']({ 
-          isSyncing: false,
-          lastSync: new Date(),
-          error: null
-        });
-        
+
+        this.googleDriveService.markManualSyncFinished();
+
         const template = this.localeService.getTranslation('settings.alert_sync_completed');
         const failedText = result.failed > 0 ? ` ${result.failed} photos failed.` : '';
         alert(template.replace('{success}', result.success.toString()).replace('{failed}', failedText));
       } catch (error) {
         console.error('Sync failed:', error);
-        this.googleDriveService['updateSyncStatus']({ 
-          isSyncing: false,
-          error: error instanceof Error ? error.message : 'Sync failed'
-        });
+        this.googleDriveService.markManualSyncFinished(
+          error instanceof Error ? error.message : 'Sync failed'
+        );
         alert(this.localeService.getTranslation('settings.alert_sync_failed'));
       }
     }
@@ -296,7 +299,11 @@ export class SettingsComponent implements OnInit, OnDestroy, AfterViewInit {
     }
     
     // Reset counter after 3 seconds of no taps
-    setTimeout(() => {
+    if (this.versionTapTimeout !== null) {
+      clearTimeout(this.versionTapTimeout);
+    }
+    this.versionTapTimeout = window.setTimeout(() => {
+      this.versionTapTimeout = null;
       if (this.versionTapCount < 7) {
         this.versionTapCount = 0;
       }
@@ -432,29 +439,19 @@ export class SettingsComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private loadOverlaySettings() {
-    const savedOpacity = localStorage.getItem('overlayOpacity');
-    if (savedOpacity) {
-      this.overlayOpacity = parseFloat(savedOpacity);
-    }
+    this.overlayOpacity = this.captureSettings.overlayOpacity;
   }
 
   private loadAlignmentOverlaySettings() {
-    const savedEyePosition = localStorage.getItem('alignmentEyeLinePosition');
-    if (savedEyePosition) {
-      this.eyeLinePosition = parseFloat(savedEyePosition);
-    }
-    
-    const savedMouthPosition = localStorage.getItem('alignmentMouthLinePosition');
-    if (savedMouthPosition) {
-      this.mouthLinePosition = parseFloat(savedMouthPosition);
-    }
+    this.eyeLinePosition = this.captureSettings.eyeLinePosition;
+    this.mouthLinePosition = this.captureSettings.mouthLinePosition;
   }
 
   onOverlayOpacityChange(event: Event) {
     const target = event.target as HTMLInputElement;
     this.overlayOpacity = parseFloat(target.value);
-    localStorage.setItem('overlayOpacity', this.overlayOpacity.toString());
-    
+    this.captureSettings.setOverlayOpacity(this.overlayOpacity);
+
     // Update the visual progress indicator
     const progressPercent = ((this.overlayOpacity - 0.1) / (1 - 0.1)) * 100;
     target.style.setProperty('--slider-progress', `${progressPercent}%`);
@@ -476,9 +473,8 @@ export class SettingsComponent implements OnInit, OnDestroy, AfterViewInit {
 
   async loadLatestPhotoForAlignment() {
     try {
-      const photos = await this.cameraService.getStoredPhotos();
-      if (photos.length > 0) {
-        const latestPhoto = photos[0];
+      const latestPhoto = await this.cameraService.getLatestPhoto();
+      if (latestPhoto) {
         this.latestPhotoUrl = await this.cameraService.getPhotoDataUrl(latestPhoto);
       }
     } catch (error) {
@@ -520,6 +516,7 @@ export class SettingsComponent implements OnInit, OnDestroy, AfterViewInit {
     const handleEnd = () => {
       this.isDragging = false;
       this.dragType = null;
+      this.activeDragCleanup = null;
       document.removeEventListener('mousemove', handleMove);
       document.removeEventListener('mouseup', handleEnd);
       document.removeEventListener('touchmove', handleMove);
@@ -530,6 +527,7 @@ export class SettingsComponent implements OnInit, OnDestroy, AfterViewInit {
     document.addEventListener('mouseup', handleEnd);
     document.addEventListener('touchmove', handleMove, { passive: false });
     document.addEventListener('touchend', handleEnd);
+    this.activeDragCleanup = handleEnd;
   }
 
   resetToDefaultPositions() {
@@ -538,19 +536,7 @@ export class SettingsComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   saveAlignmentConfiguration() {
-    localStorage.setItem('alignmentEyeLinePosition', this.eyeLinePosition.toString());
-    localStorage.setItem('alignmentMouthLinePosition', this.mouthLinePosition.toString());
-    
-    // Dispatch storage event to notify the take-picture component
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: 'alignmentEyeLinePosition',
-      newValue: this.eyeLinePosition.toString()
-    }));
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: 'alignmentMouthLinePosition',
-      newValue: this.mouthLinePosition.toString()
-    }));
-    
+    this.captureSettings.setAlignmentPositions(this.eyeLinePosition, this.mouthLinePosition);
     this.closeAlignmentConfiguration();
   }
 

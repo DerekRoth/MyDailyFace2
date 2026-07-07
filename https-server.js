@@ -24,8 +24,16 @@ const options = {
 const publicPath = path.join(__dirname, 'dist/my-daily-face/browser');
 
 const server = https.createServer(options, (req, res) => {
-  let filePath = path.join(publicPath, req.url === '/' ? 'index.html' : req.url);
-  
+  const requestPath = decodeURIComponent(req.url.split('?')[0]);
+  let filePath = path.join(publicPath, requestPath === '/' ? 'index.html' : requestPath);
+
+  // Keep requests inside the served directory (blocks ../ traversal)
+  if (!path.resolve(filePath).startsWith(path.resolve(publicPath) + path.sep)) {
+    res.writeHead(403);
+    res.end('Forbidden');
+    return;
+  }
+
   // Handle Angular routing
   if (!path.extname(filePath) && !fs.existsSync(filePath)) {
     filePath = path.join(publicPath, 'index.html');

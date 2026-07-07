@@ -1,8 +1,11 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { CameraService, CameraPhoto } from '../services/camera.service';
 import { CameraStreamService } from '../services/camera-stream.service';
 import { TestDataGeneratorService } from '../services/test-data-generator.service';
+import { CaptureSettingsService } from '../services/capture-settings.service';
 import { CommonModule } from '@angular/common';
 import { TranslatePipe } from '../pipes/translate.pipe';
 import { LocaleService } from '../services/locale.service';
@@ -54,23 +57,39 @@ export class TakePictureComponent implements OnInit, OnDestroy {
   animatingToBrowse = false;
   freezeFrameUrl: string | null = null;
 
+  private destroy$ = new Subject<void>();
+  private pendingTimeouts: number[] = [];
+  private jumpAnimation: Animation | null = null;
+
   constructor(
     private cameraService: CameraService,
     private cameraStreamService: CameraStreamService,
     private router: Router,
     private testDataGenerator: TestDataGeneratorService,
+    private captureSettings: CaptureSettingsService,
     private localeService: LocaleService
   ) {}
 
   ngOnInit() {
     this.initializeCamera();
     this.loadLatestPhoto();
-    this.loadOverlaySettings();
-    this.loadAlignmentGuidesSettings();
+    this.subscribeToCaptureSettings();
   }
 
   ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+    for (const id of this.pendingTimeouts) {
+      clearTimeout(id);
+    }
+    this.pendingTimeouts = [];
+    this.jumpAnimation?.cancel();
+    this.jumpAnimation = null;
     this.cameraStreamService.pauseStream();
+  }
+
+  private schedule(callback: () => void, delay: number): void {
+    this.pendingTimeouts.push(window.setTimeout(callback, delay));
   }
 
   async initializeCamera() {
@@ -83,10 +102,11 @@ export class TakePictureComponent implements OnInit, OnDestroy {
         this.isStreaming = true;
         this.error = null;
 
-        // Listen for when video is actually playing and has dimensions
+        // Listen for when video is actually playing and has dimensions.
+        // once:true so a retry doesn't stack a duplicate listener
         video.addEventListener('playing', () => {
           this.videoReady = true;
-        });
+        }, { once: true });
 
         // Also handle case where video might already be playing
         if (video.readyState >= 3) { // HAVE_FUTURE_DATA or greater
@@ -116,7 +136,7 @@ export class TakePictureComponent implements OnInit, OnDestroy {
 
       // 3. Show flash effect (starts at full brightness)
       this.showFlash = true;
-      setTimeout(() => {
+      this.schedule(() => {
         this.showFlash = false;
       }, this.testDataGenerator.getAdjustedTimeout(this.ANIMATION_TIMINGS.FLASH_DURATION));
 
@@ -127,12 +147,14 @@ export class TakePictureComponent implements OnInit, OnDestroy {
         // Update overlay with the new latest photo
         this.overlayImageUrl = await this.cameraService.getPhotoDataUrl(photo);
         // 5. Start animation to Browse tab after user sees freeze frame
-        setTimeout(() => {
+        this.schedule(() => {
           this.animateToBottomNav();
         }, this.testDataGenerator.getAdjustedTimeout(this.ANIMATION_TIMINGS.ANIMATION_START_TIME));
 
-        // 6. Reset state after animation completes (no navigation)
-        setTimeout(() => {
+        // 6. Reset state after animation completes (no navigation).
+        // isTakingPicture stays true until here — releasing it earlier lets a
+        // second tap start a capture that fights this one's animation timeouts
+        this.schedule(() => {
           this.resetAnimationState();
         }, this.testDataGenerator.getAdjustedTimeout(this.ANIMATION_TIMINGS.NAVIGATION_TIME));
       } else {
@@ -144,8 +166,6 @@ export class TakePictureComponent implements OnInit, OnDestroy {
       console.error('Error taking picture:', error);
       this.error = this.localeService.getTranslation('take_picture.capture_error');
       this.resetAnimationState();
-    } finally {
-      this.isTakingPicture = false;
     }
   }
 
@@ -172,20 +192,16 @@ export class TakePictureComponent implements OnInit, OnDestroy {
     this.showFreezeFrame = false;
     this.animatingToBrowse = false;
     this.freezeFrameUrl = null;
-  }
-
-
-  private generateId(): string {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    this.jumpAnimation = null;
+    this.isTakingPicture = false;
   }
 
   private animateToBottomNav() {
     // Small delay to ensure freeze frame is rendered
-    setTimeout(() => {
+    this.schedule(() => {
       // Get the Browse navigation item position
       const browseNavItem = document.querySelector('.bottom-navigation .nav-item:nth-child(2)');
-      const video = this.videoElement.nativeElement;
-      if (!browseNavItem || !this.freezeFrameElement || !video) {
+      if (!browseNavItem || !this.freezeFrameElement || !this.videoElement) {
         // Fallback if elements not found
         this.resetAnimationState();
         return;
@@ -243,13 +259,9 @@ export class TakePictureComponent implements OnInit, OnDestroy {
         fill: 'forwards'
       });
 
-      // Mark animation as started
+      // Mark animation as started; keep a handle so ngOnDestroy can cancel it
+      this.jumpAnimation = animation;
       this.animatingToBrowse = true;
-
-      // Clean up after animation completes
-      animation.onfinish = () => {
-        // Animation complete - the state reset will happen from the parent setTimeout
-      };
     }, this.testDataGenerator.getAdjustedTimeout(this.ANIMATION_TIMINGS.DOM_READY_DELAY));
   }
 
@@ -260,19 +272,15 @@ export class TakePictureComponent implements OnInit, OnDestroy {
   }
 
   toggleAlignmentGuides() {
-    this.showAlignmentGuides = !this.showAlignmentGuides;
-    // Save the user's choice
-    localStorage.setItem('alignmentOverlayEnabled', this.showAlignmentGuides.toString());
+    this.captureSettings.setAlignmentGuidesEnabled(!this.showAlignmentGuides);
   }
 
   private async loadLatestPhoto() {
     try {
-      const photos = await this.cameraService.getStoredPhotos();
-      if (photos.length > 0) {
-        // Get the most recent photo (photos are sorted newest first)
-        const latestPhoto = photos[0];
+      const latestPhoto = await this.cameraService.getLatestPhoto();
+      if (latestPhoto) {
         this.overlayImageUrl = await this.cameraService.getPhotoDataUrl(latestPhoto);
-        
+
         // Initialize overlay visibility based on saved preference or default to enabled
         this.initializeOverlayVisibility();
       }
@@ -281,48 +289,22 @@ export class TakePictureComponent implements OnInit, OnDestroy {
     }
   }
 
-  private loadOverlaySettings() {
-    const savedOpacity = localStorage.getItem('overlayOpacity');
-    if (savedOpacity) {
-      this.overlayOpacity = parseFloat(savedOpacity);
-    }
-    
-    // Listen for storage changes from other components
-    window.addEventListener('storage', (event) => {
-      if (event.key === 'overlayOpacity' && event.newValue) {
-        this.overlayOpacity = parseFloat(event.newValue);
-      }
-    });
-  }
+  private subscribeToCaptureSettings() {
+    this.captureSettings.overlayOpacity$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(opacity => this.overlayOpacity = opacity);
 
-  private loadAlignmentGuidesSettings() {
-    const savedEnabled = localStorage.getItem('alignmentOverlayEnabled');
-    if (savedEnabled !== null) {
-      this.showAlignmentGuides = savedEnabled === 'true';
-    }
-    
-    const savedEyePosition = localStorage.getItem('alignmentEyeLinePosition');
-    if (savedEyePosition) {
-      this.eyeLinePosition = parseFloat(savedEyePosition);
-    }
-    
-    const savedMouthPosition = localStorage.getItem('alignmentMouthLinePosition');
-    if (savedMouthPosition) {
-      this.mouthLinePosition = parseFloat(savedMouthPosition);
-    }
-    
-    // Listen for storage changes from settings component
-    window.addEventListener('storage', (event) => {
-      if (event.key === 'alignmentOverlayEnabled' && event.newValue !== null) {
-        this.showAlignmentGuides = event.newValue === 'true';
-      }
-      if (event.key === 'alignmentEyeLinePosition' && event.newValue) {
-        this.eyeLinePosition = parseFloat(event.newValue);
-      }
-      if (event.key === 'alignmentMouthLinePosition' && event.newValue) {
-        this.mouthLinePosition = parseFloat(event.newValue);
-      }
-    });
+    this.captureSettings.alignmentGuidesEnabled$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(enabled => this.showAlignmentGuides = enabled);
+
+    this.captureSettings.eyeLinePosition$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(position => this.eyeLinePosition = position);
+
+    this.captureSettings.mouthLinePosition$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(position => this.mouthLinePosition = position);
   }
 
   private initializeOverlayVisibility() {

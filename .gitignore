@@ -46,3 +46,8 @@ Thumbs.db
 /src/environments/environment.prod.ts
 # Keep example files
 !/src/environments/environment.example.ts
+
+# TLS keys and certificates (https-server.js regenerates them)
+*.key
+*.crt
+*.pem

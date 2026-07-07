@@ -21,6 +21,9 @@ export class LocaleService {
 
   private readonly STORAGE_KEY = 'selected-language';
   private currentLanguageSubject = new BehaviorSubject<string>(this.getInitialLanguage());
+  // Built once on first access; TranslatePipe is impure and calls getTranslation on
+  // every change detection cycle, so the table must not be rebuilt per call
+  private translationsTable: Record<string, Record<string, string>> | null = null;
 
   constructor() {
     // Save the initial language selection
@@ -91,6 +94,37 @@ export class LocaleService {
     localStorage.setItem(this.STORAGE_KEY, languageCode);
   }
 
+  // BCP 47 tag for Intl formatting based on the active app language
+  private get formattingLocale(): string {
+    return this.currentLanguage === 'en' ? 'en-US' : this.currentLanguage;
+  }
+
+  // "Today" / "Yesterday" / "3 days ago" / localized short date
+  formatRelativeDate(date: Date): string {
+    const now = new Date();
+    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (diffInDays === 0) {
+      return this.getTranslation('date.today');
+    } else if (diffInDays === 1) {
+      return this.getTranslation('date.yesterday');
+    } else if (diffInDays > 1 && diffInDays < 7) {
+      return this.getTranslation('date.days_ago').replace('{days}', diffInDays.toString());
+    }
+    return date.toLocaleDateString(this.formattingLocale, {
+      month: 'short',
+      day: 'numeric',
+      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+    });
+  }
+
+  formatTime(date: Date): string {
+    return date.toLocaleTimeString(this.formattingLocale, {
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  }
+
   // Method to get translated text based on current language
   getTranslation(key: string): string {
     const lang = this.currentLanguage;
@@ -99,6 +133,13 @@ export class LocaleService {
   }
 
   private getTranslations(languageCode: string): Record<string, string> {
+    if (!this.translationsTable) {
+      this.translationsTable = this.buildTranslations();
+    }
+    return this.translationsTable[languageCode] || this.translationsTable['en'];
+  }
+
+  private buildTranslations(): Record<string, Record<string, string>> {
     // Translation mappings for each language
     const translations: Record<string, Record<string, string>> = {
       'en': {
@@ -107,6 +148,18 @@ export class LocaleService {
         'nav.browse': 'Browse',
         'nav.play': 'Play',
         'nav.settings': 'Settings',
+
+        // Accessibility labels
+        'a11y.close_photo': 'Close photo',
+        'a11y.delete_photo': 'Delete photo',
+        'a11y.open_photo': 'Open photo',
+        'a11y.first_photo': 'First photo',
+        'a11y.previous_photo': 'Previous photo',
+        'a11y.play': 'Play',
+        'a11y.pause': 'Pause',
+        'a11y.next_photo': 'Next photo',
+        'a11y.last_photo': 'Last photo',
+        'a11y.slideshow_progress': 'Slideshow progress',
 
         // Browse Pictures
         'browse.title': 'Your Photos',
@@ -475,6 +528,18 @@ export class LocaleService {
         'nav.play': 'Lire',
         'nav.settings': 'Paramètres',
 
+        // Accessibility labels
+        'a11y.close_photo': 'Fermer la photo',
+        'a11y.delete_photo': 'Supprimer la photo',
+        'a11y.open_photo': 'Ouvrir la photo',
+        'a11y.first_photo': 'Première photo',
+        'a11y.previous_photo': 'Photo précédente',
+        'a11y.play': 'Lecture',
+        'a11y.pause': 'Pause',
+        'a11y.next_photo': 'Photo suivante',
+        'a11y.last_photo': 'Dernière photo',
+        'a11y.slideshow_progress': 'Progression du diaporama',
+
         // Browse Pictures
         'browse.title': 'Vos Photos',
         'browse.photo_count_single': '1 photo',
@@ -841,6 +906,18 @@ export class LocaleService {
         'nav.browse': 'Durchsuchen',
         'nav.play': 'Abspielen',
         'nav.settings': 'Einstellungen',
+
+        // Accessibility labels
+        'a11y.close_photo': 'Foto schließen',
+        'a11y.delete_photo': 'Foto löschen',
+        'a11y.open_photo': 'Foto öffnen',
+        'a11y.first_photo': 'Erstes Foto',
+        'a11y.previous_photo': 'Vorheriges Foto',
+        'a11y.play': 'Abspielen',
+        'a11y.pause': 'Pause',
+        'a11y.next_photo': 'Nächstes Foto',
+        'a11y.last_photo': 'Letztes Foto',
+        'a11y.slideshow_progress': 'Diashow-Fortschritt',
 
         // Browse Pictures
         'browse.title': 'Ihre Fotos',
@@ -1209,6 +1286,18 @@ export class LocaleService {
         'nav.play': 'Riproduci',
         'nav.settings': 'Impostazioni',
 
+        // Accessibility labels
+        'a11y.close_photo': 'Chiudi foto',
+        'a11y.delete_photo': 'Elimina foto',
+        'a11y.open_photo': 'Apri foto',
+        'a11y.first_photo': 'Prima foto',
+        'a11y.previous_photo': 'Foto precedente',
+        'a11y.play': 'Riproduci',
+        'a11y.pause': 'Pausa',
+        'a11y.next_photo': 'Foto successiva',
+        'a11y.last_photo': 'Ultima foto',
+        'a11y.slideshow_progress': 'Avanzamento presentazione',
+
         // Browse Pictures
         'browse.title': 'Le tue foto',
         'browse.photo_count_single': '1 foto',
@@ -1576,6 +1665,18 @@ export class LocaleService {
         'nav.play': 'Reproduzir',
         'nav.settings': 'Configurações',
 
+        // Accessibility labels
+        'a11y.close_photo': 'Fechar foto',
+        'a11y.delete_photo': 'Excluir foto',
+        'a11y.open_photo': 'Abrir foto',
+        'a11y.first_photo': 'Primeira foto',
+        'a11y.previous_photo': 'Foto anterior',
+        'a11y.play': 'Reproduzir',
+        'a11y.pause': 'Pausar',
+        'a11y.next_photo': 'Próxima foto',
+        'a11y.last_photo': 'Última foto',
+        'a11y.slideshow_progress': 'Progresso da apresentação',
+
         // Browse Pictures
         'browse.title': 'Suas Fotos',
         'browse.photo_count_single': '1 foto',
@@ -1938,6 +2039,6 @@ export class LocaleService {
       }
     };
 
-    return translations[languageCode] || translations['en'];
+    return translations;
   }
 }

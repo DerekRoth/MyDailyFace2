@@ -11,7 +11,6 @@ import { OfflineIndicatorComponent } from './components/offline-indicator/offlin
 import { AuthStatusNotificationComponent } from './components/auth-status-notification/auth-status-notification.component';
 import { AppUpdateService } from './services/app-update.service';
 import { OfflineQueueService } from './services/offline-queue.service';
-import { TokenRefreshWorkerService } from './services/token-refresh-worker.service';
 
 @Component({
   selector: 'app-root',
@@ -34,8 +33,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private errorTracker: ErrorTrackerService,
     private cameraStreamService: CameraStreamService,
     private appUpdateService: AppUpdateService,
-    private offlineQueueService: OfflineQueueService,
-    private tokenRefreshWorker: TokenRefreshWorkerService
+    private offlineQueueService: OfflineQueueService
   ) {}
 
   ngOnInit() {
@@ -62,13 +60,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
     // Service worker update handling (using new AppUpdateService)
     // The AppUpdateService handles all update logic now
-
-    // Initialize token refresh worker for background auth management
-    if (this.tokenRefreshWorker.isSupported()) {
-      console.log('Token refresh worker initialized');
-    } else {
-      console.warn('Service workers not supported - background token refresh unavailable');
-    }
 
     // Clean up camera when page is about to unload
     window.addEventListener('beforeunload', () => {

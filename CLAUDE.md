@@ -62,11 +62,16 @@ DailyFace.me is a Progressive Web App (PWA) built with Angular 19 that allows us
 - **Synchronized timing** between CSS and JavaScript
 
 ### Services Architecture
-- **CameraService**: WebRTC camera access and photo capture
-- **IndexedDbService**: Local photo storage with efficient retrieval
-- **GoogleDriveService**: OAuth 2.0 integration with restricted API keys
+- **CameraService**: WebRTC photo capture, thumbnail generation, photo index (metadata-only listing)
+- **CameraStreamService**: Shared MediaStream; pauses on tab leave and fully stops the hardware after a 30s idle
+- **IndexedDbService**: Local photo storage (DB version 3: `synced` index, stored thumbnails, lazy blob→ArrayBuffer migration)
+- **GoogleDriveService**: OAuth 2.0 via Google Identity Services; access token kept in memory only, idempotent uploads, paginated downloads
+- **OfflineQueueService**: The single queue for Drive uploads/deletions; stores photoIds (never bytes) and survives reloads
+- **CaptureSettingsService**: BehaviorSubject-based cross-component capture settings (overlay opacity, alignment guides)
 - **TestDataGeneratorService**: SVG face generation and animation debugging
-- **LocaleService**: Multi-language support with browser detection
+- **LocaleService**: Multi-language support, browser detection, locale-aware date/time formatting
+
+**Memory rule**: never load all photo bytes at once. Use `getPhotoIndex()` (metadata + thumbnails) for lists and `getPhotoDataUrl()` for on-demand full resolution.
 
 ## Development Notes
 
@@ -75,17 +80,18 @@ DailyFace.me is a Progressive Web App (PWA) built with Angular 19 that allows us
 # Development server
 npm run start
 
-# Production build
-npm run build -- --base-href /
+# Production build (also used by CI)
+npm run build
 
-# Internationalization builds
-npm run build:i18n          # Build all languages (generates separate locale builds)
-npm run build:prod          # Production build with all languages
-npm run extract-i18n        # Extract i18n keys (NOTE: not used - translations are hardcoded)
+# Unit tests (also run in CI before every deploy)
+npm test -- --watch=false --browsers=ChromeHeadless
 
 # Deploy to GitHub Pages
-# Automated via GitHub Actions on push to main branch
+# Automated via GitHub Actions on push to main branch (tests must pass first)
 ```
+
+Note: translations are resolved at runtime by `LocaleService` — there is no Angular
+`--localize` build. The old `build:i18n`/`build:prod` scripts and XLF files were removed.
 
 ### Environment Setup
 - **Node.js**: Requires v20.19+ or v22.12+ for Angular CLI
@@ -121,9 +127,8 @@ Access by tapping version 7 times in Settings:
 The project uses a **custom translation system** rather than Angular's built-in i18n:
 
 **Key Components:**
-- **LocaleService** (`src/app/services/locale.service.ts`): Core translation service with hardcoded translations
+- **LocaleService** (`src/app/services/locale.service.ts`): Core translation service with hardcoded translations (built once and memoized — the pipe is impure and calls it every change-detection cycle)
 - **TranslatePipe** (`src/app/pipes/translate.pipe.ts`): Custom pipe for `{{ 'key' | translate }}` syntax
-- **XLF Files** (`src/locale/messages.{lang}.xlf`): Documentation only - NOT used at runtime
 
 **How it works:**
 1. **Translation Keys**: Use format like `'settings.configure_alignment_lines'` in templates
@@ -132,14 +137,14 @@ The project uses a **custom translation system** rather than Angular's built-in 
 4. **Fallback**: Returns the key itself if translation not found
 
 **Adding New Translations:**
-1. ⚠️ **IMPORTANT**: Add to `LocaleService.getTranslations()` method, NOT just XLF files
-2. **All Languages**: Must add to all language sections in LocaleService (en, fr, de, it, pt)
-3. **XLF Files**: Update for documentation consistency but not required for functionality
-4. **Testing**: Use `npm run build` to verify - missing translations show as raw keys
+1. ⚠️ **IMPORTANT**: Add to the `buildTranslations()` table in `LocaleService`
+2. **All Languages**: Must add to all language sections (en, fr, de, it, pt) — the
+   `locale.service.spec.ts` key-parity test fails the build if any language is missing a key
+3. **Testing**: `npm test` verifies key parity; missing translations show as raw keys at runtime
 
-**Translation Object Structure** (`src/app/services/locale.service.ts:107-1655`):
+**Translation Object Structure** (`src/app/services/locale.service.ts`):
 ```typescript
-private getTranslations(languageCode: string): Record<string, string> {
+private buildTranslations(): Record<string, Record<string, string>> {
   const translations: Record<string, Record<string, string>> = {
     'en': {
       'nav.take_picture': 'Take Picture',
@@ -148,14 +153,17 @@ private getTranslations(languageCode: string): Record<string, string> {
     },
     'fr': {
       'nav.take_picture': 'Prendre photo',
-      'settings.title': 'Paramètres', 
+      'settings.title': 'Paramètres',
       // ... hardcoded French translations
     }
     // ... other languages
   };
-  return translations[languageCode] || translations['en'];
+  return translations;
 }
 ```
+
+**Date/time formatting**: use `LocaleService.formatRelativeDate()` / `formatTime()` —
+never hardcode `'en-US'` in `toLocaleDateString` calls.
 
 **Browser Language Detection**: `LocaleService` automatically detects browser language and saves preference to localStorage
 
@@ -164,9 +172,13 @@ private getTranslations(languageCode: string): Record<string, string> {
 ### Google Drive API
 - **Client ID**: Safe to expose publicly
 - **API Key**: Must be restricted in Google Cloud Console:
-  - HTTP referrers: `https://derekroth.github.io/*`, `https://127.0.0.1:*`
+  - HTTP referrers: `https://dailyface.me/*`, `https://derekroth.github.io/*`, `https://127.0.0.1:*`
   - APIs: Google Drive API only
 - **Environment files**: Excluded from git via `.gitignore`
+- **Tokens**: The Drive access token lives in memory only — never persist tokens to
+  localStorage/IndexedDB. Silent renewal goes through GIS `requestAccessToken({prompt: ''})`
+- **CSP**: `src/index.html` ships a Content-Security-Policy meta tag scoped to self +
+  Google auth/API hosts — update it when adding external resources
 
 ### Camera Permissions
 - Requires HTTPS for getUserMedia API
@@ -183,7 +195,7 @@ private getTranslations(languageCode: string): Record<string, string> {
 
 ### GitHub Actions Workflow
 - **Triggers**: Push to main branch or manual workflow dispatch
-- **Build process**: Node.js 22, npm ci, Angular build with base-href
+- **Build process**: Node.js 22, npm ci, headless unit tests, Angular build
 - **Environment setup**: Creates environment.ts from example using GitHub secrets
 - **Deployment**: Uses official GitHub Pages actions for secure deployment
 - **Permissions**: Minimal required permissions for pages deployment
@@ -200,7 +212,8 @@ Set these in your repository Settings → Secrets and variables → Actions:
 ### Build Considerations
 - **Base href**: Used to be set to `/MyDailyFace2/` for GitHub Pages before custom domain was configured
 - **Browser subfolder**: Angular 19 outputs to `browser/` subdirectory
-- **Bundle warnings**: Settings and browse-pictures components exceed 4KB budget
+- **Lazy routes**: only the camera screen is eager; all other routes use `loadComponent`,
+  keeping the initial bundle under the 600 kB budget
 
 ## Common Issues & Solutions
 
@@ -245,21 +258,20 @@ Set these in your repository Settings → Secrets and variables → Actions:
 ## File References for Quick Access
 
 ### Core Animation Logic
-- `src/app/take-picture/take-picture.component.ts:147-232` - `animateToBottomNav()` method
-- `src/app/take-picture/take-picture.component.ts:23-35` - Animation timing configuration
+- `src/app/take-picture/take-picture.component.ts` - `animateToBottomNav()` and the `ANIMATION_TIMINGS` configuration
 
 ### Service Implementations
-- `src/app/services/camera.service.ts` - Camera and photo capture logic
-- `src/app/services/google-drive.service.ts:32-50` - OAuth initialization
-- `src/app/services/test-data-generator.service.ts:255-259` - Animation speed helpers
-- `src/app/services/locale.service.ts` - Multi-language support and browser detection
-- `src/app/services/error-tracker.service.ts:142-151` - Global error overlay state management
-- `src/app/app.component.ts:39-51,117-137` - App-level error overlay implementation
+- `src/app/services/camera.service.ts` - Camera capture, thumbnails, photo index
+- `src/app/services/google-drive.service.ts` - OAuth (GIS token client) and bidirectional sync
+- `src/app/services/offline-queue.service.ts` - Upload/delete queue (photoIds only)
+- `src/app/services/capture-settings.service.ts` - Shared overlay/alignment settings
+- `src/app/services/locale.service.ts` - Translations, browser detection, date formatting
+- `src/app/services/error-tracker.service.ts` - Global error overlay state management
 
 ### Key UI Components
-- `src/app/settings/settings.component.ts:147-166` - Hidden debug menu activation
-- `src/app/browse-pictures/browse-pictures.component.css:1-45` - CSS Grid layout
-- `src/app/app.component.css:19-30` - Bottom navigation structure
+- `src/app/settings/settings.component.ts` - Hidden debug menu activation (`onVersionTap`)
+- `src/app/browse-pictures/browse-pictures.component.css` - CSS Grid layout
+- `src/app/app.component.css` - Bottom navigation structure
 
 ## Notes for Future Development
 - Animation system is fully JavaScript-based for better control

@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { SwUpdate, VersionEvent } from '@angular/service-worker';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs';
 
 export interface UpdateStatus {
   updateAvailable: boolean;
@@ -28,6 +27,8 @@ export class AppUpdateService {
   public updateStatus$ = this.updateStatusSubject.asObservable();
   private checkInterval: any = null;
   private readonly CHECK_INTERVAL = 30 * 60 * 1000; // 30 minutes
+  // True once a VERSION_READY event arrived and the update hasn't been applied
+  private versionReady = false;
 
   constructor(private swUpdate: SwUpdate) {
     if (this.swUpdate.isEnabled) {
@@ -40,20 +41,19 @@ export class AppUpdateService {
     this.swUpdate.versionUpdates.subscribe((evt) => {
       switch (evt.type) {
         case 'VERSION_DETECTED':
-          console.log('New version detected');
-          this.updateStatus({
-            updateAvailable: true,
-            lastCheck: new Date()
-          });
+          // Only detected, not downloaded yet — activateUpdate() would fail,
+          // so don't offer the update to the user until VERSION_READY
+          console.log('New version detected, downloading...');
+          this.updateStatus({ lastCheck: new Date() });
           break;
 
         case 'VERSION_READY':
           console.log('New version ready');
+          this.versionReady = true;
           this.updateStatus({
             updateAvailable: true,
             lastCheck: new Date()
           });
-          // Optionally auto-prompt user here
           break;
 
         case 'VERSION_INSTALLATION_FAILED':
@@ -106,11 +106,15 @@ export class AppUpdateService {
         return true;
       } else {
         console.log('No update available');
-        // Reset update available status if no update found
-        this.updateStatus({
-          updateAvailable: false,
-          availableVersion: null
-        });
+        // checkForUpdate() returning false only means no NEW version was found.
+        // A previously downloaded update may still be READY and waiting — don't
+        // hide the banner from a user who clicked "Later"
+        if (!this.versionReady) {
+          this.updateStatus({
+            updateAvailable: false,
+            availableVersion: null
+          });
+        }
         return false;
       }
     } catch (error) {
@@ -136,6 +140,7 @@ export class AppUpdateService {
 
       console.log('Applying app update...');
       await this.swUpdate.activateUpdate();
+      this.versionReady = false;
 
       this.updateStatus({
         isUpdating: false,
@@ -154,55 +159,6 @@ export class AppUpdateService {
       });
       return false;
     }
-  }
-
-  // Prompt user to update - returns observable that emits when user responds
-  promptUserForUpdate(): Observable<boolean> {
-    return new Observable(observer => {
-      const currentStatus = this.updateStatusSubject.value;
-
-      if (!currentStatus.updateAvailable) {
-        observer.next(false);
-        observer.complete();
-        return;
-      }
-
-      // Create a simple confirmation dialog
-      const userWantsUpdate = confirm(
-        'A new version of DailyFace.me is available. Would you like to update now? The app will reload automatically.'
-      );
-
-      observer.next(userWantsUpdate);
-      observer.complete();
-
-      if (userWantsUpdate) {
-        this.applyUpdate();
-      }
-    });
-  }
-
-  // Show update notification banner - returns observable for user interaction
-  showUpdateBanner(): Observable<'update' | 'dismiss' | 'later'> {
-    return new Observable(observer => {
-      const currentStatus = this.updateStatusSubject.value;
-
-      if (!currentStatus.updateAvailable) {
-        observer.next('dismiss');
-        observer.complete();
-        return;
-      }
-
-      // For now, use a simple confirm dialog
-      // In a real app, you'd show a proper UI banner
-      const result = confirm('New version available! Update now?');
-
-      observer.next(result ? 'update' : 'later');
-      observer.complete();
-
-      if (result) {
-        this.applyUpdate();
-      }
-    });
   }
 
   getCurrentStatus(): UpdateStatus {

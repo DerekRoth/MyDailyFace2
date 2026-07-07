@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CameraService, CameraPhoto } from '../services/camera.service';
 import { TestDataGeneratorService } from '../services/test-data-generator.service';
@@ -24,7 +24,7 @@ interface FlattenedItem {
   templateUrl: './browse-pictures.component.html',
   styleUrl: './browse-pictures.component.css'
 })
-export class BrowsePicturesComponent implements OnInit {
+export class BrowsePicturesComponent implements OnInit, OnDestroy {
   photos: CameraPhoto[] = [];
   photoSections: PhotoSection[] = [];
   flattenedPhotoItems: FlattenedItem[] = [];
@@ -72,20 +72,48 @@ export class BrowsePicturesComponent implements OnInit {
     private localeService: LocaleService
   ) {}
 
+  private destroyed = false;
+  private pendingTimeouts: number[] = [];
+  // Increments per updateVisiblePhotos run so stale async loads can bail out
+  private visibleUpdateSeq = 0;
+
   ngOnInit() {
     this.loadPhotos();
+  }
+
+  ngOnDestroy() {
+    this.destroyed = true;
+    for (const id of this.pendingTimeouts) {
+      clearTimeout(id);
+    }
+    this.pendingTimeouts = [];
+  }
+
+  private schedule(callback: () => void, delay: number): void {
+    this.pendingTimeouts.push(window.setTimeout(callback, delay));
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.showDeleteConfirm) {
+      this.cancelDelete();
+    } else if (this.showPhotoModal) {
+      this.closePhoto();
+    }
   }
 
   async loadPhotos() {
     this.isLoading = true;
     try {
-      this.photos = await this.cameraService.getStoredPhotos();
-      
+      // Metadata + thumbnails only — the grid must never hold every photo's
+      // full-resolution bytes in memory
+      this.photos = await this.cameraService.getPhotoIndex();
+
       // Group photos by month-year
       this.groupPhotosByMonth();
-      
-      // Load data URLs for display (load in batches for better performance)
-      await this.loadPhotoDataUrls();
+
+      // Load thumbnails for display (in batches for better performance)
+      await this.loadThumbnails();
     } catch (error) {
       console.error('Error loading photos:', error);
     } finally {
@@ -93,18 +121,21 @@ export class BrowsePicturesComponent implements OnInit {
     }
   }
 
-  private async loadPhotoDataUrls() {
-    // Load photos in batches of 10 for better performance
+  private async loadThumbnails() {
     const batchSize = 10;
     for (let i = 0; i < this.photos.length; i += batchSize) {
+      if (this.destroyed) {
+        return; // Stop hammering IndexedDB after the user navigates away
+      }
       const batch = this.photos.slice(i, i + batchSize);
       const promises = batch.map(async (photo) => {
         try {
-          const dataUrl = await this.cameraService.getPhotoDataUrl(photo);
-          if (dataUrl) {
-            this.photoDataUrls.set(photo.id, dataUrl);
+          // Stored thumbnail, or generated + persisted for pre-thumbnail photos
+          const thumbnail = await this.cameraService.getOrCreateThumbnail(photo);
+          if (thumbnail) {
+            this.photoDataUrls.set(photo.id, thumbnail);
           } else {
-            console.warn(`Failed to load photo data for ${photo.id} - corrupted or missing blob`);
+            console.warn(`Failed to load thumbnail for ${photo.id} - corrupted or missing data`);
           }
         } catch (error) {
           console.error(`Error loading photo ${photo.id}:`, error);
@@ -145,7 +176,7 @@ export class BrowsePicturesComponent implements OnInit {
     this.updateDisplayedInfo();
     
     // Calculate initial scale based on thumbnail size
-    setTimeout(() => {
+    this.schedule(() => {
       const photoContainer = document.querySelector('.photo-container') as HTMLElement;
       if (photoContainer && this.transitionOrigin) {
         const containerRect = photoContainer.getBoundingClientRect();
@@ -155,9 +186,9 @@ export class BrowsePicturesComponent implements OnInit {
         );
       }
       this.animatePhotoOpen = true;
-      
+
       // Show interface elements after opening animation completes
-      setTimeout(async () => {
+      this.schedule(async () => {
         this.showPhotoInterface = true;
         // Prepare the scrollable photo container in the background
         await this.prepareScrollablePhotos();
@@ -213,7 +244,7 @@ export class BrowsePicturesComponent implements OnInit {
     this.swipeTransform = '';
     
     // Wait for closing animation to complete (2x slower than opening)
-    setTimeout(() => {
+    this.schedule(() => {
       this.showPhotoModal = false;
       this.transitionOrigin = null;
       this.animatePhotoOpen = false;
@@ -357,8 +388,7 @@ export class BrowsePicturesComponent implements OnInit {
           }
           // Update visible photos and display info only if still in fullscreen mode
           if (this.showPhotoModal) {
-            const containerWidth = window.innerWidth;
-            await this.updateVisiblePhotos(containerWidth);
+            await this.updateVisiblePhotos();
             this.updateDisplayedInfo();
           }
         } else {
@@ -387,7 +417,7 @@ export class BrowsePicturesComponent implements OnInit {
         currentPhotoSlide.style.opacity = '0';
         
         // Wait for fade-out to complete, then move to next photo
-        setTimeout(() => {
+        this.schedule(() => {
           // Move to the next photo (or previous if at end)
           this.moveToNextPhotoAfterDeletion();
           resolve();
@@ -432,31 +462,11 @@ export class BrowsePicturesComponent implements OnInit {
   }
 
   formatDate(date: Date): string {
-    const now = new Date();
-    const diffInMs = now.getTime() - date.getTime();
-    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-    
-    if (diffInDays === 0) {
-      return this.localeService.getTranslation('date.today');
-    } else if (diffInDays === 1) {
-      return this.localeService.getTranslation('date.yesterday');
-    } else if (diffInDays < 7) {
-      return this.localeService.getTranslation('date.days_ago').replace('{days}', diffInDays.toString());
-    } else {
-      return date.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric', 
-        year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined 
-      });
-    }
+    return this.localeService.formatRelativeDate(date);
   }
 
   formatTime(date: Date): string {
-    return date.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
-      minute: '2-digit',
-      hour12: true 
-    });
+    return this.localeService.formatTime(date);
   }
 
   trackByPhotoId(index: number, photo: CameraPhoto): string {
@@ -571,7 +581,7 @@ export class BrowsePicturesComponent implements OnInit {
           this.scrollContainerWidth = actualContainerWidth;
           
           // Load visible photos for flexbox layout
-          await this.updateVisiblePhotos(actualContainerWidth);
+          await this.updateVisiblePhotos();
           
           // Disable smooth scrolling for instant positioning
           container.style.scrollBehavior = 'auto';
@@ -581,11 +591,11 @@ export class BrowsePicturesComponent implements OnInit {
           container.scrollLeft = targetScroll;
           
           // Wait a bit to ensure scroll has taken effect
-          setTimeout(() => {
+          this.schedule(() => {
             // Show the scrollable view
             this.showScrollablePhotos = true;
-            
-            setTimeout(() => {
+
+            this.schedule(() => {
               // Re-enable smooth scrolling
               container.style.scrollBehavior = 'smooth';
               resolve();
@@ -611,7 +621,7 @@ export class BrowsePicturesComponent implements OnInit {
     if (newIndex !== this.currentPhotoIndex && newIndex >= 0 && newIndex < this.allPhotosFlat.length) {
       this.currentPhotoIndex = newIndex;
       this.updateDisplayedInfo();
-      this.updateVisiblePhotos(containerWidth);
+      this.updateVisiblePhotos();
     }
   }
 
@@ -632,38 +642,49 @@ export class BrowsePicturesComponent implements OnInit {
     }
   }
   
-  private async updateVisiblePhotos(containerWidth: number) {
-    const newVisiblePhotos: typeof this.visiblePhotos = [];
-    
-    // Show ALL photos but only load dataUrls for a window around current photo
-    const windowSize = 10; // Smaller window for better performance
-    
-    for (let index = 0; index < this.allPhotosFlat.length; index++) {
-      const photo = this.allPhotosFlat[index];
-      
-      // Only load dataUrl if within the window around current photo
-      let dataUrl: string | null = null;
-      const distanceFromCurrent = Math.abs(index - this.currentPhotoIndex);
-      
-      if (distanceFromCurrent <= windowSize) {
-        // Check cache first
-        dataUrl = this.photoCache.get(photo.id) || null;
-        if (!dataUrl) {
-          const loadedUrl = await this.cameraService.getPhotoDataUrl(photo);
-          if (loadedUrl) {
-            dataUrl = loadedUrl;
-            this.photoCache.set(photo.id, dataUrl);
-          }
-        }
-      }
-      
-      newVisiblePhotos.push({
+  private async updateVisiblePhotos() {
+    const seq = ++this.visibleUpdateSeq;
+
+    // Build the slide list only when the photo set changed (open, deletion) —
+    // replacing the array on every scroll event recreates all slide DOM nodes
+    // mid-swipe. With trackBy + in-place mutation, scrolling only fills in
+    // dataUrls on existing entries.
+    if (this.visiblePhotos.length !== this.allPhotosFlat.length
+        || this.visiblePhotos.some((slide, i) => slide.photo.id !== this.allPhotosFlat[i].id)) {
+      this.visiblePhotos = this.allPhotosFlat.map(photo => ({
         photo,
-        dataUrl
-      });
+        dataUrl: this.photoCache.get(photo.id) || null
+      }));
     }
-    
-    this.visiblePhotos = newVisiblePhotos;
+
+    // Only load dataUrls for a window around the current photo
+    const windowSize = 10;
+    const start = Math.max(0, this.currentPhotoIndex - windowSize);
+    const end = Math.min(this.allPhotosFlat.length - 1, this.currentPhotoIndex + windowSize);
+
+    for (let index = start; index <= end; index++) {
+      const slide = this.visiblePhotos[index];
+      if (slide.dataUrl) continue;
+
+      const cached = this.photoCache.get(slide.photo.id);
+      if (cached) {
+        slide.dataUrl = cached;
+        continue;
+      }
+
+      const loadedUrl = await this.cameraService.getPhotoDataUrl(slide.photo);
+      if (this.destroyed || seq !== this.visibleUpdateSeq) {
+        return; // A newer scroll position superseded this run
+      }
+      if (loadedUrl) {
+        this.photoCache.set(slide.photo.id, loadedUrl);
+        slide.dataUrl = loadedUrl;
+      }
+    }
+  }
+
+  trackByVisiblePhoto(index: number, item: { photo: CameraPhoto; dataUrl: string | null }): string {
+    return item.photo.id;
   }
 
   private updateDisplayedInfo() {

@@ -27,9 +27,17 @@
       <!-- Bottom Controls -->
       <div class="bottom-controls">
         <!-- Progress Bar -->
-        <div class="progress-container" 
+        <div class="progress-container"
+             role="slider"
+             tabindex="0"
+             [attr.aria-label]="'a11y.slideshow_progress' | translate"
+             [attr.aria-valuemin]="1"
+             [attr.aria-valuemax]="photos.length"
+             [attr.aria-valuenow]="currentPhotoIndex + 1"
              (click)="seekToPosition($event)"
-             (touchend)="seekToPositionTouch($event)">
+             (touchend)="seekToPositionTouch($event)"
+             (keydown.arrowleft)="previousPhoto()"
+             (keydown.arrowright)="nextPhoto()">
           <div class="progress-track">
             <div class="progress-fill" [style.width.%]="getProgressPercentage()"></div>
             <div class="progress-thumb" 
@@ -41,19 +49,19 @@
 
         <!-- Control Buttons -->
         <div class="control-buttons">
-          <button class="control-btn" (click)="goToFirstPhoto()">
+          <button class="control-btn" (click)="goToFirstPhoto()" [attr.aria-label]="'a11y.first_photo' | translate">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
             </svg>
           </button>
           
-          <button class="control-btn" (click)="previousPhoto()">
+          <button class="control-btn" (click)="previousPhoto()" [attr.aria-label]="'a11y.previous_photo' | translate">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
             </svg>
           </button>
           
-          <button class="play-btn" (click)="togglePlayback()">
+          <button class="play-btn" (click)="togglePlayback()" [attr.aria-label]="(isPlaying ? 'a11y.pause' : 'a11y.play') | translate">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" *ngIf="!isPlaying">
               <path d="M8 5v14l11-7z"/>
             </svg>
@@ -62,13 +70,13 @@
             </svg>
           </button>
           
-          <button class="control-btn" (click)="nextPhoto()">
+          <button class="control-btn" (click)="nextPhoto()" [attr.aria-label]="'a11y.next_photo' | translate">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
             </svg>
           </button>
           
-          <button class="control-btn" (click)="goToLastPhoto()">
+          <button class="control-btn" (click)="goToLastPhoto()" [attr.aria-label]="'a11y.last_photo' | translate">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
             </svg>

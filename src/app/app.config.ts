@@ -6,7 +6,9 @@ import { provideServiceWorker } from '@angular/service-worker';
 
 export const appConfig: ApplicationConfig = {
   providers: [provideZoneChangeDetection({ eventCoalescing: true }), provideRouter(routes), provideServiceWorker('ngsw-worker.js', {
-            enabled: true, // Enable service worker in all modes for testing
-            registrationStrategy: 'registerImmediately'
+            // Disabled during ng serve — a service worker in dev serves stale
+            // bundles and there is no ngsw-worker.js in the dev server anyway
+            enabled: !isDevMode(),
+            registrationStrategy: 'registerWhenStable:30000'
           })]
 };

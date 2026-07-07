@@ -117,8 +117,9 @@
           <p>{{ 'settings.language_description' | translate }}</p>
         </div>
         <div class="language-selector">
-          <select 
+          <select
             class="language-dropdown"
+            [attr.aria-label]="'settings.language' | translate"
             (change)="onLanguageChange($event)">
             <option *ngFor="let lang of supportedLanguages" 
                     [value]="lang.code"

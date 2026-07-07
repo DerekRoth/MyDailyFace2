@@ -403,9 +403,10 @@ export class TestDataGeneratorService {
   }
 
   async clearTestData(): Promise<void> {
-    const photos = await this.indexedDbService.getAllPhotos();
+    // Metadata only — no need to load photo bytes just to read ids
+    const photos = await this.indexedDbService.getAllPhotoMeta();
     const testPhotos = photos.filter(photo => photo.id.startsWith('test_'));
-    
+
     for (const photo of testPhotos) {
       await this.indexedDbService.deletePhoto(photo.id);
     }

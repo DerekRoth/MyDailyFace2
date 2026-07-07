@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { IndexedDbService, PhotoRecord } from './indexed-db.service';
+import { IndexedDbService } from './indexed-db.service';
 import { GoogleDriveService } from './google-drive.service';
 import { OfflineQueueService } from './offline-queue.service';
 
@@ -8,6 +8,7 @@ export interface CameraPhoto {
   timestamp: Date;
   dataUrl?: string;
   data?: ArrayBuffer;
+  thumbnail?: string;
 }
 
 @Injectable({
@@ -31,10 +32,13 @@ export class CameraService {
 
       canvas.width = videoElement.videoWidth;
       canvas.height = videoElement.videoHeight;
-      
+
       // Draw the video frame normally (not mirrored) for the saved photo
       context.drawImage(videoElement, 0, 0);
-      
+
+      // Small thumbnail for the gallery grid, generated while we have the frame
+      const thumbnail = this.renderThumbnail(canvas);
+
       // Convert to blob for IndexedDB storage
       return new Promise((resolve) => {
         canvas.toBlob(async (blob) => {
@@ -45,10 +49,10 @@ export class CameraService {
 
           const id = this.generateId();
           const timestamp = new Date();
-          
+
           // Save to IndexedDB
           try {
-            await this.indexedDbService.savePhoto(blob, id, timestamp);
+            await this.indexedDbService.savePhoto(blob, id, timestamp, thumbnail ?? undefined);
             
             // Convert blob to ArrayBuffer for the return object too
             const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
@@ -66,7 +70,7 @@ export class CameraService {
             
             // Queue for Google Drive sync if auto-sync is enabled
             if (this.googleDriveService.isAutoSyncEnabled()) {
-              await this.offlineQueueService.queuePhotoUpload(blob, id, timestamp);
+              await this.offlineQueueService.queuePhotoUpload(id, timestamp);
             }
             
             resolve(photo);
@@ -82,17 +86,96 @@ export class CameraService {
     }
   }
 
-  async getStoredPhotos(): Promise<CameraPhoto[]> {
+  // (There is intentionally no "load all photos with bytes" API — with years of
+  // daily photos that materializes hundreds of MB. Use getPhotoIndex + on-demand
+  // getPhotoDataUrl instead.)
+
+  // Metadata + thumbnails only, newest first. Use this for lists;
+  // getPhotoDataUrl fetches full resolution on demand by id.
+  async getPhotoIndex(): Promise<CameraPhoto[]> {
     try {
-      const photoRecords = await this.indexedDbService.getAllPhotos();
-      return photoRecords.map(record => ({
-        id: record.id,
-        timestamp: record.timestamp,
-        data: record.data
-      }));
+      const metas = await this.indexedDbService.getAllPhotoMeta();
+      return metas
+        .map(meta => ({
+          id: meta.id,
+          timestamp: meta.timestamp,
+          thumbnail: meta.thumbnail
+        }))
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
     } catch (error) {
-      console.error('Error getting stored photos:', error);
+      console.error('Error getting photo index:', error);
       return [];
+    }
+  }
+
+  // Returns the stored thumbnail, generating and persisting one for photos
+  // taken before thumbnails existed
+  async getOrCreateThumbnail(photo: CameraPhoto): Promise<string | null> {
+    if (photo.thumbnail) {
+      return photo.thumbnail;
+    }
+
+    try {
+      const record = await this.indexedDbService.getPhoto(photo.id);
+      if (!record) return null;
+      if (record.thumbnail) return record.thumbnail;
+      if (!record.data) return null;
+
+      const thumbnail = await this.generateThumbnailFromData(record.data);
+      if (thumbnail) {
+        await this.indexedDbService.updatePhotoThumbnail(photo.id, thumbnail);
+      }
+      return thumbnail;
+    } catch (error) {
+      console.error('Error creating thumbnail for photo:', photo.id, error);
+      return null;
+    }
+  }
+
+  private readonly THUMBNAIL_MAX_SIZE = 320;
+
+  private renderThumbnail(source: HTMLCanvasElement | HTMLImageElement): string | null {
+    try {
+      const width = source instanceof HTMLImageElement ? source.naturalWidth : source.width;
+      const height = source instanceof HTMLImageElement ? source.naturalHeight : source.height;
+      if (!width || !height) return null;
+
+      const scale = Math.min(1, this.THUMBNAIL_MAX_SIZE / Math.max(width, height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(width * scale));
+      canvas.height = Math.max(1, Math.round(height * scale));
+      canvas.getContext('2d')!.drawImage(source, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL('image/jpeg', 0.7);
+    } catch (error) {
+      console.error('Error rendering thumbnail:', error);
+      return null;
+    }
+  }
+
+  private generateThumbnailFromData(data: ArrayBuffer): Promise<string | null> {
+    return new Promise((resolve) => {
+      const blob = this.indexedDbService.arrayBufferToBlob(data);
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve(this.renderThumbnail(img));
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(null);
+      };
+      img.src = url;
+    });
+  }
+
+  async getLatestPhoto(): Promise<CameraPhoto | null> {
+    try {
+      const record = await this.indexedDbService.getLatestPhoto();
+      return record ? { id: record.id, timestamp: record.timestamp, data: record.data } : null;
+    } catch (error) {
+      console.error('Error getting latest photo:', error);
+      return null;
     }
   }
 
@@ -142,14 +225,17 @@ export class CameraService {
     try {
       // Get photo info before deleting from local storage
       const photoRecord = await this.indexedDbService.getPhoto(photoId);
-      
+
       // Delete from local storage
       await this.indexedDbService.deletePhoto(photoId);
-      
-      // Queue deletion for Google Drive if photo exists and user is connected
-      // Note: We sync deletions regardless of auto-sync setting for data consistency
-      if (photoRecord && this.googleDriveService.isAuthenticated()) {
-        await this.offlineQueueService.queuePhotoDelete(photoId, photoRecord.timestamp);
+
+      // Queue the Drive deletion whenever a Drive copy exists or may be created.
+      // This must not depend on being authenticated right now — the token expires
+      // hourly, and a deletion skipped here would resurrect on the next sync
+      if (photoRecord && (photoRecord.googleDriveFileId || this.googleDriveService.isAutoSyncEnabled())) {
+        await this.offlineQueueService.queuePhotoDelete(
+          photoId, photoRecord.timestamp, photoRecord.googleDriveFileId || undefined
+        );
         console.log(`Queued deletion of photo ${photoId} for Google Drive sync`);
       }
     } catch (error) {
@@ -161,20 +247,24 @@ export class CameraService {
   async deleteAllPhotos(): Promise<void> {
     try {
       // Get all photos before deleting to queue Drive deletions
-      let photosToDelete: PhotoRecord[] = [];
-      if (this.googleDriveService.isAuthenticated()) {
-        photosToDelete = await this.indexedDbService.getAllPhotos();
-      }
-      
+      const photosToDelete = await this.indexedDbService.getAllPhotoMeta();
+
       // Delete from local storage
       await this.indexedDbService.deleteAllPhotos();
-      
-      // Queue all photos for deletion from Google Drive if user is connected
-      if (photosToDelete.length > 0 && this.googleDriveService.isAuthenticated()) {
-        for (const photo of photosToDelete) {
-          await this.offlineQueueService.queuePhotoDelete(photo.id, photo.timestamp);
+
+      // Queue Drive deletions regardless of the current auth state (see deletePhoto)
+      const autoSync = this.googleDriveService.isAutoSyncEnabled();
+      let queued = 0;
+      for (const photo of photosToDelete) {
+        if (photo.googleDriveFileId || autoSync) {
+          await this.offlineQueueService.queuePhotoDelete(
+            photo.id, photo.timestamp, photo.googleDriveFileId || undefined
+          );
+          queued++;
         }
-        console.log(`Queued ${photosToDelete.length} photos for Google Drive deletion`);
+      }
+      if (queued > 0) {
+        console.log(`Queued ${queued} photos for Google Drive deletion`);
       }
     } catch (error) {
       console.error('Error deleting all photos:', error);
@@ -199,7 +289,9 @@ export class CameraService {
       throw new Error('Not authenticated with Google Drive');
     }
 
-    const photos = await this.getStoredPhotos();
+    // Only photos that aren't backed up yet — re-uploading synced photos would
+    // duplicate the whole library in Drive
+    const photos = await this.indexedDbService.getUnsyncedPhotos();
     let success = 0;
     let failed = 0;
 

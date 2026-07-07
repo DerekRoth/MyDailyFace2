@@ -1,19 +1,15 @@
 import { Routes } from '@angular/router';
-import { HomepageComponent } from './homepage/homepage.component';
 import { TakePictureComponent } from './take-picture/take-picture.component';
-import { BrowsePicturesComponent } from './browse-pictures/browse-pictures.component';
-import { PlayComponent } from './play/play.component';
-import { SettingsComponent } from './settings/settings.component';
-import { PrivacyComponent } from './privacy/privacy.component';
-import { TermsComponent } from './terms/terms.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/take-picture', pathMatch: 'full' },
-  { path: 'home', component: HomepageComponent },
+  // The camera screen is the default route, so it stays eager; everything else
+  // loads on demand to keep the initial bundle inside its budget
   { path: 'take-picture', component: TakePictureComponent },
-  { path: 'browse-pictures', component: BrowsePicturesComponent },
-  { path: 'play', component: PlayComponent },
-  { path: 'settings', component: SettingsComponent },
-  { path: 'privacy', component: PrivacyComponent },
-  { path: 'terms', component: TermsComponent }
+  { path: 'home', loadComponent: () => import('./homepage/homepage.component').then(m => m.HomepageComponent) },
+  { path: 'browse-pictures', loadComponent: () => import('./browse-pictures/browse-pictures.component').then(m => m.BrowsePicturesComponent) },
+  { path: 'play', loadComponent: () => import('./play/play.component').then(m => m.PlayComponent) },
+  { path: 'settings', loadComponent: () => import('./settings/settings.component').then(m => m.SettingsComponent) },
+  { path: 'privacy', loadComponent: () => import('./privacy/privacy.component').then(m => m.PrivacyComponent) },
+  { path: 'terms', loadComponent: () => import('./terms/terms.component').then(m => m.TermsComponent) }
 ];

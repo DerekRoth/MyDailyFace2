@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, interval } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { IndexedDbService } from './indexed-db.service';
-import { TokenRefreshWorkerService } from './token-refresh-worker.service';
 
 declare global {
   interface Window {
@@ -59,15 +58,16 @@ export class GoogleDriveService {
   private isInitialized = false;
   private folderId: string | null = null;
   private tokenClient: any = null;
+  // The access token is kept in memory only — persisting it (e.g. in
+  // localStorage) would expose it to any script on the origin. Renewal goes
+  // through the GIS token client with an empty prompt instead.
   private accessToken: string | null = null;
-  private refreshToken: string | null = null;
   private tokenExpiresAt: Date | null = null;
   private autoSyncInterval: any = null;
   private isSyncing: boolean = false;
 
   constructor(
-    private indexedDbService: IndexedDbService,
-    private tokenRefreshWorker: TokenRefreshWorkerService
+    private indexedDbService: IndexedDbService
   ) {
     // Load auto-sync preference from localStorage
     const autoSyncEnabled = localStorage.getItem('googleDriveAutoSync') === 'true';
@@ -78,9 +78,6 @@ export class GoogleDriveService {
 
     // Start monitoring connection and sync when available
     this.startAutoSync();
-
-    // Listen for background token refresh events
-    this.setupTokenRefreshListeners();
   }
 
   async initializeGapi(): Promise<void> {
@@ -234,6 +231,14 @@ export class GoogleDriveService {
 
       await this.ensureFolderExists();
 
+      // Uploads must be idempotent: the offline queue and the background sync can
+      // both attempt the same photo, and a retry after a lost success response
+      // must not create a second copy
+      const existingFileId = await this.findExistingFileId(fileName);
+      if (existingFileId) {
+        return existingFileId;
+      }
+
       const metadata = {
         name: fileName,
         parents: this.folderId ? [this.folderId] : undefined
@@ -265,64 +270,85 @@ export class GoogleDriveService {
   }
 
   async syncPhoto(photoBlob: Blob, photoId: string, timestamp: Date): Promise<string | null> {
-    try {
-      const fileName = `dailyface_${photoId}_${timestamp.toISOString().split('T')[0]}.jpg`;
-      const fileId = await this.uploadPhoto(photoBlob, fileName);
+    const fileName = `dailyface_${photoId}_${timestamp.toISOString().split('T')[0]}.jpg`;
+    const fileId = await this.uploadPhoto(photoBlob, fileName);
 
-      // Mark as synced in local storage
-      if (fileId) {
+    // Mark as synced in local storage
+    if (fileId) {
+      try {
         await this.indexedDbService.updatePhotoSyncStatus(photoId, fileId, true);
+      } catch (error) {
+        // The upload succeeded — a bookkeeping failure (e.g. the photo was just
+        // deleted locally) must not be reported as an upload failure, or the
+        // caller will retry and duplicate the file
+        console.warn('Photo uploaded but sync status update failed:', photoId, error);
       }
-
-      return fileId;
-    } catch (error) {
-      console.error('Photo sync failed:', error);
-      return null;
     }
+
+    return fileId;
   }
 
-  async deletePhoto(photoId: string, timestamp: Date): Promise<boolean> {
-    // Define fileName at function scope so it's available in catch block
+  async deletePhoto(photoId: string, timestamp: Date, knownFileId?: string): Promise<boolean> {
     const fileName = `dailyface_${photoId}_${timestamp.toISOString().split('T')[0]}.jpg`;
-    
+
     try {
       if (!await this.ensureValidToken()) {
         console.warn('Not authenticated with Google Drive');
         return false;
       }
 
+      await this.ensureFolderExists();
+
+      if (knownFileId) {
+        await this.deleteDriveFile(knownFileId);
+      }
+
+      // Also delete any same-named copies (duplicates from earlier sync races),
+      // scoped to the app folder so unrelated files can't be matched
       const response = await window.gapi.client.drive.files.list({
-        q: `name='${fileName}' and trashed=false`,
-        spaces: 'drive'
+        q: `name='${this.escapeDriveQueryValue(fileName)}' and '${this.folderId}' in parents and trashed=false`,
+        spaces: 'drive',
+        fields: 'files(id)'
       });
 
-      if (response.result.files && response.result.files.length > 0) {
-        const fileId = response.result.files[0].id;
-
-        // Delete the file
-        await window.gapi.client.drive.files.delete({
-          fileId: fileId
-        });
-
-        console.log('Photo deleted from Google Drive:', fileName);
-        return true;
-      } else {
-        console.warn('Photo not found in Google Drive:', fileName);
-        // Return true even if not found - it's effectively deleted
-        return true;
+      const files = response.result.files || [];
+      for (const file of files) {
+        await this.deleteDriveFile(file.id!);
       }
+
+      console.log('Photo deleted from Google Drive:', fileName);
+      return true;
     } catch (error) {
       console.error('Failed to delete photo from Google Drive:', error);
-      // Check if it's a specific error type we can handle
-      if (error instanceof Error) {
-        if (error.message.includes('404') || error.message.includes('not found')) {
-          // File already deleted or doesn't exist
-          console.log('Photo already deleted or not found in Google Drive:', fileName);
-          return true;
-        }
-      }
       return false;
     }
+  }
+
+  private async deleteDriveFile(fileId: string): Promise<void> {
+    try {
+      await window.gapi.client.drive.files.delete({ fileId });
+    } catch (error: any) {
+      // Already gone is success
+      const status = error?.status ?? error?.result?.error?.code;
+      if (status !== 404) {
+        throw error;
+      }
+    }
+  }
+
+  private escapeDriveQueryValue(value: string): string {
+    return value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  }
+
+  private async findExistingFileId(fileName: string): Promise<string | null> {
+    const response = await window.gapi.client.drive.files.list({
+      q: `name='${this.escapeDriveQueryValue(fileName)}' and '${this.folderId}' in parents and trashed=false`,
+      spaces: 'drive',
+      fields: 'files(id)'
+    });
+
+    const files = response.result.files || [];
+    return files.length > 0 ? files[0].id! : null;
   }
 
   private async ensureFolderExists(): Promise<void> {
@@ -356,20 +382,14 @@ export class GoogleDriveService {
 
   private storeAuthenticationState(): void {
     try {
+      // No tokens here — only the fact that the user connected Drive and the
+      // app folder id, so the next session can re-authorize silently via GIS
       const authData = {
         authenticated: true,
-        accessToken: this.accessToken,
-        refreshToken: this.refreshToken, // Will be null for client-side
-        expiresAt: this.tokenExpiresAt?.toISOString(),
-        folderId: this.folderId,
-        clientId: this.config.clientId, // Store for background refresh
-        lastTokenRefresh: new Date().toISOString()
+        folderId: this.folderId
       };
-      
-      // Simple encoding to obscure tokens in localStorage (not cryptographic security)
-      const encoded = btoa(JSON.stringify(authData));
-      localStorage.setItem('googleDriveAuthData', encoded);
-      
+      localStorage.setItem('googleDriveAuthData', JSON.stringify(authData));
+
       // Keep legacy flag for compatibility
       localStorage.setItem('googleDriveAuthenticated', 'true');
       if (this.folderId) {
@@ -382,76 +402,42 @@ export class GoogleDriveService {
 
   private async restoreAuthenticationState(): Promise<void> {
     try {
-      const encodedData = localStorage.getItem('googleDriveAuthData');
-      
-      if (encodedData) {
+      const storedData = localStorage.getItem('googleDriveAuthData');
+      const legacyFlag = localStorage.getItem('googleDriveAuthenticated') === 'true';
+
+      if (!storedData && !legacyFlag) {
+        return;
+      }
+
+      if (storedData) {
         try {
-          const authData = JSON.parse(atob(encodedData));
-          this.accessToken = authData.accessToken;
-          this.refreshToken = authData.refreshToken;
-          this.tokenExpiresAt = authData.expiresAt ? new Date(authData.expiresAt) : null;
-          this.folderId = authData.folderId;
-          
-          // Check if token is still valid or can be refreshed
-          if (this.isTokenExpired()) {
-            console.log('Stored token expired, attempting refresh');
-            const refreshed = await this.refreshAccessToken();
-            if (!refreshed) {
-              console.log('Token refresh failed, clearing auth state');
-              this.clearAuthenticationState();
-              return;
-            }
-          }
-          
-          // Validate the token by testing API access
-          await this.initializeGapi();
-          await this.ensureFolderExists();
-          
-          this.updateSyncStatus({ 
-            isAuthenticated: true,
-            error: null 
-          });
-          
-          console.log('Authentication state restored successfully');
-          
-        } catch (parseError) {
-          console.error('Failed to parse stored auth data:', parseError);
-          this.clearAuthenticationState();
-        }
-      } else {
-        // Fallback to legacy authentication check
-        const isAuthenticated = localStorage.getItem('googleDriveAuthenticated') === 'true';
-        if (isAuthenticated) {
-          console.log('Legacy auth flag found, attempting silent sign-in');
-          await this.attemptSilentSignIn();
+          const authData = JSON.parse(storedData);
+          this.folderId = authData.folderId || null;
+        } catch {
+          // Pre-existing base64-encoded format (which contained tokens) — ignore;
+          // it gets overwritten in the new format on the next successful sign-in
         }
       }
+
+      // Tokens are never persisted, so get a fresh one silently through GIS
+      await this.initializeGapi();
+      const refreshed = await this.refreshAccessToken();
+      if (!refreshed) {
+        console.log('Silent re-authentication failed, user needs to reconnect');
+        this.clearAuthenticationState();
+        return;
+      }
+
+      await this.ensureFolderExists();
+      this.updateSyncStatus({
+        isAuthenticated: true,
+        error: null
+      });
+
+      console.log('Authentication state restored successfully');
     } catch (error) {
       console.error('Failed to restore authentication state:', error);
       this.clearAuthenticationState();
-    }
-  }
-
-  private async attemptSilentSignIn(): Promise<boolean> {
-    try {
-      await this.initializeGapi();
-      
-      // If we have a refresh token, try to use it
-      if (this.refreshToken) {
-        console.log('Attempting token refresh with stored refresh token');
-        return await this.refreshAccessToken();
-      }
-      
-      // If no refresh token, we can't do silent auth with Google Identity Services
-      // The user will need to sign in again
-      console.log('No refresh token available, silent authentication not possible');
-      this.clearAuthenticationState();
-      return false;
-      
-    } catch (error) {
-      console.error('Silent sign-in failed:', error);
-      this.clearAuthenticationState();
-      return false;
     }
   }
 
@@ -459,7 +445,6 @@ export class GoogleDriveService {
     try {
       // Clear tokens from memory
       this.accessToken = null;
-      this.refreshToken = null;
       this.tokenExpiresAt = null;
       this.folderId = null;
       
@@ -496,13 +481,8 @@ export class GoogleDriveService {
         error: null
       });
       
-      console.log('Token received and stored, expires at:', this.tokenExpiresAt);
-      
-      // Schedule background token refresh
-      if (this.tokenRefreshWorker.isSupported()) {
-        this.tokenRefreshWorker.scheduleTokenRefresh();
-      }
-      
+      console.log('Token received, expires at:', this.tokenExpiresAt);
+
       // Trigger automatic sync when authenticated
       this.triggerBackgroundSync();
       
@@ -524,15 +504,6 @@ export class GoogleDriveService {
 
   private async refreshAccessToken(): Promise<boolean> {
     try {
-      // For published apps, try silent refresh first
-      if (this.isPublishedApp()) {
-        const silentSuccess = await this.attemptSilentRefresh();
-        if (silentSuccess) {
-          return true;
-        }
-      }
-      
-      // If silent refresh fails or app is in testing, try interactive refresh
       await this.initializeGapi();
       
       if (!this.tokenClient) {
@@ -624,6 +595,19 @@ export class GoogleDriveService {
     this.syncStatusSubject.next({
       ...currentStatus,
       ...updates
+    });
+  }
+
+  // Manual sync state, driven by the settings screen's "sync all" flow
+  markManualSyncStarted(): void {
+    this.updateSyncStatus({ isSyncing: true });
+  }
+
+  markManualSyncFinished(error: string | null = null): void {
+    this.updateSyncStatus({
+      isSyncing: false,
+      lastSync: error ? this.syncStatusSubject.value.lastSync : new Date(),
+      error
     });
   }
 
@@ -750,27 +734,34 @@ export class GoogleDriveService {
 
   private async downloadMissingPhotos(): Promise<{downloaded: number, failed: number}> {
     try {
-      // Get all files from the DailyFace.me folder
+      // Get all files from the DailyFace.me folder, following pagination —
+      // a single list request returns at most 1000 files
       await this.ensureFolderExists();
-      
-      const response = await window.gapi.client.drive.files.list({
-        q: `'${this.folderId}' in parents and name contains 'dailyface_' and trashed=false`,
-        spaces: 'drive',
-        pageSize: 1000,
-        fields: 'files(id,name,modifiedTime)'
-      });
 
-      const driveFiles = response.result.files || [];
+      const driveFiles: any[] = [];
+      let pageToken: string | undefined;
+      do {
+        const response = await window.gapi.client.drive.files.list({
+          q: `'${this.folderId}' in parents and name contains 'dailyface_' and trashed=false`,
+          spaces: 'drive',
+          pageSize: 1000,
+          fields: 'nextPageToken, files(id,name,modifiedTime)',
+          pageToken
+        });
+        driveFiles.push(...(response.result.files || []));
+        pageToken = response.result.nextPageToken;
+      } while (pageToken);
+
       console.log(`Found ${driveFiles.length} photos in Google Drive`);
-      
+
       if (driveFiles.length === 0) {
         return { downloaded: 0, failed: 0 };
       }
 
-      // Get all local photos
-      const localPhotos = await this.indexedDbService.getAllPhotos();
+      // Metadata only — the sync loop must not materialize every photo's bytes
+      const localPhotos = await this.indexedDbService.getAllPhotoMeta();
       const localFileIds = new Set(localPhotos.map(p => p.googleDriveFileId).filter(id => id));
-      const localDates = new Set(localPhotos.map(p => this.formatDateForFilename(p.timestamp)));
+      const driveFileIds = new Set(driveFiles.map(f => f.id));
 
       let downloaded = 0;
       let failed = 0;
@@ -793,24 +784,44 @@ export class GoogleDriveService {
           // Check for date conflicts (same date, different file)
           const dateString = this.formatDateForFilename(parsedInfo.date);
           const existingPhoto = localPhotos.find(p => this.formatDateForFilename(p.timestamp) === dateString);
-          
+
           if (existingPhoto) {
-            // Conflict resolution: Google Drive version takes precedence
-            console.log(`Date conflict detected for ${dateString}, replacing local photo with Drive version`);
+            // Never overwrite a local photo that hasn't been backed up yet, and
+            // when both this file and the local photo's own Drive copy exist,
+            // keep the local one — replacing would just ping-pong between copies
+            const localCopyStillInDrive = existingPhoto.googleDriveFileId
+              && driveFileIds.has(existingPhoto.googleDriveFileId);
+            if (!existingPhoto.syncedToGoogleDrive || localCopyStillInDrive) {
+              continue;
+            }
+          }
+
+          // Download and save first — the conflicting local photo is only
+          // removed once its replacement is safely stored
+          const photoData = await this.downloadPhoto(file.id!);
+          if (!photoData) {
+            failed++;
+            continue;
+          }
+
+          await this.indexedDbService.savePhoto(photoData, parsedInfo.photoId, parsedInfo.date);
+          await this.indexedDbService.updatePhotoSyncStatus(parsedInfo.photoId, file.id!, true);
+          if (existingPhoto && existingPhoto.id !== parsedInfo.photoId) {
             await this.indexedDbService.deletePhoto(existingPhoto.id);
           }
 
-          // Download and save the photo
-          const photoData = await this.downloadPhoto(file.id!);
-          if (photoData) {
-            await this.indexedDbService.savePhoto(photoData, parsedInfo.photoId, parsedInfo.date);
-            await this.indexedDbService.updatePhotoSyncStatus(parsedInfo.photoId, file.id!, true);
-            downloaded++;
-            console.log(`Downloaded photo for date ${dateString}`);
-          } else {
-            failed++;
-          }
+          // Keep the in-memory view current so a second Drive file for the same
+          // date within this pass is handled as a conflict, not a fresh download
+          localFileIds.add(file.id!);
+          localPhotos.push({
+            id: parsedInfo.photoId,
+            timestamp: parsedInfo.date,
+            googleDriveFileId: file.id!,
+            syncedToGoogleDrive: true
+          });
 
+          downloaded++;
+          console.log(`Downloaded photo for date ${dateString}`);
         } catch (error) {
           console.error('Failed to download photo:', file.name, error);
           failed++;
@@ -858,76 +869,6 @@ export class GoogleDriveService {
     return date.toISOString().split('T')[0];
   }
 
-  private setupTokenRefreshListeners(): void {
-    // Listen for successful background token refresh
-    window.addEventListener('tokenRefreshed', ((event: CustomEvent) => {
-      console.log('Background token refresh successful');
-      const tokenData = event.detail;
-      
-      // Update our local token data
-      if (tokenData?.access_token) {
-        this.accessToken = tokenData.access_token;
-        this.tokenExpiresAt = tokenData.expires_at ? new Date(tokenData.expires_at) : null;
-        
-        // Update sync status
-        this.updateSyncStatus({
-          isAuthenticated: true,
-          error: null
-        });
-        
-        console.log('Local token updated from background refresh');
-      }
-    }) as EventListener);
-    
-    // Listen for background token refresh failures
-    window.addEventListener('tokenRefreshFailed', ((event: CustomEvent) => {
-      console.log('Background token refresh failed:', event.detail);
-      
-      // Don't immediately clear auth - give user a chance to manually refresh
-      this.updateSyncStatus({
-        error: 'Authentication may need renewal - sync will retry'
-      });
-    }) as EventListener);
-  }
-  
-  private async attemptSilentRefresh(): Promise<boolean> {
-    try {
-      // Use the background worker's silent refresh capability
-      if (this.tokenRefreshWorker.isActive()) {
-        this.tokenRefreshWorker.forceTokenRefresh();
-        
-        // Wait a bit for the refresh to complete
-        return new Promise((resolve) => {
-          const timeout = setTimeout(() => resolve(false), 8000);
-          
-          const listener = () => {
-            clearTimeout(timeout);
-            window.removeEventListener('tokenRefreshed', listener);
-            resolve(true);
-          };
-          
-          window.addEventListener('tokenRefreshed', listener);
-        });
-      }
-      
-      return false;
-    } catch (error) {
-      console.error('Silent refresh attempt failed:', error);
-      return false;
-    }
-  }
-  
-  private isPublishedApp(): boolean {
-    // Check if this is a published app (not in testing phase)
-    // Published apps have better token refresh capabilities
-    const userAgent = navigator.userAgent;
-    const isWebView = /wv|WebView/i.test(userAgent);
-    const isStandaloneApp = window.matchMedia('(display-mode: standalone)').matches;
-    
-    // For store-packaged apps or PWAs installed as standalone
-    return isWebView || isStandaloneApp || window.location.protocol === 'https:';
-  }
-  
   // Enhanced error handling for API calls
   private async makeAuthenticatedRequest(url: string, options: RequestInit = {}): Promise<Response> {
     let response = await fetch(url, {
@@ -938,8 +879,10 @@ export class GoogleDriveService {
       }
     });
     
-    // If token expired, try to refresh and retry once
-    if (response.status === 401 || response.status === 403) {
+    // If token expired, try to refresh and retry once. Only 401 means bad
+    // credentials — 403 is also returned for rate limiting and quota, and
+    // treating it as an auth failure signs the user out on a transient error
+    if (response.status === 401) {
       console.log('Token expired, attempting refresh and retry');
       
       const refreshed = await this.refreshAccessToken();

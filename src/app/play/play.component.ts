@@ -30,6 +30,16 @@ export class PlayComponent implements OnInit, OnDestroy {
   readonly FPS = 10;
   readonly INTERVAL_MS = 1000 / this.FPS; // 100ms for 10 FPS
 
+  // Frame pipeline: decoded data URLs are cached ahead of the playhead so a
+  // 100ms tick doesn't have to wait on IndexedDB + FileReader, and a sequence
+  // counter drops late loads so frames can't flash out of order
+  private readonly FRAME_CACHE_LIMIT = 60;
+  private readonly PRELOAD_AHEAD = 10;
+  private frameCache = new Map<string, string>();
+  private pendingFrames = new Set<string>();
+  private displaySeq = 0;
+  private tickInFlight = false;
+
   constructor(
     private cameraService: CameraService,
     private localeService: LocaleService
@@ -46,7 +56,8 @@ export class PlayComponent implements OnInit, OnDestroy {
 
   async loadPhotos() {
     try {
-      this.photos = await this.cameraService.getStoredPhotos();
+      // Metadata only — frames are loaded on demand through the frame cache
+      this.photos = await this.cameraService.getPhotoIndex();
       // Sort photos by timestamp (oldest to newest)
       this.photos.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
       
@@ -59,28 +70,73 @@ export class PlayComponent implements OnInit, OnDestroy {
   }
 
   async displayPhoto(index: number) {
-    if (index >= 0 && index < this.photos.length) {
-      this.currentPhotoIndex = index;
-      this.currentPhotoUrl = await this.cameraService.getPhotoDataUrl(this.photos[index]);
+    if (index < 0 || index >= this.photos.length) return;
+
+    this.currentPhotoIndex = index;
+    const seq = ++this.displaySeq;
+    const url = await this.getFrame(this.photos[index]);
+    // Only apply if no newer frame was requested while this one loaded
+    if (url && seq === this.displaySeq) {
+      this.currentPhotoUrl = url;
+    }
+  }
+
+  private async getFrame(photo: CameraPhoto): Promise<string | null> {
+    const cached = this.frameCache.get(photo.id);
+    if (cached) return cached;
+
+    const url = await this.cameraService.getPhotoDataUrl(photo);
+    if (url) {
+      this.cacheFrame(photo.id, url);
+    }
+    return url;
+  }
+
+  private cacheFrame(id: string, url: string): void {
+    if (this.frameCache.size >= this.FRAME_CACHE_LIMIT) {
+      const oldest = this.frameCache.keys().next().value;
+      if (oldest !== undefined) {
+        this.frameCache.delete(oldest);
+      }
+    }
+    this.frameCache.set(id, url);
+  }
+
+  private preloadAhead(fromIndex: number): void {
+    for (let i = 1; i <= this.PRELOAD_AHEAD; i++) {
+      const photo = this.photos[(fromIndex + i) % this.photos.length];
+      if (this.frameCache.has(photo.id) || this.pendingFrames.has(photo.id)) continue;
+
+      this.pendingFrames.add(photo.id);
+      this.cameraService.getPhotoDataUrl(photo)
+        .then(url => {
+          if (url) this.cacheFrame(photo.id, url);
+        })
+        .finally(() => this.pendingFrames.delete(photo.id));
     }
   }
 
   async startSlideshow() {
     if (this.photos.length === 0) return;
-    
+
     this.isPlaying = true;
     // Don't reset to 0, continue from current position
-    
-    this.intervalId = setInterval(async () => {
-      this.currentPhotoIndex++;
-      
-      if (this.currentPhotoIndex >= this.photos.length) {
-        // Loop back to the beginning
-        this.currentPhotoIndex = 0;
-      }
-      
-      await this.displayPhoto(this.currentPhotoIndex);
-    }, this.INTERVAL_MS);
+    this.preloadAhead(this.currentPhotoIndex);
+
+    this.intervalId = setInterval(() => this.advanceFrame(), this.INTERVAL_MS);
+  }
+
+  private async advanceFrame(): Promise<void> {
+    if (this.tickInFlight) return; // Previous frame still loading — skip, don't stack
+
+    this.tickInFlight = true;
+    try {
+      const nextIndex = (this.currentPhotoIndex + 1) % this.photos.length;
+      await this.displayPhoto(nextIndex);
+      this.preloadAhead(nextIndex);
+    } finally {
+      this.tickInFlight = false;
+    }
   }
 
   stopSlideshow() {
@@ -123,14 +179,6 @@ export class PlayComponent implements OnInit, OnDestroy {
     this.stopSlideshow();
     const newIndex = this.currentPhotoIndex < this.photos.length - 1 ? this.currentPhotoIndex + 1 : 0;
     await this.displayPhoto(newIndex);
-  }
-
-  formatDate(date: Date): string {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
   }
 
   getProgressPercentage(): number {
@@ -236,27 +284,22 @@ export class PlayComponent implements OnInit, OnDestroy {
       this.dragHandlers.mouseMove = (e: MouseEvent) => {
         this.handleDragMove(e);
       };
-      
+
       this.dragHandlers.mouseUp = (e: MouseEvent) => {
         this.endDrag();
       };
-      
-      // Add mouse event listeners
-      document.addEventListener('mousemove', this.dragHandlers.mouseMove, true);
-      document.addEventListener('mouseup', this.dragHandlers.mouseUp, true);
+
+      // One capture-phase listener on window is enough — mouse events bubble
+      // through window regardless of where the pointer is
       window.addEventListener('mousemove', this.dragHandlers.mouseMove, true);
       window.addEventListener('mouseup', this.dragHandlers.mouseUp, true);
-      document.body.addEventListener('mousemove', this.dragHandlers.mouseMove, true);
-      document.body.addEventListener('mouseup', this.dragHandlers.mouseUp, true);
     }
   }
-  
+
   startDrag(event: MouseEvent): void {
-    console.log('startDrag called on element:', event.target);
-    
     event.preventDefault();
     event.stopPropagation();
-    
+
     // Delegate to the unified touch/mouse handler
     this.startDragTouch(event, false);
   }
@@ -293,15 +336,11 @@ export class PlayComponent implements OnInit, OnDestroy {
     
     // Remove mouse event listeners
     if (this.dragHandlers.mouseMove) {
-      document.removeEventListener('mousemove', this.dragHandlers.mouseMove, true);
       window.removeEventListener('mousemove', this.dragHandlers.mouseMove, true);
-      document.body.removeEventListener('mousemove', this.dragHandlers.mouseMove, true);
     }
-    
+
     if (this.dragHandlers.mouseUp) {
-      document.removeEventListener('mouseup', this.dragHandlers.mouseUp, true);
       window.removeEventListener('mouseup', this.dragHandlers.mouseUp, true);
-      document.body.removeEventListener('mouseup', this.dragHandlers.mouseUp, true);
     }
     
     // Remove touch event listeners

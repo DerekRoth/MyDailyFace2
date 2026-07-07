@@ -5,6 +5,10 @@
   <title>DailyFace.me</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <!-- Constrain what can execute/connect on this origin: only our own bundles
+       plus the Google Identity/Drive scripts and APIs. Photos render from
+       data:/blob: URLs. Angular component styles require 'unsafe-inline'. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com https://apis.google.com; connect-src 'self' https://www.googleapis.com https://content.googleapis.com https://accounts.google.com https://oauth2.googleapis.com; frame-src https://accounts.google.com https://content.googleapis.com; img-src 'self' data: blob: https://*.googleusercontent.com; style-src 'self' 'unsafe-inline' https://accounts.google.com; font-src 'self'; object-src 'none'; base-uri 'self'">
   <meta name="google-site-verification" content="Lr91vAwBVg1OmNkSe1OFlcciipJcM9p5N1KsOThQYh8" />
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="manifest" href="manifest.webmanifest">
